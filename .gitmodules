@@ -5,5 +5,5 @@
 	path = llvm-project
 	url = git@github.com:llvm/llvm-project.git
 [submodule "PMDebugger"]
-	path = PMDebugger
+	path = benchmarks/crash_consistency/PMDebugger
 	url = git@github.com:PASAUCMerced/PMDebugger.git
