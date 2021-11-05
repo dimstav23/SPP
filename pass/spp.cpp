@@ -92,8 +92,7 @@ namespace {
                 for (auto I = BB->begin(), Iend = BB->end(); I != Iend; ++I) {
                     if (auto* CB = dyn_cast<CallBase>(I)) {
                         if (CB->getCalledFunction()->getName() == "pmemobj_direct_inline") {
-                            errs() << "Found pmemobj";
-
+                            errs() << "Found pmemobj_direct_inline\n";
                         }
                     }
                 }
@@ -130,7 +129,7 @@ namespace {
                 Spp.visitFunc(&*F);
             }
 
-
+	    return true;
         }
     };
 

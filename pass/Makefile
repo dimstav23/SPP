@@ -1,8 +1,8 @@
 SOURCES = spp.cpp
 LIB_NAME = spp.so
 
-LDFLAGS = $(shell llvm-config-12 --ldflags)
-CXXFLAGS = -ggdb3 -Wall -fno-rtti -fPIC -shared $(shell llvm-config-12 --cxxflags)
+LDFLAGS = $(shell llvm-config --ldflags)
+CXXFLAGS = -ggdb3 -Wall -fno-rtti -fPIC -shared $(shell llvm-config --cxxflags)
 
 all: $(LIB_NAME)
 
