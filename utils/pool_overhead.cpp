@@ -39,8 +39,8 @@ int main()
 	
 	const size_t poolSize = atoi(getenv("POOL_SIZE"));
 
-	unlink("/dev/shm/spmo_test.pool");
-	PMEMobjpool* pool = pmemobj_create("/dev/shm/spmo_test.pool", "spmo_test", poolSize, 0660);
+	unlink("/dev/shm//dev/shm/spp_test.pool");
+	PMEMobjpool* pool = pmemobj_create("/dev/shm//dev/shm/spp_test.pool", "spp_test", poolSize, 0660);
 	assert(pool != NULL);
 	
 	size_t lb=1;

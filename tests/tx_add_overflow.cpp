@@ -9,9 +9,9 @@ Source repository: https://github.com/mstniy/safepm
 #include <unistd.h>
 #include "common.h"
 
-POBJ_LAYOUT_BEGIN(spmo_test);
-POBJ_LAYOUT_ROOT(spmo_test, struct root);
-POBJ_LAYOUT_END(spmo_test);
+POBJ_LAYOUT_BEGIN(spp_test);
+POBJ_LAYOUT_ROOT(spp_test, struct root);
+POBJ_LAYOUT_END(spp_test);
 
 struct root {
 	uint64_t x[3];
@@ -19,8 +19,8 @@ struct root {
 
 int main()
 {
-	unlink("spmo_test.pool");
-	PMEMobjpool* pool = pmemobj_create("spmo_test.pool", "spmo_test", 32*1024*1024, 0660);
+	unlink("/dev/shm/spp_test.pool");
+	PMEMobjpool* pool = pmemobj_create("/dev/shm/spp_test.pool", "spp_test", 32*1024*1024, 0660);
 	assert(pool != NULL);
 
 	PMEMoid proot_ = pmemobj_root(pool, sizeof(struct root));
