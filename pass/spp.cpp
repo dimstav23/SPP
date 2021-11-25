@@ -194,15 +194,32 @@ namespace {
         SPPTagCleaningFunc() : FunctionPass(ID) { }
 
         virtual bool runOnFunction(Function &F) {
-
+            /* Ignore declarations */
             if (F.isDeclaration()) return false;
             
-            errs() << F.getName() << "\n";
             for (auto &I : instructions(F)) {
-                I.print(errs());
-                errs() << "\n";
+                if (isa<LoadInst>(I)) {
+                    /* Load instructions handling */
+                    Value *LoadPtr = I.getOperand(0);
+                    IRBuilder<> B(&I);
+                    Value *Unmasked = B.CreatePtrToInt(LoadPtr, B.getInt64Ty(), "unmasked_ld"); //convert to 64bit int
+                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
+                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_ld"); // mask the 48 LSbits
+                    Value *NewLoadPtr = B.CreateIntToPtr(Masked, LoadPtr->getType(), "new_ld_ptr"); //convert back to ptr
+                    I.setOperand(0, NewLoadPtr);
+                }
+                else if (isa<StoreInst>(I)) {
+                    /* Store instructions handling */
+                    Value *StorePtr = I.getOperand(1);
+                    IRBuilder<> B(&I);
+                    Value *Unmasked = B.CreatePtrToInt(StorePtr, B.getInt64Ty(), "unmasked_st"); //convert to 64bit int
+                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
+                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_st"); // mask the 48 LSbits
+                    Value *NewStorePtr = B.CreateIntToPtr(Masked, StorePtr->getType(), "new_st_ptr"); //convert back to ptr
+                    I.setOperand(1, NewStorePtr);
+                }
             }
-            return false;
+            return true;
         }
     };
 

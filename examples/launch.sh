@@ -5,10 +5,10 @@ make
 
 cd ../examples
 
-#clang -O -emit-llvm example.c -c -o example.bc #produce bitcode
-#clang -S -emit-llvm example.c #produce initial .ll
-#opt -load ../pass/spp.so -spp -S example.ll -o example_transformed.ll #produce transformed .ll
-#llc example_transformed.ll -o example.s #produce transformed .s file
+clang -O -emit-llvm example.c -c -o example.bc #produce bitcode
+clang -S -emit-llvm example.c #produce initial .ll
+opt -load ../pass/spp.so -spp -spp_tag_cleaning -S example.ll -o example_transformed.ll #produce transformed .ll
+llc example_transformed.ll -o example.s #produce transformed .s file
 
 rm -rf example
 
