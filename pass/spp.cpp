@@ -60,15 +60,10 @@ namespace {
         SmallSet<Function*, 32> varargFuncs;
         DenseMap<Constant*, Constant*> globalUses;
         DenseMap<Instruction*, Instruction*> optimizedMemInsts;
-        //DenseMap<Instruction*, LowerUpperBound> boundsForInsts;
+        SmallSet<Function*, 32> externalFuncs;
         
     public:
-
-        //SPPPass(Module* M, TargetLibraryInfo* TLI) {
-        //  this->M = M;
-        //  this->TLI = TLI;
-        //}
-
+    
         SPPPass(Module* M) {
             this->M = M;
         }
@@ -116,42 +111,35 @@ namespace {
             return &*std::next(BasicBlock::iterator(I));
         }
 
-        void visitFunc(Function* F) {
+        bool visitFunc(Function* F) {
+            bool Changed = false;
             for (auto &I : instructions(F)) {
-                if (auto *CB = dyn_cast<CallBase>(&I)) {
-                    if (CB->getCalledFunction()->getName()=="pmemobj_direct_inline") {
-                        
-                        Value *Pmem_ptr = cast<Value>(&I); //get the return value of the pmemobj_direct_inline                  
-                        std::vector<User*> Users(Pmem_ptr->user_begin(), Pmem_ptr->user_end());
-
-                        IRBuilder<> B(SPPPass::getInsertPointAfter(&I)); //find the appropriate instert point
-                    
-                        Value *Unmasked = B.CreatePtrToInt(Pmem_ptr, B.getInt64Ty(), "unmasked"); //convert to 64bit int
-                        //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                        Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked"); // mask the 48 LSbits
-                        Value *New_pmem_ptr = B.CreateIntToPtr(Masked, Pmem_ptr->getType(), "new_pm_ptr"); //convert back to ptr
-
-                        //replace all the uses
-                        for (User *U : Users) {
-                            U->replaceUsesOfWith(Pmem_ptr, New_pmem_ptr);
-                            errs() << "replaced " << Pmem_ptr->getName() << " with " << New_pmem_ptr->getName() << "\n";
-                        }                         
-                    }
-                    else if (CB->getCalledFunction()->getName()=="test_func") {
-                        Value *test = cast<Value>(&I); //get the return value of the test_func                  
-                        std::vector<User*> Users(test->user_begin(), test->user_end());
-
-                        IRBuilder<> B(SPPPass::getInsertPointAfter(&I)); //find the appropriate instert point
-                        Value *new_test = B.CreateAdd(test, ConstantInt::get(B.getInt32Ty(), 1),"new_test");
-                        //replace all the uses
-                        for (User *U : Users) {
-                            U->replaceUsesOfWith(test, new_test);
-                            errs() << "replaced " << test->getName() << " with " << new_test->getName() << "\n";
-                        }                    
+                /* Function calls handling --- Mask the ptr for external function calls */
+                if (auto *CB = dyn_cast<CallBase>(&I)) { 
+                    if (externalFuncs.contains(CB->getCalledFunction()) ) {
+                        for (auto Arg = CB->arg_begin(), ArgEnd = CB->arg_end(); Arg != ArgEnd; ++Arg) {
+                            if (auto* ArgVal = dyn_cast<Value>(Arg)) {
+                                if (ArgVal->getType()->isPointerTy()) {
+                                    IRBuilder<> B(&I);
+                                    Value *Unmasked = B.CreatePtrToInt(ArgVal, B.getInt64Ty(), "unmasked_arg"); //convert to 64bit int
+                                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
+                                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_arg"); // mask the 48 LSbits
+                                    Value *NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
+                                    CB->setArgOperand(Arg - CB->arg_begin(), NewArgVal);
+                                }
+                            }  
+                        }
+                       Changed = true;  
                     }
                 }
             }
+            return Changed;
         }
+
+        void addExternalFunc(Function* F) {
+            externalFuncs.insert(F);
+        }
+        
     };
 
     class SPPModule : public ModulePass {
@@ -159,13 +147,24 @@ namespace {
         static char ID;
 
         SPPModule() : ModulePass(ID) { }
+
         virtual bool runOnModule(Module& M) {
             SPPPass Spp(&M);
+            bool Changed = false;
+            //Track the external functions first
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
-                if (F->isDeclaration()) continue;
-                Spp.visitFunc(&*F);
+                if (F->isDeclaration()) {
+                    Spp.addExternalFunc(&*F);
+                }
             }
-            return true;
+
+            //Visit the functions to clear the appropriate ptr before external calls
+            for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
+                if (!F->isDeclaration()) {
+                    Changed = Spp.visitFunc(&*F);
+                }
+            }
+            return Changed;
         }
     };
 
@@ -196,30 +195,26 @@ namespace {
         virtual bool runOnFunction(Function &F) {
             /* Ignore declarations */
             if (F.isDeclaration()) return false;
-            
+            bool Changed = false;
             for (auto &I : instructions(F)) {
-                if (isa<LoadInst>(I)) {
-                    /* Load instructions handling */
-                    Value *LoadPtr = I.getOperand(0);
-                    IRBuilder<> B(&I);
-                    Value *Unmasked = B.CreatePtrToInt(LoadPtr, B.getInt64Ty(), "unmasked_ld"); //convert to 64bit int
-                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_ld"); // mask the 48 LSbits
-                    Value *NewLoadPtr = B.CreateIntToPtr(Masked, LoadPtr->getType(), "new_ld_ptr"); //convert back to ptr
-                    I.setOperand(0, NewLoadPtr);
-                }
-                else if (isa<StoreInst>(I)) {
-                    /* Store instructions handling */
-                    Value *StorePtr = I.getOperand(1);
-                    IRBuilder<> B(&I);
-                    Value *Unmasked = B.CreatePtrToInt(StorePtr, B.getInt64Ty(), "unmasked_st"); //convert to 64bit int
-                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_st"); // mask the 48 LSbits
-                    Value *NewStorePtr = B.CreateIntToPtr(Masked, StorePtr->getType(), "new_st_ptr"); //convert back to ptr
-                    I.setOperand(1, NewStorePtr);
+                /* Load/Store instructions handling --- mask the ptr */
+                if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
+                    for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
+                        if (auto* Ptr = dyn_cast<Value>(Op)) {
+                            if (Ptr->getType()->isPointerTy()) {
+                                IRBuilder<> B(&I);
+                                Value *Unmasked = B.CreatePtrToInt(Ptr, B.getInt64Ty(), "unmasked_ptr"); //convert to 64bit int
+                                //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
+                                Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_ptr"); // mask the 48 LSbits
+                                Value *NewPtr = B.CreateIntToPtr(Masked, Ptr->getType(), "new_ptr"); //convert back to ptr
+                                I.setOperand(Op->getOperandNo(), NewPtr);
+                                Changed = true;
+                            }
+                        }
+                    }
                 }
             }
-            return true;
+            return Changed;
         }
     };
 
@@ -235,4 +230,8 @@ namespace {
     RegisterMyPass_tag_clean(PassManagerBuilder::EP_EarlyAsPossible,
                    registerPass_tag_cleaning);
 
+    //to keep the pass available even in -O0
+    static RegisterStandardPasses
+    RegisterMyPass_tag_clean_non_opt(PassManagerBuilder::EP_EnabledOnOptLevel0,
+                   registerPass_tag_cleaning);
 }

@@ -29,8 +29,9 @@ int test_func(int a) {
 	return a+1;
 }
 
-void test_func_ptr(uint64_t *ptr, uint64_t set) {
+void test_func_ptr(uint64_t *ptr, uint64_t set, uint64_t *ptr_2) {
 	*ptr = set;
+	*ptr_2 = set+1;
 	return;
 } 
 
@@ -40,12 +41,14 @@ int main()
 	k = test_func(k);
 	printf("%d\n",k);
 	
-	uint64_t *array;
+	uint64_t *array, *array_2;
 	array = (uint64_t*)malloc(ARRAY_SIZE * sizeof(uint64_t));
+	array_2 = (uint64_t*)malloc(ARRAY_SIZE * sizeof(uint64_t));
 	for (uint64_t i=0; i<ARRAY_SIZE; i++) {
-		test_func_ptr(array+i, i);
+		test_func_ptr(array+i, i, array_2+i);
 	}
 	free(array);
+	free(array_2);
 
 	unlink("/dev/shm/spp_test.pool");
 
