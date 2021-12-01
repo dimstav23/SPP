@@ -10,6 +10,7 @@ Source repository: https://github.com/mstniy/safepm
 #include <stdlib.h>
 
 #define ARRAY_SIZE 100
+#define STR_SIZE 200
 
 POBJ_LAYOUT_BEGIN(spp_test);
 POBJ_LAYOUT_ROOT(spp_test, struct root);
@@ -49,6 +50,12 @@ int main()
 	}
 	free(array);
 	free(array_2);
+
+	char *str = (char*)calloc(sizeof(uint64_t), STR_SIZE);
+	char *str_2 = (char*)malloc(STR_SIZE * sizeof(uint64_t));
+	memcpy(str_2, str, strlen(str));
+	free(str);
+	free(str_2);
 
 	unlink("/dev/shm/spp_test.pool");
 

@@ -39,6 +39,7 @@
 #include <llvm/Analysis/LoopIterator.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/ValueTracking.h>
+#include <llvm/Transforms/Utils/Local.h>
 
 #include <iostream>
 #include <map>
@@ -57,10 +58,13 @@ namespace {
         TargetLibraryInfo* TLI = nullptr;
         ScalarEvolution* SE = nullptr;
 
+        const DataLayout *DL;
+
         SmallSet<Function*, 32> varargFuncs;
         DenseMap<Constant*, Constant*> globalUses;
         DenseMap<Instruction*, Instruction*> optimizedMemInsts;
         SmallSet<Function*, 32> externalFuncs;
+        SmallSet<Value*, 32> pmemPtrs;
         
     public:
     
@@ -70,6 +74,10 @@ namespace {
 
         void setScalarEvolution(ScalarEvolution* SE) {
             this->SE = SE;
+        }
+
+        void setDL(const DataLayout *DL) {
+            this->DL = DL;
         }
 
         //TODO
@@ -111,6 +119,62 @@ namespace {
             return &*std::next(BasicBlock::iterator(I));
         }
 
+        bool instrGep(GetElementPtrInst* Gep) {
+            /* No effect on ptr means no effect on size. */
+            if (Gep->hasAllZeroIndices()) {
+                return false;
+            }
+                    
+            /* We want to skip GEPs on vtable stuff, as they shouldn't be able to
+            * overflow, and because they don't have metadata normally negative
+            * GEPs fail on these. */
+            /*
+            if (isVtableGep(Gep))
+                return false;
+            */
+
+            /* TODO: we cannot support GEPs operating on vectors. */
+            if (Gep->getType()->isVectorTy()) {
+                errs() << "Warning: ignoring GEP on vector: " << *Gep << "\n";
+                return false;
+            }
+
+            IRBuilder<> B(getInsertPointAfter(Gep));
+            std::vector<User*> Users(Gep->user_begin(), Gep->user_end());
+
+            //get the GEP offset
+            Value *GepOff = EmitGEPOffset(&B, *DL, Gep);
+            
+            //extract the actual GEP offset as an 64-bit integer
+            uint64_t constIntValue = 0;
+            if (ConstantInt* CI = dyn_cast<ConstantInt>(GepOff)) {
+                if (CI->getBitWidth() <= 64) {
+                    constIntValue = CI->getSExtValue();
+                }
+            }
+
+            errs() << "gep ops : ";
+            Gep->print(errs());
+            errs() << " || offset : " << constIntValue << "\n";
+            
+            /*
+            for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
+                if (auto* Ptr = dyn_cast<Value>(Op)) {
+                    //errs() << Ptr->getName() << ",";
+                    
+                    if (pmemPtrs.contains(Ptr)) {
+                        I.print(errs());
+                        errs() << "\n";
+                        continue;
+                    }
+                    
+                }
+                        
+            }
+            */
+            return true;
+        }
+
         bool visitFunc(Function* F) {
             bool Changed = false;
             for (auto &I : instructions(F)) {
@@ -127,10 +191,18 @@ namespace {
                                     Value *NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
                                     CB->setArgOperand(Arg - CB->arg_begin(), NewArgVal);
                                 }
+                                else if (auto *Gep = dyn_cast<GetElementPtrInst>(ArgVal)) {
+                                    errs() << "WARNING: inserted GEP handling from function argument\n";
+                                    Changed = instrGep(Gep);
+                                }
                             }  
                         }
-                       Changed = true;  
+                        Changed = true;  
                     }
+                }
+                /* GEPs handling --- Apply the arithmetic to the top tag part*/
+                else if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
+                    Changed = instrGep(Gep);
                 }
             }
             return Changed;
@@ -138,6 +210,17 @@ namespace {
 
         void addExternalFunc(Function* F) {
             externalFuncs.insert(F);
+        }
+
+        void trackPmemPtrs(Function* F) {
+            for (auto &I : instructions(F)) {
+                if (auto *CB = dyn_cast<CallBase>(&I)) {
+                    if (CB->getCalledFunction()->getName()=="pmemobj_direct_inline") {
+                        Value *Pmem_ptr = cast<Value>(&I);
+                        pmemPtrs.insert(Pmem_ptr);                       
+                    }
+                }
+            }
         }
         
     };
@@ -150,11 +233,18 @@ namespace {
 
         virtual bool runOnModule(Module& M) {
             SPPPass Spp(&M);
+
+            Spp.setDL(&M.getDataLayout()); //init the data layout
+
             bool Changed = false;
-            //Track the external functions first
+            //Track the external functions first &
+            //Track the pointers derived from pmemobj_direct_inline
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
                 if (F->isDeclaration()) {
                     Spp.addExternalFunc(&*F);
+                }
+                else {
+                    Spp.trackPmemPtrs(&*F);
                 }
             }
 
@@ -198,6 +288,7 @@ namespace {
             bool Changed = false;
             for (auto &I : instructions(F)) {
                 /* Load/Store instructions handling --- mask the ptr */
+                /* should normally call the hook function for the overflow check */
                 if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
                     for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
                         if (auto* Ptr = dyn_cast<Value>(Op)) {
