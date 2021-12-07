@@ -177,6 +177,7 @@ namespace {
         }
 
         bool visitFunc(Function* F) {
+            errs() << "Running visitFunc\n";
             bool Changed = false;
             for (auto &I : instructions(F)) {
                 /* Function calls handling --- Mask the ptr for external function calls */
@@ -271,7 +272,7 @@ namespace {
                          legacy::PassManagerBase &PM) {
         PM.add(new SPPModule());
     }
-
+    /*
     //apply the module pass at this phase because EarlyAsPossible can cause UB
     static RegisterStandardPasses
     RegisterMyPass(PassManagerBuilder::EP_ModuleOptimizerEarly,
@@ -280,13 +281,13 @@ namespace {
     //to keep the pass available even in -O0
     static RegisterStandardPasses
     RegisterMyPass_non_opt(PassManagerBuilder::EP_EnabledOnOptLevel0,
-                   registerPass);
+                   registerPass);*/
 
 
-    class SPPTagCleaningFunc : public ModulePass {
+    class SPPTagCleaning : public ModulePass {
     public:
         static char ID;
-        SPPTagCleaningFunc() : ModulePass(ID) { }
+        SPPTagCleaning() : ModulePass(ID) { }
         Function* __spp_cleantag;
 
 #define SPPFUNC(F)  (F->getName().startswith("__spp"))
@@ -300,41 +301,50 @@ namespace {
             GETSPPFUNC(__spp_cleantag);
         }
 
-        void instrumentLoadOrStore(SmallVector<Instruction*, 8> LoadsAndStores) {
+        int getOpIdx(Instruction* I, Value* Ptr) {
+            for (auto Op = I->op_begin(), OpEnd = I->op_end(); Op != OpEnd; ++Op) {
+                if (Op->get() == Ptr)
+                    return Op->getOperandNo();
+            }
+            return -1;
+        }
+
+        void instrumentLoadOrStore(SmallVector<Instruction*, 64> LoadsAndStores) {
             errs() << "Running instrumentLoadOrStore\n";
             for (SmallVectorImpl<Instruction*>::reverse_iterator It = LoadsAndStores.rbegin(),
                 E = LoadsAndStores.rend(); It != E; ++It) {
                 Instruction* I = *It;
                 IRBuilder<> B(I);
                 bool isStore = isa<StoreInst>(*I);
-                
                 Value* Ptr = isStore
                     ? cast<StoreInst>(I)->getPointerOperand()
                     : cast<LoadInst>(I)->getPointerOperand();
 
-                errs() << "Ptr to be masked: " << Ptr;
-                //CallInst* Masked = B.CreateCall(__spp_cleantag, Ptr);
-                //Value* NewPtr = B.CreatePointerCast(Masked, Ptr->getType());
-                //errs() << " Masked: " << NewPtr << "\n";
-                //I.setOperand(Op->getOperandNo(), NewPtr);
+                Value* TmpPtr = B.CreateBitCast(Ptr, __spp_cleantag->getFunctionType()->getParamType(0));
+                CallInst* Masked = B.CreateCall(__spp_cleantag, TmpPtr);
+                Value* NewPtr = B.CreatePointerCast(Masked, Ptr->getType());
+
+                int OpIdx = getOpIdx(I, Ptr);
+                I->setOperand(OpIdx, NewPtr);
             }
                     
         }
 
         virtual bool runOnModule(Module &M) {
             /* Ignore declarations */
-            SmallVector<Instruction*, 8> LoadsAndStores;
+            SmallVector<Instruction*, 64> LoadsAndStores;
 
             errs() << "Running SPP Tag Cleaning Pass\n";
 
             //Prepare runtime before instrumentation
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
                 if (F->isDeclaration()) continue;
-                //findHelperFunc(&*F);
+               
+                findHelperFunc(&*F);
             }
             
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
-                if (F->isDeclaration()) continue;
+                if (F->isDeclaration() || SPPFUNC(F)) continue;
                 for (auto BB = F->begin(), BBend = F->end(); BB != BBend; ++BB) {
                     for (auto I = BB->begin(), Iend = BB->end(); I != Iend; ++I) {
                         if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
@@ -349,20 +359,7 @@ namespace {
         }
     };
 
-    char SPPTagCleaningFunc::ID = 0;
-    static RegisterPass<SPPTagCleaningFunc> Y("spp_tag_cleaning", "Safe Persistent Pointers Tag Cleaning Pass", false, false);
+    char SPPTagCleaning::ID = 0;
+    static RegisterPass<SPPTagCleaning> Y("spp_tag_cleaning", "Safe Persistent Pointers Tag Cleaning Pass", false, false);
 
-    static void registerPass_tag_cleaning(const PassManagerBuilder &,
-                         legacy::PassManagerBase &PM) {
-        PM.add(new SPPTagCleaningFunc());
-    }
-
-    static RegisterStandardPasses
-    RegisterMyPass_tag_clean(PassManagerBuilder::EP_EarlyAsPossible,
-                   registerPass_tag_cleaning);
-
-    //to keep the pass available even in -O0
-    static RegisterStandardPasses
-    RegisterMyPass_tag_clean_non_opt(PassManagerBuilder::EP_EnabledOnOptLevel0,
-                   registerPass_tag_cleaning);
 }

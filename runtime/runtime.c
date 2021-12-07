@@ -14,7 +14,7 @@ extern "C" {
 #define PTRSIZEBITS 32 // TODO: change to compile parameter
 #define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
 
-INLINEATTR void* __spp_cleantag(const void* ptr) {
+INLINEATTR uint64_t* __spp_cleantag(const uint64_t* ptr) {
 	void* ptrval = (void*)((uint64_t)ptr & PTRVALMASK);
 	return ptrval;
 }
