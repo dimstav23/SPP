@@ -6,7 +6,11 @@ make
 cd ../examples
 
 clang -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
-clang -S -I../pmdk/src/include/ -emit-llvm example.c #produce initial .ll
+clang -O -emit-llvm ../runtime/runtime.c -c -o runtime.bc #produce runtime bitcode
+
+llvm-link -o example.ll -S runtime.bc example.bc
+
+#clang -S -I../pmdk/src/include/ -emit-llvm example.c #produce initial .ll
 opt -load ../pass/spp.so -spp_tag_cleaning -spp -S example.ll -o example_transformed.ll #produce transformed .ll pass sequence plays a role here
 llc example_transformed.ll -o example.s #produce transformed .s file -- https://subscription.packtpub.com/book/application-development/9781785285981/1/ch01lvl1sec16/transforming-llvm-ir
 

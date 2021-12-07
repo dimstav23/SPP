@@ -54,6 +54,7 @@ using namespace llvm;
 namespace {
 
     class SPPPass {
+
         Module* M = nullptr;
         TargetLibraryInfo* TLI = nullptr;
         ScalarEvolution* SE = nullptr;
@@ -153,9 +154,9 @@ namespace {
                 }
             }
 
-            errs() << "gep ops : ";
-            Gep->print(errs());
-            errs() << " || offset : " << constIntValue << "\n";
+            //errs() << "gep ops : ";
+            //Gep->print(errs());
+            //errs() << " || offset : " << constIntValue << "\n";
             
             /*
             for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
@@ -231,7 +232,10 @@ namespace {
 
         SPPModule() : ModulePass(ID) { }
 
+#define SPPFUNC(F)  (F->getName().startswith("__spp"))
+
         virtual bool runOnModule(Module& M) {
+            errs() << "Runing SPP Module Pass\n";
             SPPPass Spp(&M);
 
             Spp.setDL(&M.getDataLayout()); //init the data layout
@@ -244,6 +248,7 @@ namespace {
                     Spp.addExternalFunc(&*F);
                 }
                 else {
+                    if (SPPFUNC(F)) continue;
                     Spp.trackPmemPtrs(&*F);
                 }
             }
@@ -251,6 +256,7 @@ namespace {
             //Visit the functions to clear the appropriate ptr before external calls
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
                 if (!F->isDeclaration()) {
+                    if (SPPFUNC(F)) continue;
                     Changed = Spp.visitFunc(&*F);
                 }
             }
@@ -277,34 +283,68 @@ namespace {
                    registerPass);
 
 
-    class SPPTagCleaningFunc : public FunctionPass {
+    class SPPTagCleaningFunc : public ModulePass {
     public:
         static char ID;
-        SPPTagCleaningFunc() : FunctionPass(ID) { }
+        SPPTagCleaningFunc() : ModulePass(ID) { }
+        Function* __spp_cleantag;
 
-        virtual bool runOnFunction(Function &F) {
+#define SPPFUNC(F)  (F->getName().startswith("__spp"))
+#define GETSPPFUNC(NAME)  { if (F->getName().equals(#NAME)) NAME = F; }
+
+        void findHelperFunc(Function* F) {
+            if (!SPPFUNC(F))  return;
+
+            F->setLinkage(GlobalValue::ExternalLinkage);
+
+            GETSPPFUNC(__spp_cleantag);
+        }
+
+        void instrumentLoadOrStore(SmallVector<Instruction*, 8> LoadsAndStores) {
+            errs() << "Running instrumentLoadOrStore\n";
+            for (SmallVectorImpl<Instruction*>::reverse_iterator It = LoadsAndStores.rbegin(),
+                E = LoadsAndStores.rend(); It != E; ++It) {
+                Instruction* I = *It;
+                IRBuilder<> B(I);
+                bool isStore = isa<StoreInst>(*I);
+                
+                Value* Ptr = isStore
+                    ? cast<StoreInst>(I)->getPointerOperand()
+                    : cast<LoadInst>(I)->getPointerOperand();
+
+                errs() << "Ptr to be masked: " << Ptr;
+                //CallInst* Masked = B.CreateCall(__spp_cleantag, Ptr);
+                //Value* NewPtr = B.CreatePointerCast(Masked, Ptr->getType());
+                //errs() << " Masked: " << NewPtr << "\n";
+                //I.setOperand(Op->getOperandNo(), NewPtr);
+            }
+                    
+        }
+
+        virtual bool runOnModule(Module &M) {
             /* Ignore declarations */
-            if (F.isDeclaration()) return false;
-            bool Changed = false;
-            for (auto &I : instructions(F)) {
-                /* Load/Store instructions handling --- mask the ptr */
-                /* should normally call the hook function for the overflow check */
-                if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
-                    for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
-                        if (auto* Ptr = dyn_cast<Value>(Op)) {
-                            if (Ptr->getType()->isPointerTy()) {
-                                IRBuilder<> B(&I);
-                                Value *Unmasked = B.CreatePtrToInt(Ptr, B.getInt64Ty(), "unmasked_ptr"); //convert to 64bit int
-                                //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                                Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_ptr"); // mask the 48 LSbits
-                                Value *NewPtr = B.CreateIntToPtr(Masked, Ptr->getType(), "new_ptr"); //convert back to ptr
-                                I.setOperand(Op->getOperandNo(), NewPtr);
-                                Changed = true;
-                            }
+            SmallVector<Instruction*, 8> LoadsAndStores;
+
+            errs() << "Running SPP Tag Cleaning Pass\n";
+
+            //Prepare runtime before instrumentation
+            for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
+                if (F->isDeclaration()) continue;
+                //findHelperFunc(&*F);
+            }
+            
+            for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
+                if (F->isDeclaration()) continue;
+                for (auto BB = F->begin(), BBend = F->end(); BB != BBend; ++BB) {
+                    for (auto I = BB->begin(), Iend = BB->end(); I != Iend; ++I) {
+                        if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
+                            LoadsAndStores.push_back(&*I);
                         }
                     }
                 }
             }
+            bool Changed = LoadsAndStores.size() != 0;
+            instrumentLoadOrStore(LoadsAndStores);
             return Changed;
         }
     };
