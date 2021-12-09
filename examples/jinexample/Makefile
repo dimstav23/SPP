@@ -5,13 +5,18 @@ SRCDIR = ./src
 OBJDIR = ./obj
 PMDKSRCDIR = ../../pmdk/src
 
-CC = clang
-LLC = llc 
-LLVMLINK = llvm-link
-OPT = opt
+#CC = clang
+#LLC = llc 
+#LLVMLINK = llvm-link
+#OPT = opt
+CC = /home/poolmoo/.local/clangllvm.12.0.0/bin/clang
+LLC = /home/poolmoo/.local/clangllvm.12.0.0/bin/llc
+OPT = /home/poolmoo/.local/clangllvm.12.0.0/bin/opt
+LLVMLINK = /home/poolmoo/.local/clangllvm.12.0.0/bin/llvm-link
 OPTLEVEL = -O1
 CFLAGS = -include $(SPPLIBDIR)/src/spp.h -emit-llvm -I$(PMDKSRCDIR)/include/
-SPP_PASS = ../../pass/spp.so
+#SPP_PASS = ../../pass/spp.so
+SPP_PASS = /home/poolmoo/tools/clangllvm/miu.2021.llvm.12.0/build/lib/LLVMSPP.so 
 LDFLAGS= -L$(PMDKSRCDIR)/debug/ -DTAG_BITS=15 -lpmem -lpmemobj -lm
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)

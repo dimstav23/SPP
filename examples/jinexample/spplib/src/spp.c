@@ -17,8 +17,6 @@ extern "C" {
 #include <math.h>
 #include "./spp.h" ///
 
-#define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
-
 __attribute__((__used__))
 __attribute__((always_inline))
 void *
