@@ -3,21 +3,26 @@
 
 extern void * mymalloc (int x);
 extern void myfree (void * ptr);
-
-void mystrcpy (char * x, char * y)
-{
-    strcpy(x, y);
-}
+extern void mystrcpy (char * x, char * y);
 
 int main (int argc, char ** argv)
 {
     char* str_src= "spp_test";
-    void * str_dest= mymalloc(10); 
+    char * str_dest= mymalloc(10); 
 
     mystrcpy (str_dest, str_src);
     
-    printf("print str_dest: %s\n", str_dest);
+    printf("print_1 str_dest: %s\n", str_dest);
+    
+    char* temp= str_dest;
+    temp++;
 
+    printf("print_2 temp: %s\n", temp);
+    
+    temp++;
+    
+    printf("print_3 temp: %s\n", temp);
+    
     myfree(str_dest);
 
     return 0;
