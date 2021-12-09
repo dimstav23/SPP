@@ -2,11 +2,11 @@
 //////          spp.h           ///////////////
 ///////////////////////////////////////////////
 
-#ifdef __cplusplus                                                                            
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef SPP_HEADER_H_                                                                          
+#ifndef SPP_HEADER_H_
 #define SPP_HEADER_H_
 
 ///////////////////////////////////////////////
@@ -19,11 +19,9 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
-
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
 
 extern void * __SPP_clean_tag (void * ptr);
-
 
 ///////////////////////////////////////////////
 

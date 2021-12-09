@@ -2,7 +2,7 @@
 //////          spp.c           ///////////////
 ///////////////////////////////////////////////
 
-#ifdef __cplusplus                                                                            
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -16,7 +16,6 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 #include "./spp.h" ///
-
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
 
