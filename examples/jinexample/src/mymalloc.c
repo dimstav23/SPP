@@ -14,9 +14,9 @@ void *
 mymalloc (int x)
 {
     void * ptr=  malloc (x);
-    printf("mymalloc.tag-free ptr:\t\t %p\n", ptr);
-//    ptr= __SPP_tag_alloc (ptr); 
-    printf("mymalloc.tagged ptr:\t\t %p\n", ptr);
+    printf("mymalloc.tag-free ptr:\t\t 0x%" PRIx64 "\n", (uintptr_t)ptr);
+    ptr= __SPP_tag_alloc (ptr); 
+    printf("mymalloc.tagged ptr:\t\t 0x%" PRIx64 "\n", (uintptr_t)ptr);
     return ptr;
 }
 

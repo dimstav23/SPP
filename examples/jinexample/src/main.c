@@ -15,13 +15,12 @@ int main (int argc, char ** argv)
     printf("print_1 str_dest: %s\n", str_dest);
     
     char* temp= str_dest;
-    temp++;
-
-    printf("print_2 temp: %s\n", temp);
     
     temp++;
+    printf("temp_tagged_1: 0x%" PRIx64 "\n", (uintptr_t)temp);
     
-    printf("print_3 temp: %s\n", temp);
+    temp++;
+    printf("temp_tagged_1: 0x%" PRIx64 "\n", (uintptr_t)temp);
     
     myfree(str_dest);
 
