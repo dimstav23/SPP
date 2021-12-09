@@ -1,8 +1,8 @@
 #!/bin/bash
 
-CLANG="clang"
+CLANG="clang-12"
 SPPLIBDIR="./spplib"
-LLVM_AR="llvm-ar"
+LLVM_AR="llvm-ar-12"
 
 $CLANG -emit-llvm "${SPPLIBDIR}/src/spp.c" \
 -c -o "${SPPLIBDIR}/obj/spp_hookobj.o"  
