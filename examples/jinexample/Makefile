@@ -1,22 +1,30 @@
 TARGET   = mytest 
+
+# CHECK THE PATH! AND MODIFY ME! from here  ##################
+
 SPPLIBDIR = ./spplib
 SPPLIBOBJ = $(SPPLIBDIR)/obj/spp_hookobj.o
 SRCDIR = ./src
 OBJDIR = ./obj
 PMDKSRCDIR = ../../pmdk/src
+#SPP_PASS = ../../pass/spp.so
 
-#CC = clang
-#LLC = llc 
-#LLVMLINK = llvm-link
-#OPT = opt
+#CC = clang-12
+#LLC = llc-12 
+#LLVMLINK = llvm-link-12
+#OPT = opt-12
+
+# MODIFY ME! up to here  ##################
+
+SPP_PASS = /home/poolmoo/tools/clangllvm/miu.2021.llvm.12.0/build/lib/LLVMSPP.so 
+
 CC = /home/poolmoo/.local/clangllvm.12.0.0/bin/clang
 LLC = /home/poolmoo/.local/clangllvm.12.0.0/bin/llc
 OPT = /home/poolmoo/.local/clangllvm.12.0.0/bin/opt
 LLVMLINK = /home/poolmoo/.local/clangllvm.12.0.0/bin/llvm-link
+
 OPTLEVEL = -O1
 CFLAGS = -include $(SPPLIBDIR)/src/spp.h -emit-llvm -I$(PMDKSRCDIR)/include/
-#SPP_PASS = ../../pass/spp.so
-SPP_PASS = /home/poolmoo/tools/clangllvm/miu.2021.llvm.12.0/build/lib/LLVMSPP.so 
 LDFLAGS= -L$(PMDKSRCDIR)/debug/ -DTAG_BITS=15 -lpmem -lpmemobj -lm
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)

@@ -1,3 +1,11 @@
+
+!! CHECK THE PATH of Makefile !!!!!!!!!!!!
+
+Paths to spp.so, pmdk, etc and 
+CLANG, LLC, LLVM-LINK, OPT!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 create_SPPLIB.sh :
 	compile/create spp run-time lib (~/jinexample/spplib/src)
 Makefile:
@@ -5,6 +13,8 @@ Makefile:
 	- executable : ~/jinexample/mytest
 	- example source files (to be instrumented): ~/jinexample/src/
 		- mymalloc.c, myfree.c, mystrcpy.c, main.c
+
+
 
 How to run the executable (mytest): 
 	- LD_LIBRARY_PATH=../../pmdk/src/debug/ ./mytest
