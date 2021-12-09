@@ -4,6 +4,8 @@ CLANG="clang-12"
 SPPLIBDIR="./spplib"
 LLVM_AR="llvm-ar-12"
 
+mkdir -p ${SPPLIBDIR}/obj/
+
 $CLANG -emit-llvm "${SPPLIBDIR}/src/spp.c" \
 -c -o "${SPPLIBDIR}/obj/spp_hookobj.o"  
 

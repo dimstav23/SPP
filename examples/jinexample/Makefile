@@ -51,6 +51,7 @@ $(LLVMLINKED): $(OBJECTS)
 	@echo "-- LLVM-Linking complete "
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 	@echo "-- Compiling "$<" complete"
 
