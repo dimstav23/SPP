@@ -16,7 +16,7 @@ git checkout spp-main
 make -j$(nproc)
 ```
 
-Compile `LLVM` (Warning! High memory consumption):  
+(1) Compile `LLVM` (Warning! High memory consumption):  
 ```
 cd llvm-project
 mkdir build
@@ -26,6 +26,20 @@ cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" BUILD
 make -j$(nproc)
 export PATH=$PATH:$PWD/bin
 ```
+
+(2) Build LLVM gold plugin (without other packages):
+https://llvm.org/docs/GoldPlugin.html
+
+```
+cd llvm-project
+mkdir build
+mkdir install
+cd build
+cmake -G "Unix Makefiles" -DLLVM_BINUTILS_INCDIR=/usr/include BUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install ../llvm
+make -j$(nproc)
+export PATH=$PATH:$PWD/bin
+```
+
 
 ### Usage instructions
 
