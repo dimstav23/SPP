@@ -22,7 +22,7 @@ cd llvm-project
 mkdir build
 mkdir install
 cd build
-cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug ../llvm
+cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" BUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install ../llvm
 make -j$(nproc)
 export PATH=$PATH:$PWD/bin
 ```
