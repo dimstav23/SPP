@@ -68,7 +68,20 @@ namespace {
         SmallSet<Value*, 32> pmemPtrs;
         
     public:
-    
+
+        Function* __spp_updatetag;
+
+#define SPPFUNC(F)  (F->getName().startswith("__spp"))
+#define GETSPPFUNC(NAME)  { if (F->getName().equals(#NAME)) NAME = F; }
+
+        void findHelperFunc(Function* F) {
+            if (!SPPFUNC(F))  return;
+
+            F->setLinkage(GlobalValue::ExternalLinkage);
+
+            GETSPPFUNC(__spp_updatetag);
+        }
+
         SPPPass(Module* M) {
             this->M = M;
         }
@@ -89,6 +102,13 @@ namespace {
             }
         }
 
+        int getOpIdx(User* I, Value* Ptr) {
+            for (auto Op = I->op_begin(), OpEnd = I->op_end(); Op != OpEnd; ++Op) {
+                if (Op->get() == Ptr)
+                    return Op->getOperandNo();
+            }
+            return -1;
+        }
         /*
         * Get the insert point after the specified instruction. For non-terminators
         * this is the next instruction. For `invoke` intructions, create a new
@@ -143,21 +163,26 @@ namespace {
             IRBuilder<> B(getInsertPointAfter(Gep));
             std::vector<User*> Users(Gep->user_begin(), Gep->user_end());
 
+            //errs() << __spp_updatetag << "\n";
             //get the GEP offset
             Value *GepOff = EmitGEPOffset(&B, *DL, Gep);
-            
-            //extract the actual GEP offset as an 64-bit integer
-            uint64_t constIntValue = 0;
-            if (ConstantInt* CI = dyn_cast<ConstantInt>(GepOff)) {
-                if (CI->getBitWidth() <= 64) {
-                    constIntValue = CI->getSExtValue();
-                }
-            }
 
-            //errs() << "gep ops : ";
-            //Gep->print(errs());
-            //errs() << " || offset : " << constIntValue << "\n";
-            
+            //errs() << "GEPOffset " << *GepOff << "\n";
+            Value* TmpPtr = B.CreateBitCast(Gep, __spp_updatetag->getFunctionType()->getParamType(0));
+            //errs() << "Bitcast TmpPtr" << *TmpPtr << "\n";
+            Value* IntOff = B.CreateSExt(GepOff, __spp_updatetag->getFunctionType()->getParamType(1));
+            //errs() << "CreateSext =" << *IntOff << "\n";
+            std::vector<Value*> args;
+            args.push_back(TmpPtr);
+            args.push_back(IntOff);
+            CallInst* Masked = B.CreateCall(__spp_updatetag, args);
+            //errs() << "CallInst =" << *Masked << "\n";
+            Value* UpdatedPtr = B.CreatePointerCast(Masked, Gep->getType());
+            //errs() << "CreatePtrCast =" << *UpdatedPtr << "\n";
+            for (auto Use : Users) {
+                Use->setOperand(getOpIdx(Use, Gep), UpdatedPtr);
+            }
+            //errs() << " ";
             /*
             for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
                 if (auto* Ptr = dyn_cast<Value>(Op)) {
@@ -180,30 +205,8 @@ namespace {
             errs() << "Running visitFunc\n";
             bool Changed = false;
             for (auto &I : instructions(F)) {
-                /* Function calls handling --- Mask the ptr for external function calls */
-                if (auto *CB = dyn_cast<CallBase>(&I)) { 
-                    if (externalFuncs.contains(CB->getCalledFunction()) ) {
-                        for (auto Arg = CB->arg_begin(), ArgEnd = CB->arg_end(); Arg != ArgEnd; ++Arg) {
-                            if (auto* ArgVal = dyn_cast<Value>(Arg)) {
-                                if (ArgVal->getType()->isPointerTy()) {
-                                    IRBuilder<> B(&I);
-                                    Value *Unmasked = B.CreatePtrToInt(ArgVal, B.getInt64Ty(), "unmasked_arg"); //convert to 64bit int
-                                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_arg"); // mask the 48 LSbits
-                                    Value *NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
-                                    CB->setArgOperand(Arg - CB->arg_begin(), NewArgVal);
-                                }
-                                else if (auto *Gep = dyn_cast<GetElementPtrInst>(ArgVal)) {
-                                    errs() << "WARNING: inserted GEP handling from function argument\n";
-                                    Changed = instrGep(Gep);
-                                }
-                            }  
-                        }
-                        Changed = true;  
-                    }
-                }
                 /* GEPs handling --- Apply the arithmetic to the top tag part*/
-                else if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
+                if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
                     Changed = instrGep(Gep);
                 }
             }
@@ -230,10 +233,8 @@ namespace {
     class SPPModule : public ModulePass {
     public:
         static char ID;
-
         SPPModule() : ModulePass(ID) { }
 
-#define SPPFUNC(F)  (F->getName().startswith("__spp"))
 
         virtual bool runOnModule(Module& M) {
             errs() << "Runing SPP Module Pass\n";
@@ -249,7 +250,10 @@ namespace {
                     Spp.addExternalFunc(&*F);
                 }
                 else {
-                    if (SPPFUNC(F)) continue;
+                    if (SPPFUNC(F)) {
+                        Spp.findHelperFunc(&*F);
+                        continue;
+                    }
                     Spp.trackPmemPtrs(&*F);
                 }
             }

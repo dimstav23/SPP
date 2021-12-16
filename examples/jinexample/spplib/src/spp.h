@@ -23,6 +23,8 @@ extern "C" {
 
 extern void * __SPP_clean_tag (void * ptr);
 
+extern void* __spp_updatetag(void* ptr, int64_t off);
+
 ///////////////////////////////////////////////
 
 #endif // SPP_HEADER_H_
