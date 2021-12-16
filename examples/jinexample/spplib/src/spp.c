@@ -22,7 +22,7 @@ __attribute__((always_inline))
 void *
 __SPP_clean_tag (void * ptr)
 {
-    return (void*)(((uintptr_t)ptr) & __SPP_MASK_TAG_OUT);
+    return (void*)(((uintptr_t)ptr) & PTRVALMASK);
 }
 
 __attribute__((__used__))

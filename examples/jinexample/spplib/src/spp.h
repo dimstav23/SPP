@@ -19,7 +19,10 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
-#define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
+#define TAGLENGTH 15 // TODO: change to compile parameter
+#define PTRSIZEBITS (64 - TAGLENGTH)
+#define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
+
 
 extern void * __SPP_clean_tag (void * ptr);
 

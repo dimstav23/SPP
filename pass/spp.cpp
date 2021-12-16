@@ -205,6 +205,28 @@ namespace {
             errs() << "Running visitFunc\n";
             bool Changed = false;
             for (auto &I : instructions(F)) {
+                // NOTE: remove after integrating the LTO pass
+                if (auto* CB = dyn_cast<CallBase>(&I)) {
+                    if (externalFuncs.contains(CB->getCalledFunction())) {
+                        for (auto Arg = CB->arg_begin(), ArgEnd = CB->arg_end(); Arg != ArgEnd; ++Arg) {
+                            if (auto* ArgVal = dyn_cast<Value>(Arg)) {
+                                if (ArgVal->getType()->isPointerTy()) {
+                                    IRBuilder<> B(&I);
+                                    Value* Unmasked = B.CreatePtrToInt(ArgVal, B.getInt64Ty(), "unmasked_arg"); //convert to 64bit int
+                                    //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
+                                    Value* Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF, "masked_arg"); // mask the 48 LSbits
+                                    Value* NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
+                                    CB->setArgOperand(Arg - CB->arg_begin(), NewArgVal);
+                                }
+                                else if (auto* Gep = dyn_cast<GetElementPtrInst>(ArgVal)) {
+                                    errs() << "WARNING: inserted GEP handling from function argument\n";
+                                    Changed = instrGep(Gep);
+                                }
+                            }
+                        }
+                        Changed = true;
+                    }
+                }
                 /* GEPs handling --- Apply the arithmetic to the top tag part*/
                 if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
                     Changed = instrGep(Gep);
