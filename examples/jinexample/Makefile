@@ -31,7 +31,6 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 HOOKED   = ./obj/hooked.o  
 LLVMLINKED   = ./obj/llvmlinked.o  
-ASFILE = ./obj/asfile.s
 
 $(TARGET): $(HOOKED)
 	$(CC) -x ir -o $@ $(LDFLAGS) $(HOOKED)
@@ -43,7 +42,7 @@ $(TARGET): $(HOOKED)
 #	@echo "-- LLCing "$<" complete"
 
 $(HOOKED): $(LLVMLINKED)
-	$(OPT) -load $(SPP_PASS) -spp $(LLVMLINKED) -o $@
+	$(OPT) -load $(SPP_PASS) -spp_tag_cleaning -spp $(LLVMLINKED) -o $@
 	@echo "-- OPTing "$(LLVMLINKED)" complete"
 
 $(LLVMLINKED): $(OBJECTS)

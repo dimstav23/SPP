@@ -22,9 +22,9 @@ extern "C" {
 #define TAGLENGTH 15 // TODO: change to compile parameter
 #define PTRSIZEBITS (64 - TAGLENGTH)
 #define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
+#define TAGMASK (~PTRVALMASK)
 
-
-extern void * __SPP_clean_tag (void * ptr);
+extern void * __spp_cleantag(void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);
 
