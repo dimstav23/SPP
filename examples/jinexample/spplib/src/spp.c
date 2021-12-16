@@ -25,7 +25,6 @@ __SPP_clean_tag (void * ptr)
     return (void*)(((uintptr_t)ptr) & __SPP_MASK_TAG_OUT);
 }
 
-
 __attribute__((__used__))
 __attribute__((always_inline))
 void * 
