@@ -10,6 +10,14 @@ Initialise the submodules of the repository:
 git submodule update --init
 ```
 
+(optionally) To get all build dependencies to build this project, one can use [nix](https://nixos.org).
+A tutorial for nix can be found at https://nix.dev/
+
+```console
+$ nix-shell
+nix-shell> # in this shell all build dependencies are present
+```
+
 Compile the `pmdk` fork:
 
 ```
