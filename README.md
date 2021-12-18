@@ -4,19 +4,30 @@ Compiler pass and associated runtime for Safe Persistent Pointers
 
 ### Installation instructions
 
-Initialise the submodules of the repository:  
+Initialise the submodules of the repository:
+
 ```
 git submodule update --init
 ```
 
-Compile the `pmdk` fork:  
+(optionally) To get all build dependencies to build this project, one can use [nix](https://nixos.org).
+A tutorial for nix can be found at https://nix.dev/
+
+```console
+$ nix-shell
+nix-shell> # in this shell all build dependencies are present
+```
+
+Compile the `pmdk` fork:
+
 ```
 cd pmdk
 git checkout spp-main
 make -j$(nproc)
 ```
 
-Compile `LLVM` (Warning! High memory consumption):  
+Compile `LLVM` (Warning! High memory consumption):
+
 ```
 cd llvm-project
 mkdir build
@@ -25,6 +36,14 @@ cd build
 cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug ../llvm
 make -j$(nproc)
 export PATH=$PATH:$PWD/bin
+```
+
+Compile the llvm pass:
+
+```
+mkdir build && cd build
+cmake -G "Unix Makefiles" ..
+make -j$(nproc)
 ```
 
 ### Usage instructions
