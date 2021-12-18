@@ -3,8 +3,8 @@
 	url = git@github.com:alexandrinapanfil/pmdk.git
 [submodule "llvm-project"]
 	path = llvm-project
-	url = git@github.com:alexandrinapanfil/llvm-project.git
-	branch = spp-main
+	url = git@github.com:poolmoo/llvm-project.git 
+	branch = spp-lto.llvm.12.0.0 
 [submodule "PMDebugger"]
 	path = benchmarks/crash_consistency/PMDebugger
 	url = git@github.com:PASAUCMerced/PMDebugger.git

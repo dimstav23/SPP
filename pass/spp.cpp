@@ -54,6 +54,7 @@ using namespace llvm;
 namespace {
 
     class SPPPass {
+
         Module* M = nullptr;
         TargetLibraryInfo* TLI = nullptr;
         ScalarEvolution* SE = nullptr;
@@ -67,7 +68,20 @@ namespace {
         SmallSet<Value*, 32> pmemPtrs;
         
     public:
-    
+
+        Function* __spp_updatetag;
+
+#define SPPFUNC(F)  (F->getName().startswith("__spp"))
+#define GETSPPFUNC(NAME)  { if (F->getName().equals(#NAME)) NAME = F; }
+
+        void findHelperFunc(Function* F) {
+            if (!SPPFUNC(F))  return;
+
+            F->setLinkage(GlobalValue::ExternalLinkage);
+
+            GETSPPFUNC(__spp_updatetag);
+        }
+
         SPPPass(Module* M) {
             this->M = M;
         }
@@ -88,6 +102,13 @@ namespace {
             }
         }
 
+        int getOpIdx(User* I, Value* Ptr) {
+            for (auto Op = I->op_begin(), OpEnd = I->op_end(); Op != OpEnd; ++Op) {
+                if (Op->get() == Ptr)
+                    return Op->getOperandNo();
+            }
+            return -1;
+        }
         /*
         * Get the insert point after the specified instruction. For non-terminators
         * this is the next instruction. For `invoke` intructions, create a new
@@ -142,21 +163,26 @@ namespace {
             IRBuilder<> B(getInsertPointAfter(Gep));
             std::vector<User*> Users(Gep->user_begin(), Gep->user_end());
 
+            //errs() << __spp_updatetag << "\n";
             //get the GEP offset
             Value *GepOff = EmitGEPOffset(&B, *DL, Gep);
-            
-            //extract the actual GEP offset as an 64-bit integer
-            uint64_t constIntValue = 0;
-            if (ConstantInt* CI = dyn_cast<ConstantInt>(GepOff)) {
-                if (CI->getBitWidth() <= 64) {
-                    constIntValue = CI->getSExtValue();
-                }
-            }
 
-            errs() << "gep ops : ";
-            Gep->print(errs());
-            errs() << " || offset : " << constIntValue << "\n";
-            
+            //errs() << "GEPOffset " << *GepOff << "\n";
+            Value* TmpPtr = B.CreateBitCast(Gep, __spp_updatetag->getFunctionType()->getParamType(0));
+            //errs() << "Bitcast TmpPtr" << *TmpPtr << "\n";
+            Value* IntOff = B.CreateSExt(GepOff, __spp_updatetag->getFunctionType()->getParamType(1));
+            //errs() << "CreateSext =" << *IntOff << "\n";
+            std::vector<Value*> args;
+            args.push_back(TmpPtr);
+            args.push_back(IntOff);
+            CallInst* Masked = B.CreateCall(__spp_updatetag, args);
+            //errs() << "CallInst =" << *Masked << "\n";
+            Value* UpdatedPtr = B.CreatePointerCast(Masked, Gep->getType());
+            //errs() << "CreatePtrCast =" << *UpdatedPtr << "\n";
+            for (auto Use : Users) {
+                Use->setOperand(getOpIdx(Use, Gep), UpdatedPtr);
+            }
+            //errs() << " ";
             /*
             for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
                 if (auto* Ptr = dyn_cast<Value>(Op)) {
@@ -176,32 +202,33 @@ namespace {
         }
 
         bool visitFunc(Function* F) {
+            errs() << "Running visitFunc\n";
             bool Changed = false;
             for (auto &I : instructions(F)) {
-                /* Function calls handling --- Mask the ptr for external function calls */
-                if (auto *CB = dyn_cast<CallBase>(&I)) { 
-                    if (externalFuncs.contains(CB->getCalledFunction()) ) {
+                // NOTE: remove after integrating the LTO pass
+                if (auto* CB = dyn_cast<CallBase>(&I)) {
+                    if (externalFuncs.contains(CB->getCalledFunction())) {
                         for (auto Arg = CB->arg_begin(), ArgEnd = CB->arg_end(); Arg != ArgEnd; ++Arg) {
                             if (auto* ArgVal = dyn_cast<Value>(Arg)) {
                                 if (ArgVal->getType()->isPointerTy()) {
                                     IRBuilder<> B(&I);
-                                    Value *Unmasked = B.CreatePtrToInt(ArgVal, B.getInt64Ty(), "unmasked_arg"); //convert to 64bit int
+                                    Value* Unmasked = B.CreatePtrToInt(ArgVal, B.getInt64Ty(), "unmasked_arg"); //convert to 64bit int
                                     //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                                    Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_arg"); // mask the 48 LSbits
-                                    Value *NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
+                                    Value* Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF, "masked_arg"); // mask the 48 LSbits
+                                    Value* NewArgVal = B.CreateIntToPtr(Masked, ArgVal->getType(), "new_arg_ptr"); //convert back to ptr
                                     CB->setArgOperand(Arg - CB->arg_begin(), NewArgVal);
                                 }
-                                else if (auto *Gep = dyn_cast<GetElementPtrInst>(ArgVal)) {
+                                else if (auto* Gep = dyn_cast<GetElementPtrInst>(ArgVal)) {
                                     errs() << "WARNING: inserted GEP handling from function argument\n";
                                     Changed = instrGep(Gep);
                                 }
-                            }  
+                            }
                         }
-                        Changed = true;  
+                        Changed = true;
                     }
                 }
                 /* GEPs handling --- Apply the arithmetic to the top tag part*/
-                else if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
+                if (auto *Gep = dyn_cast<GetElementPtrInst>(&I)) {
                     Changed = instrGep(Gep);
                 }
             }
@@ -228,10 +255,11 @@ namespace {
     class SPPModule : public ModulePass {
     public:
         static char ID;
-
         SPPModule() : ModulePass(ID) { }
 
+
         virtual bool runOnModule(Module& M) {
+            errs() << "Runing SPP Module Pass\n";
             SPPPass Spp(&M);
 
             Spp.setDL(&M.getDataLayout()); //init the data layout
@@ -244,6 +272,10 @@ namespace {
                     Spp.addExternalFunc(&*F);
                 }
                 else {
+                    if (SPPFUNC(F)) {
+                        Spp.findHelperFunc(&*F);
+                        continue;
+                    }
                     Spp.trackPmemPtrs(&*F);
                 }
             }
@@ -251,6 +283,7 @@ namespace {
             //Visit the functions to clear the appropriate ptr before external calls
             for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
                 if (!F->isDeclaration()) {
+                    if (SPPFUNC(F)) continue;
                     Changed = Spp.visitFunc(&*F);
                 }
             }
@@ -265,7 +298,7 @@ namespace {
                          legacy::PassManagerBase &PM) {
         PM.add(new SPPModule());
     }
-
+    /*
     //apply the module pass at this phase because EarlyAsPossible can cause UB
     static RegisterStandardPasses
     RegisterMyPass(PassManagerBuilder::EP_ModuleOptimizerEarly,
@@ -274,55 +307,85 @@ namespace {
     //to keep the pass available even in -O0
     static RegisterStandardPasses
     RegisterMyPass_non_opt(PassManagerBuilder::EP_EnabledOnOptLevel0,
-                   registerPass);
+                   registerPass);*/
 
 
-    class SPPTagCleaningFunc : public FunctionPass {
+    class SPPTagCleaning : public ModulePass {
     public:
         static char ID;
-        SPPTagCleaningFunc() : FunctionPass(ID) { }
+        SPPTagCleaning() : ModulePass(ID) { }
+        Function* __spp_cleantag;
 
-        virtual bool runOnFunction(Function &F) {
+#define SPPFUNC(F)  (F->getName().startswith("__spp"))
+#define GETSPPFUNC(NAME)  { if (F->getName().equals(#NAME)) NAME = F; }
+
+        void findHelperFunc(Function* F) {
+            if (!SPPFUNC(F))  return;
+
+            F->setLinkage(GlobalValue::ExternalLinkage);
+
+            GETSPPFUNC(__spp_cleantag);
+        }
+
+        int getOpIdx(Instruction* I, Value* Ptr) {
+            for (auto Op = I->op_begin(), OpEnd = I->op_end(); Op != OpEnd; ++Op) {
+                if (Op->get() == Ptr)
+                    return Op->getOperandNo();
+            }
+            return -1;
+        }
+
+        void instrumentLoadOrStore(SmallVector<Instruction*, 64> LoadsAndStores) {
+            errs() << "Running instrumentLoadOrStore\n";
+            for (SmallVectorImpl<Instruction*>::reverse_iterator It = LoadsAndStores.rbegin(),
+                E = LoadsAndStores.rend(); It != E; ++It) {
+                Instruction* I = *It;
+                IRBuilder<> B(I);
+                bool isStore = isa<StoreInst>(*I);
+                Value* Ptr = isStore
+                    ? cast<StoreInst>(I)->getPointerOperand()
+                    : cast<LoadInst>(I)->getPointerOperand();
+
+                Value* TmpPtr = B.CreateBitCast(Ptr, __spp_cleantag->getFunctionType()->getParamType(0));
+                CallInst* Masked = B.CreateCall(__spp_cleantag, TmpPtr);
+                Value* NewPtr = B.CreatePointerCast(Masked, Ptr->getType());
+
+                int OpIdx = getOpIdx(I, Ptr);
+                I->setOperand(OpIdx, NewPtr);
+            }
+                    
+        }
+
+        virtual bool runOnModule(Module &M) {
             /* Ignore declarations */
-            if (F.isDeclaration()) return false;
-            bool Changed = false;
-            for (auto &I : instructions(F)) {
-                /* Load/Store instructions handling --- mask the ptr */
-                /* should normally call the hook function for the overflow check */
-                if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
-                    for (auto Op = I.op_begin(), OpEnd = I.op_end(); Op != OpEnd; ++Op) {
-                        if (auto* Ptr = dyn_cast<Value>(Op)) {
-                            if (Ptr->getType()->isPointerTy()) {
-                                IRBuilder<> B(&I);
-                                Value *Unmasked = B.CreatePtrToInt(Ptr, B.getInt64Ty(), "unmasked_ptr"); //convert to 64bit int
-                                //Value *Masked = B.CreateAnd(Unmasked, 0x7FFFFFFFFF,"masked"); // mask the 39 LSbits
-                                Value *Masked = B.CreateAnd(Unmasked, 0xFFFFFFFFFFFF,"masked_ptr"); // mask the 48 LSbits
-                                Value *NewPtr = B.CreateIntToPtr(Masked, Ptr->getType(), "new_ptr"); //convert back to ptr
-                                I.setOperand(Op->getOperandNo(), NewPtr);
-                                Changed = true;
-                            }
+            SmallVector<Instruction*, 64> LoadsAndStores;
+
+            errs() << "Running SPP Tag Cleaning Pass\n";
+
+            //Prepare runtime before instrumentation
+            for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
+                if (F->isDeclaration()) continue;
+               
+                findHelperFunc(&*F);
+            }
+            
+            for (auto F = M.begin(), Fend = M.end(); F != Fend; ++F) {
+                if (F->isDeclaration() || SPPFUNC(F)) continue;
+                for (auto BB = F->begin(), BBend = F->end(); BB != BBend; ++BB) {
+                    for (auto I = BB->begin(), Iend = BB->end(); I != Iend; ++I) {
+                        if (isa<LoadInst>(I) || isa<StoreInst>(I)) {
+                            LoadsAndStores.push_back(&*I);
                         }
                     }
                 }
             }
+            bool Changed = LoadsAndStores.size() != 0;
+            instrumentLoadOrStore(LoadsAndStores);
             return Changed;
         }
     };
 
-    char SPPTagCleaningFunc::ID = 0;
-    static RegisterPass<SPPTagCleaningFunc> Y("spp_tag_cleaning", "Safe Persistent Pointers Tag Cleaning Pass", false, false);
+    char SPPTagCleaning::ID = 0;
+    static RegisterPass<SPPTagCleaning> Y("spp_tag_cleaning", "Safe Persistent Pointers Tag Cleaning Pass", false, false);
 
-    static void registerPass_tag_cleaning(const PassManagerBuilder &,
-                         legacy::PassManagerBase &PM) {
-        PM.add(new SPPTagCleaningFunc());
-    }
-
-    static RegisterStandardPasses
-    RegisterMyPass_tag_clean(PassManagerBuilder::EP_EarlyAsPossible,
-                   registerPass_tag_cleaning);
-
-    //to keep the pass available even in -O0
-    static RegisterStandardPasses
-    RegisterMyPass_tag_clean_non_opt(PassManagerBuilder::EP_EnabledOnOptLevel0,
-                   registerPass_tag_cleaning);
 }
