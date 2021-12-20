@@ -9,6 +9,7 @@ pkgs.mkShell {
   ];
   # add tools here
   nativeBuildInputs = [
+    pkgs.gdb
     pkgs.pkg-config
     pkgs.pandoc
     pkgs.m4
@@ -16,7 +17,7 @@ pkgs.mkShell {
     pkgs.cmake
   ];
   shellHook = ''
-    export PATH=$PATH:$PWD/llvm-project/bin
+    export PATH=$PATH:$PWD/llvm-project/build/bin
   '';
 
   ## Disable mapping address randomization and provide PMDK with appropriately low mapping address hint:
