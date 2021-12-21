@@ -18,24 +18,40 @@ make -j$(nproc)
 
 (1) Compile `LLVM` (Warning! High memory consumption):  
 ```
-cd llvm-project
-mkdir build
-mkdir install
-cd build
-cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" BUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install ../llvm
-make -j$(nproc)
+CC=/path/to/gcc 
+CXX=/path/to/g++
+
+cd llvm-project;
+mkdir build;
+mkdir install;
+cd build;
+cmake -G "Unix Makefiles" \
+-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+DCMAKE_C_COMPILER=CC \
+DCMAKE_CXX_COMPILER=CXX \
+BUILD_SHARED_LIBS=ON \
+-DCMAKE_INSTALL_PREFIX=../install ../llvm
+make -j$(nproc);
+
+// Optional for fast build: LLVM_OPTIMIZED_TABLEGEN=ON
+
 export PATH=$PATH:$PWD/bin
 ```
 
-(2) Build LLVM gold plugin (without other packages):
+(2) Build LLVM gold plugin (llvm only without other packages):
 https://llvm.org/docs/GoldPlugin.html
 
 ```
-cd llvm-project
-mkdir build
-mkdir install
-cd build
-cmake -G "Unix Makefiles" -DLLVM_BINUTILS_INCDIR=/usr/include BUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install ../llvm
+cd llvm-project;
+mkdir build;
+mkdir install;
+cd build;
+cmake -G "Unix Makefiles" \
+-DLLVM_BINUTILS_INCDIR=/usr/include \
+DCMAKE_C_COMPILER=CC \
+DCMAKE_CXX_COMPILER=CXX \
+BUILD_SHARED_LIBS=ON \
+-DCMAKE_INSTALL_PREFIX=../install ../llvm
 make -j$(nproc)
 export PATH=$PATH:$PWD/bin
 ```
