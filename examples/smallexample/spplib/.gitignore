@@ -1,0 +1,4 @@
+# Ignore following files
+*.o
+*.bc
+*.ll
