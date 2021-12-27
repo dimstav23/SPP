@@ -20,7 +20,7 @@ extern "C" {
 __attribute__((__used__))
 __attribute__((always_inline))
 void *
-__spp_clean_tag (void * ptr)
+__spp_cleantag (void * ptr)
 {
     return (void*)(((uintptr_t)ptr) & __SPP_MASK_TAG_OUT);
 }

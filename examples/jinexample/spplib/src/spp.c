@@ -20,18 +20,21 @@ extern "C" {
 __attribute__((__used__))
 __attribute__((always_inline))
 void *
-__SPP_clean_tag (void * ptr)
+__spp_cleantag(void * ptr)
 {
-    return (void*)(((uintptr_t)ptr) & __SPP_MASK_TAG_OUT);
+    return (void*)(((uintptr_t)ptr) & PTRVALMASK);
 }
 
 __attribute__((__used__))
 __attribute__((always_inline))
 void * 
 __spp_updatetag(void* ptr, int64_t off) {
-	void* ptrval = ptr;// (void*)((uint64_t)ptr + (off << PTRSIZEBITS));
-	printf("Offset: %lu \n", off);
-	return ptrval;
+	int64_t delta = ((uint64_t)ptr & TAGMASK) >> PTRSIZEBITS;
+	delta += off;
+	void* res = ((uint64_t)ptr & PTRVALMASK) + (delta << PTRSIZEBITS);
+	printf("Orig ptr: %lu Updated delta: %lu Offset %lu Updated ptr %lu \n", (int64_t)ptr, (int64_t)delta, (int64_t)off, (int64_t)res);
+	//TODO: Add Overflow/Underflow checks
+	return res;
 }
 ///////////////////////////////////////////////
 

@@ -9,10 +9,10 @@ OBJDIR = ./obj
 PMDKSRCDIR = ../../pmdk/src
 SPP_PASS = ../../pass/spp.so
 
-CC = clang-12
-LLC = llc-12 
-LLVMLINK = llvm-link-12
-OPT = opt-12
+CC = clang
+LLC = llc 
+LLVMLINK = llvm-link
+OPT = opt
 
 # MODIFY ME! up to here  ##################
 
@@ -31,19 +31,18 @@ SOURCES  := $(wildcard $(SRCDIR)/*.c)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 HOOKED   = ./obj/hooked.o  
 LLVMLINKED   = ./obj/llvmlinked.o  
-ASFILE = ./obj/asfile.s
 
-$(TARGET): $(ASFILE)
-	$(CC) -o $@ $(LDFLAGS) $(ASFILE)
+$(TARGET): $(HOOKED)
+	$(CC) -x ir -o $@ $(LDFLAGS) $(HOOKED)
 	@echo "-- Linking complete"
 	@echo "-- Executable: $(TARGET)"
 
-$(ASFILE): $(HOOKED)
-	$(LLC) $(HOOKED) -o $@ 
-	@echo "-- LLCing "$<" complete"
+#$(ASFILE): $(HOOKED)
+#	$(LLC) $(HOOKED) -o $@ 
+#	@echo "-- LLCing "$<" complete"
 
 $(HOOKED): $(LLVMLINKED)
-	$(OPT) -load $(SPP_PASS) -spp $(LLVMLINKED) -o $@
+	$(OPT) -load $(SPP_PASS) -spp_tag_cleaning -spp $(LLVMLINKED) -o $@
 	@echo "-- OPTing "$(LLVMLINKED)" complete"
 
 $(LLVMLINKED): $(OBJECTS)

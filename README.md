@@ -4,12 +4,22 @@ Compiler pass and associated runtime for Safe Persistent Pointers
 
 ### Installation instructions
 
-Initialise the submodules of the repository:  
+Initialise the submodules of the repository:
+
 ```
 git submodule update --init
 ```
 
-Compile the `pmdk` fork:  
+(optionally) To get all build dependencies to build this project, one can use [nix](https://nixos.org).
+A tutorial for nix can be found at https://nix.dev/
+
+```console
+$ nix-shell
+nix-shell> # in this shell all build dependencies are present
+```
+
+Compile the `pmdk` fork:
+
 ```
 cd pmdk
 git checkout spp-main
@@ -55,7 +65,6 @@ BUILD_SHARED_LIBS=ON \
 make -j$(nproc)
 export PATH=$PATH:$PWD/bin
 ```
-
 
 ### Usage instructions
 

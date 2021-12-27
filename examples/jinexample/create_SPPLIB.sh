@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CLANG="clang-12"
+CLANG="clang"
 SPPLIBDIR="./spplib"
 LLVM_AR="llvm-ar-12"
 

@@ -1,56 +1,36 @@
 #!/bin/bash
 
-
 #######################################
 ##   NOTE: SET LLVMROOT PATH BELOW!  ##
 #######################################
 
-#LLVMROOT=/PATH/TO/CLANGLLVM/INSTALL
-LLVMROOT=~/.local/spp.llvm.12.0.0/
+# LLVMROOT: llvm install dir ################
 
-CLANG="${LLVMROOT}/bin/clang"
-OPTLEV="-O2"
-
+LLVMROOT=/home/mjnam/.local/spp.llvm.12.0.0/
 SPPROOT="../../"
 PMDKSRC="${SPPROOT}/pmdk/src/"
 
-TESTSRC="${SPPROOT}/examples/smallexample/src/"
 SPPLIB="${SPPROOT}/examples/smallexample/spplib/"
 SPPLIBSRC="${SPPLIB}/src/"
 SPPLIBOBJ="${SPPLIB}/obj/"
+TESTSRC="${SPPROOT}/examples/smallexample/src/"
 
-WRAP_LIST="-Xlinker --wrap=free -Xlinker --wrap=strcpy -Xlinker --wrap=strcmp -Xlinker --wrap=strncpy -Xlinker --wrap=strncmp -Xlinker --wrap=memcmp -Xlinker --wrap=memchr -Xlinker --wrap=strchr -Xlinker --wrap=strncat -Xlinker --wrap=strtol -Xlinker --wrap=strlen -Xlinker --wrap=strchrnul"   
-
+WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
 
 #   Compile spp hook functions      ###################
 
-rm "${SPPLIBOBJ}/spp_hookobj.o"
-rm "${SPPLIBOBJ}/wrappers.o"
-
-# compiling spp.c
-
-$CLANG -emit-llvm \
-"${SPPLIBSRC}/spp.c" \
--c -o \
-"${SPPLIBOBJ}/spp_hookobj.o"
-
-# compiling wrappers.c
-
-$CLANG \
-"${SPPLIBSRC}/wrappers_spp.c" \
--c -o \
-"${SPPLIBOBJ}/wrappers.o" 
-
-echo "----- Hook functions compiled ----------"
-
-#"-I${LLVMROOT}/lib/clang/12.0.0/include/" \
+bash ./create_spplib.sh
 
 #   Building examples  #########################
 
+CLANG=$(which clang)
+CLANGPP=$(which clang++)
+OPT_LEVEV="-O2"
+
 $CLANG \
-$OPTLEV \
+$OPT_LEVEL \
 -flto \
--fuse-ld=/usr/bin/ld.gold \
+-fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/debug/" \
@@ -58,11 +38,11 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
 -DTAG_BITS=15 -lpmem -lpmemobj \
 "${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mystrcpy.c" "${TESTSRC}/main.c" \
--o example
+-o example -v
 
 rm -rf /dev/shm/spp_test.pool
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
-echo "----- runtest done. exe: example"
+echo ".......... smalltest.sh complete. (exe: example) ...."
 
 #https://lists.llvm.org/pipermail/llvm-dev/2013-January/058038.html

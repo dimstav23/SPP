@@ -1,8 +1,9 @@
 # Ignore node_modules folder                                                             
-build
-build_spp_llvm
+build*
+.direnv
 
 # Ignore following files
+.envrc
 *.o
 *.bc
 *.ll
