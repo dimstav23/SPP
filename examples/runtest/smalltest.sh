@@ -8,7 +8,8 @@
 #LLVMROOT=/PATH/TO/CLANGLLVM/INSTALL
 LLVMROOT=~/.local/spp.llvm.12.0.0/
 
-CLANG="${LLVMROOT}/bin/clang"
+#CLANG="${LLVMROOT}/bin/clang"
+CLANG=$(which clang)
 OPTLEV="-O2"
 
 SPPROOT="../../"
@@ -19,7 +20,10 @@ SPPLIB="${SPPROOT}/examples/smallexample/spplib/"
 SPPLIBSRC="${SPPLIB}/src/"
 SPPLIBOBJ="${SPPLIB}/obj/"
 
-WRAP_LIST="-Xlinker --wrap=free -Xlinker --wrap=strcpy -Xlinker --wrap=strcmp -Xlinker --wrap=strncpy -Xlinker --wrap=strncmp -Xlinker --wrap=memcmp -Xlinker --wrap=memchr -Xlinker --wrap=strchr -Xlinker --wrap=strncat -Xlinker --wrap=strtol -Xlinker --wrap=strlen -Xlinker --wrap=strchrnul"   
+WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
+
+echo "--- SPPLIB: $SPPLIB"
+echo "-   CLANG: $CLANG"
 
 
 #   Compile spp hook functions      ###################
@@ -29,14 +33,15 @@ rm "${SPPLIBOBJ}/wrappers.o"
 
 # compiling spp.c
 
-$CLANG -emit-llvm \
+$CLANG -flto \
 "${SPPLIBSRC}/spp.c" \
 -c -o \
 "${SPPLIBOBJ}/spp_hookobj.o"
 
 # compiling wrappers.c
 
-$CLANG \
+$(which gcc) \
+-include "${SPPLIBSRC}/spp.h" \
 "${SPPLIBSRC}/wrappers_spp.c" \
 -c -o \
 "${SPPLIBOBJ}/wrappers.o" 
@@ -50,7 +55,7 @@ echo "----- Hook functions compiled ----------"
 $CLANG \
 $OPTLEV \
 -flto \
--fuse-ld=/usr/bin/ld.gold \
+-fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/debug/" \
@@ -58,7 +63,7 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
 -DTAG_BITS=15 -lpmem -lpmemobj \
 "${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mystrcpy.c" "${TESTSRC}/main.c" \
--o example
+-o example -v
 
 rm -rf /dev/shm/spp_test.pool
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example

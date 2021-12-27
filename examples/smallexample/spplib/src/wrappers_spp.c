@@ -71,7 +71,7 @@ __real_free (void *ptr);
 ///                                 /// 
 ///////////////////////////////////////
 
-extern void* __spp_clean_tag (void * p);  
+extern void* __spp_cleantag (void * p);  
 
 ///////////////////////////////////////
 ///                                 /// 
@@ -83,7 +83,7 @@ void
 __wrap_free (void* base)  
 {
     printf("SPP: real free is interposed\n");
-    __real_free(__spp_clean_tag(base)); 
+    __real_free(__spp_cleantag(base)); 
 }
 
 /////////////////////////////////
@@ -115,7 +115,7 @@ __wrap_strlen(const char * str)
 {
   dbg(printf("HOOK Strlen at %p\n", str);)
   
-  return __real_strlen((const char*)__spp_clean_tag((void*)str));
+  return __real_strlen((const char*)__spp_cleantag((void*)str));
 }
 
 ////////////////////////
@@ -142,13 +142,13 @@ __wrap_strcpy(char * dest, char * src)
   
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    __real_strcpy ((char*)__spp_clean_tag(dest), 
-                   (char*)__spp_clean_tag(src));
+    __real_strcpy ((char*)__spp_cleantag(dest), 
+                   (char*)__spp_cleantag(src));
   
   #else  
     
     __real_strcpy((char*)MIU_check_mem_access(dest,strlen(src)), 
-                  (char*)__spp_clean_tag(src));
+                  (char*)__spp_cleantag(src));
     
   
   #endif  // ENABLE_SPACEMIU, PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS
@@ -169,11 +169,11 @@ __wrap_strcpy(char * dest, char * src)
 int 
 __wrap_strcmp(char * str1, char * str2)
 {
-    char * untagstr1= (char*)__spp_clean_tag(str1); 
-    char * untagstr2= (char*)__spp_clean_tag(str2); 
+    char * untagstr1= (char*)__spp_cleantag(str1); 
+    char * untagstr2= (char*)__spp_cleantag(str2); 
     
-    return __real_strcmp ((char*)__spp_clean_tag(str1), 
-                         (char*)__spp_clean_tag(str2)); 
+    return __real_strcmp ((char*)__spp_cleantag(str1), 
+                         (char*)__spp_cleantag(str2)); 
 }
 
 
@@ -189,8 +189,8 @@ __wrap_strncmp(char *str1, char *str2, size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    char * untagstr1= (char*)__spp_clean_tag(str1);
-    char * untagstr2= (char*)__spp_clean_tag(str2);
+    char * untagstr1= (char*)__spp_cleantag(str1);
+    char * untagstr2= (char*)__spp_cleantag(str2);
 
   #else
      
@@ -217,8 +217,8 @@ __wrap_strncpy(char * dest, char * src,size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-   __real_strncpy ((char*)__spp_clean_tag((void*)dest),
-                    (char*)__spp_clean_tag((void*)src),
+   __real_strncpy ((char*)__spp_cleantag((void*)dest),
+                    (char*)__spp_cleantag((void*)src),
                      n); 
 
   #else
@@ -242,8 +242,8 @@ __wrap_strncpy(char * dest, char * src,size_t n)
 int 
 __wrap_memcmp(void *str1, void *str2, size_t n)
 {
-    return __real_memcmp ((void*)__spp_clean_tag(str1), 
-                          (void*)__spp_clean_tag(str2),n);
+    return __real_memcmp ((void*)__spp_cleantag(str1), 
+                          (void*)__spp_cleantag(str2),n);
 }
 
 ////////////////////////
@@ -258,7 +258,7 @@ __wrap_memchr(void *str, int c, size_t n)
   
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    void * result= __real_memchr((void*)__spp_clean_tag(str),c,n); 
+    void * result= __real_memchr((void*)__spp_cleantag(str),c,n); 
   
   #else 
     
@@ -283,7 +283,7 @@ __wrap_memchr(void *str, int c, size_t n)
 char * 
 __wrap_strchr (char *str, int c)
 {
-    char* result= __real_strchr((char*)__spp_clean_tag(str),c);
+    char* result= __real_strchr((char*)__spp_cleantag(str),c);
 
     if (result!=NULL){
         uintptr_t tag= (uintptr_t)str & (uintptr_t)(~__SPP_MASK_TAG_OUT); 
@@ -309,8 +309,8 @@ __wrap_strncat (char *dest, char *src, size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    __real_strncat((char*)__spp_clean_tag(dest),
-                    (char*)__spp_clean_tag(src), n);
+    __real_strncat((char*)__spp_cleantag(dest),
+                    (char*)__spp_cleantag(src), n);
   
   #else 
 
@@ -330,7 +330,7 @@ __wrap_strncat (char *dest, char *src, size_t n)
       #endif
     }
     __real_strncat ((char*)MIU_check_mem_access(dest,destlen+srclen),
-                    (char*)__spp_clean_tag(src), n);
+                    (char*)__spp_cleantag(src), n);
 
   #endif // ENABLE_SPACEMIU || PErform only tagging
  
@@ -350,8 +350,8 @@ __wrap_strncat (char *dest, char *src, size_t n)
 long int 
 __wrap_strtol (char *str, char **endptr, int base)
 {
-    return __real_strtol((char*)__spp_clean_tag(str), 
-                      (char**)__spp_clean_tag(endptr), 
+    return __real_strtol((char*)__spp_cleantag(str), 
+                      (char**)__spp_cleantag(endptr), 
                       base);
 }
 

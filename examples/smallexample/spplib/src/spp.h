@@ -21,7 +21,7 @@ extern "C" {
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
 
-extern void * __spp_clean_tag (void * ptr);
+extern void * __spp_cleantag (void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);
 
