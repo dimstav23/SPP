@@ -15,9 +15,12 @@ pkgs.mkShell {
     pkgs.m4
     pkgs.bashInteractive
     pkgs.cmake
+    pkgs.tclx
+    pkgs.bash
+    (pkgs.callPackage ./impure-clang.nix {})
   ];
   shellHook = ''
-    export PATH=$PATH:$PWD/llvm-project/build/bin
+    export PATH=$PATH:$PWD/../.local/
   '';
 
   ## Disable mapping address randomization and provide PMDK with appropriately low mapping address hint:
