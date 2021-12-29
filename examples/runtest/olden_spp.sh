@@ -9,8 +9,12 @@ source ../../../../script/myheader.sh
 #   compile hooks 
 . ./create_spplib.sh
 
+
 CLANG=$(which clang)
 CLANGPP=$(which clang++)
+
+echo "clang:: $CLANG"
+echo "clang++:: $CLANGPP"
 
 USER=mjnam
 
@@ -23,6 +27,8 @@ LLVM_TEST_SUITE_DIR=${ROOT}/llvm-test-suite/test-suite-src/
 SPPLLVMSRC=${ROOT}/spp-pass/llvm-project/llvm/
 
 WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"
+
+echo "running lnt............."
 
 lnt runtest test_suite \
 --sandbox ${SANDBOX_DIR} \
@@ -48,8 +54,8 @@ lnt runtest test_suite \
 --use-cmake="$(which cmake)" \
 --use-lit="${SPPLLVMSRC}/utils/lit/lit.py" \
 --benchmarking-only \
---only-test "MultiSource/Benchmarks/Olden/bh" \
+--only-test "MultiSource/Benchmarks/Olden/treeadd" \
 --use-perf=all \
 --cmake-cache Debug \
--j 10;
+-j 1;
 
