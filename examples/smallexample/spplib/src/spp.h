@@ -20,10 +20,12 @@ extern "C" {
 #include <math.h>
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
+#define USED_NUM_BITS 48
 
 extern void * __spp_cleantag (void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);
+extern void* __spp_update_pointer(void* ptr, int64_t off);
 
 ///////////////////////////////////////////////
 
