@@ -45,6 +45,7 @@ __spp_cleantag (void * ptr)
 }
 
  __attribute__((__used__))
+__attribute__((__optnone__)) /// -> disable later. just to check if it's hooked.
 //__attribute__((always_inline))
 void *
 __spp_checkbound (void * ptr)
@@ -68,6 +69,7 @@ __spp_checkbound (void * ptr)
 /// spp pass calls this at GEP instead of __spp_updatetag in debug mode
 /// 
 __attribute__((__used__))
+__attribute__((__optnone__)) /// disable later. just to check if it's hooked.
 //__attribute__((always_inline))
 void * 
 __spp_updatetag_DEBUG (void* ptr, int64_t off, void * ptrop) {
@@ -112,6 +114,8 @@ __spp_updatetag_DEBUG (void* ptr, int64_t off, void * ptrop) {
 }
 
 __attribute__((__used__))
+__attribute__((__optnone__)) /// disable later. just to check if it's hooked.
+//__attribute__((always_inline))
 //__attribute__((always_inline))
 void * 
 __spp_updatetag(void* ptr, int64_t off) {
