@@ -17,7 +17,7 @@ ${SPPLIB}/src/local_wrappers_spp.c \
 -c -o \
 ${SPPLIB}/obj/wrappers.o
 
-$GCC \
+$GCC -g -O1 \
 ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o

@@ -15,14 +15,17 @@ extern "C" {
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stddef.h>
-//#include <stdbool.h>
 #include <assert.h>
 #include <math.h>
+//#include <stdbool.h>
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
-#define USED_NUM_BITS 48
+
+#define NUM_USED_BITS  48
+#define NUM_SPARE_BITS 16 
 
 extern void * __spp_cleantag (void * ptr);
+extern void * __spp_checkbound (void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);
 extern void* __spp_updatetag_DEBUG(void* ptr, int64_t off, void* ptrop);

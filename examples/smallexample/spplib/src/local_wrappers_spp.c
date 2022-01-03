@@ -85,11 +85,11 @@ __wrap_malloc (size_t sz)
 {
     void * ptr= __real_malloc (sz);
      
-    uintptr_t tag= ((uintptr_t)sz)<<USED_NUM_BITS;
-    dbg(printf("malloc_tag: 0x%.16" PRIXPTR ", size: %lu\n", tag, sz);) 
-    
+    uintptr_t tag= ((uintptr_t)sz)<<NUM_USED_BITS;
+    //dbg(printf("malloc_tag: 0x%.16" PRIXPTR ", size: %lu\n", tag, sz);) 
+     
     uintptr_t tagged= (((uintptr_t)ptr) | tag);
-    dbg(printf("spp_malloc. Orig: 0x%.16" PRIXPTR ", tagged: 0x%.16" PRIXPTR "\n", (uintptr_t)ptr, tagged);) 
+    dbg(printf("spp_malloc. ptr: 0x%.16" PRIXPTR ", tagged: 0x%.16" PRIXPTR ", sz: %lu\n", (uintptr_t)ptr, tagged, sz);) 
     
     return (void*)tagged;
 }

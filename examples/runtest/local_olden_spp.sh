@@ -14,7 +14,7 @@ OPT_LEVEL=-O2
 USER=mjnam
 
 # to be tested
-#TEST=em3d
+#TEST=bisort
 #   compile hooks 
 . ./local_create_spplib.sh
 
@@ -57,5 +57,5 @@ lnt runtest test_suite \
 --only-test "MultiSource/Benchmarks/Olden/${TEST}" \
 --use-perf=all \
 --cmake-cache Debug \
--j 1;
+-j 20;
 
