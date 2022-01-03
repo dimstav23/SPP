@@ -14,7 +14,7 @@ OPT_LEVEL=-O2
 USER=mjnam
 
 # to be tested
-TEST=bisort
+#TEST=em3d
 #   compile hooks 
 . ./local_create_spplib.sh
 

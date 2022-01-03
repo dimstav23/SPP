@@ -25,10 +25,9 @@ bash ./create_spplib.sh
 
 CLANG=$(which clang)
 CLANGPP=$(which clang++)
-OPT_LEVEV="-O2"
 
 $CLANG \
-$OPT_LEVEL \
+-O2 \
 -flto \
 -fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/lib/LLVMSPP.so"  \

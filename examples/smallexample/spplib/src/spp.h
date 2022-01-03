@@ -25,6 +25,7 @@ extern "C" {
 extern void * __spp_cleantag (void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);
+extern void* __spp_updatetag_DEBUG(void* ptr, int64_t off, void* ptrop);
 extern void* __spp_update_pointer(void* ptr, int64_t off);
 
 ///////////////////////////////////////////////
