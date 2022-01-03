@@ -14,7 +14,7 @@ OPT_LEVEL=-O2
 USER=mjnam
 
 # to be tested
-#TEST=bisort
+TEST=bh
 #   compile hooks 
 . ./local_create_spplib.sh
 
@@ -42,12 +42,10 @@ lnt runtest test_suite \
 --cxxflags  "-Xclang -load -Xclang ${SPPLLVMPASS}"  \
 --cflags    "-Xclang -include -Xclang ${SPPLIBSRC}/spp.h" \
 --cxxflags  "-Xclang -include -Xclang ${SPPLIBSRC}/spp.h" \
---cflags    "-L${SPPLIBOBJ}" \
---cxxflags  "-L${SPPLIBOBJ}" \
 --cflags    "$WRAP_LIST ${SPPLIBOBJ}/wrappers.o" \
 --cxxflags  "$WRAP_LIST ${SPPLIBOBJ}/wrappers.o" \
---cflags    "-Xlinker -lspphook" \
---cxxflags  "-Xlinker -lspphook" \
+--cflags    "${SPPLIBOBJ}/spp_hookobj.o" \
+--cxxflags  "${SPPLIBOBJ}/spp_hookobj.o" \
 --cflags    "-Xlinker -lm" \
 --cxxflags  "-Xlinker -lm" \
 --test-suite "${LLVM_TEST_SUITE_DIR}" \
@@ -59,3 +57,7 @@ lnt runtest test_suite \
 --cmake-cache Debug \
 -j 20;
 
+#--cflags    "-Xlinker -lspphook" \
+#--cxxflags  "-Xlinker -lspphook" \
+#--cflags    "-L${SPPLIBOBJ}" \
+#--cxxflags  "-L${SPPLIBOBJ}" \
