@@ -1,6 +1,7 @@
 # Ignore node_modules folder                                                             
 build*
 .direnv
+obj
 
 # Ignore following files
 .envrc
@@ -8,3 +9,6 @@ build*
 *.bc
 *.ll
 *.so
+*.a
+example
+*.swp

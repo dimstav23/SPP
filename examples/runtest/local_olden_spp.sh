@@ -9,6 +9,7 @@ source ../../../../script/myheader.sh
 
 CLANG=$(which clang)
 CLANGPP=$(which clang++)
+OPT_LEVEL=-O2
 
 USER=mjnam
 
@@ -56,5 +57,5 @@ lnt runtest test_suite \
 --only-test "MultiSource/Benchmarks/Olden/${TEST}" \
 --use-perf=all \
 --cmake-cache Debug \
--j 10;
+-j 20;
 
