@@ -17,6 +17,10 @@ extern "C" {
 #include <math.h>
 #include "./spp.h" ///
 
+///////////////////////////////
+///      Debug Macro        ///
+///////////////////////////////
+
 //#define SPP_PRINT_DEBUG
 #ifdef SPP_PRINT_DEBUG
 #  define dbg(x) x
@@ -24,12 +28,24 @@ extern "C" {
 #  define dbg(x)
 #endif
 
+//#define SPP_DEBUG
+#ifdef SPP_DEBUG
+#  define __SPP_ATTR __optnone__ 
+#else
+#  define __SPP_ATTR always_inline 
+#endif
+
+///////////////////////////////
+///  Debug Macro up to here ///
+///////////////////////////////
+
+
 //typedef enum { false = 0, true = !false } mybool;
 // NUM_USED_BITS = 48
 // NUM_SPARE_BITS= 16 (check ./spp.h)
 
 __attribute__((__used__))
-//__attribute__((always_inline))
+__attribute__((__SPP_ATTR))
 int64_t 
 __spp_extract_tagval (void *ptr)
 {
@@ -37,7 +53,7 @@ __spp_extract_tagval (void *ptr)
 }
 
 __attribute__((__used__))
-//__attribute__((always_inline))
+__attribute__((__SPP_ATTR))
 void *
 __spp_cleantag (void * ptr)
 {
@@ -45,8 +61,7 @@ __spp_cleantag (void * ptr)
 }
 
  __attribute__((__used__))
-__attribute__((__optnone__)) /// -> disable later. just to check if it's hooked.
-//__attribute__((always_inline))
+__attribute__((__SPP_ATTR))
 void *
 __spp_checkbound (void * ptr)
 {
@@ -69,7 +84,7 @@ __spp_checkbound (void * ptr)
 /// spp pass calls this at GEP instead of __spp_updatetag in debug mode
 /// 
 __attribute__((__used__))
-__attribute__((__optnone__)) /// disable later. just to check if it's hooked.
+__attribute__((__SPP_ATTR))
 //__attribute__((always_inline))
 void * 
 __spp_updatetag_DEBUG (void* ptr, int64_t off, void * ptrop) {
@@ -114,9 +129,7 @@ __spp_updatetag_DEBUG (void* ptr, int64_t off, void * ptrop) {
 }
 
 __attribute__((__used__))
-__attribute__((__optnone__)) /// disable later. just to check if it's hooked.
-//__attribute__((always_inline))
-//__attribute__((always_inline))
+__attribute__((__SPP_ATTR))
 void * 
 __spp_updatetag(void* ptr, int64_t off) {
     
@@ -156,7 +169,7 @@ __spp_updatetag(void* ptr, int64_t off) {
 	
 // it is not desirable that this func is called
 __attribute__((__used__))
-//__attribute__((inline))
+__attribute__((__SPP_ATTR))
 void * 
 __spp_update_pointer (void* ptr, int64_t off) {
     assert((uintptr_t)ptr==(int64_t)ptr);

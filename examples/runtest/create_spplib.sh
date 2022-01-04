@@ -4,7 +4,7 @@
 
 CLANG=$(which clang)
 GCC=$(which gcc)
-AR=$(which ar)
+AR=$(which llvm-ar)
 
 SPPLIB=../smallexample/spplib/
 
@@ -17,11 +17,11 @@ ${SPPLIB}/src/wrappers_spp.c \
 -c -o \
 ${SPPLIB}/obj/wrappers.o
 
-$GCC \
+$CLANG -emit-llvm \
 ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o
 
-$AR q \
-${SPPLIB}/obj/libspphook.a \
-${SPPLIB}/obj/spp_hookobj.o
+#$AR q \
+#${SPPLIB}/obj/libspphook.a \
+#${SPPLIB}/obj/spp_hookobj.o

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo ">>>>>>> SPP. smalltest.sh starts.. (exe: example) ...."
+
 #######################################
 ##   NOTE: SET LLVMROOT PATH BELOW!  ##
 #######################################
@@ -9,6 +11,8 @@
 LLVMROOT=/home/mjnam/.local/spp.llvm.12.0.0/
 SPPROOT="../../"
 PMDKSRC="${SPPROOT}/pmdk/src/"
+
+OPT_LEVEL="-O2"
 
 SPPLIB="${SPPROOT}/examples/smallexample/spplib/"
 SPPLIBSRC="${SPPLIB}/src/"
@@ -27,7 +31,7 @@ CLANG=$(which clang)
 CLANGPP=$(which clang++)
 
 $CLANG \
--O2 \
+$OPT_LEVEL \
 -flto \
 -fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/lib/LLVMSPP.so"  \
@@ -40,8 +44,8 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -o example -v
 
 rm -rf /dev/shm/spp_test.pool
+echo ".......... PMDKSRC: ${PMDKSRC}" 
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
-echo ".......... smalltest.sh complete. (exe: example) ...."
 
 #https://lists.llvm.org/pipermail/llvm-dev/2013-January/058038.html
