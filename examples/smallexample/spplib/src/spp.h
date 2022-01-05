@@ -21,6 +21,11 @@ extern "C" {
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
 
+#define TAGLENGTH 15 // TODO: change to compile parameter
+#define PTRSIZEBITS (64 - TAGLENGTH)
+#define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
+#define TAGMASK (~PTRVALMASK)
+
 #define NUM_USED_BITS  48
 #define NUM_SPARE_BITS 16 
 

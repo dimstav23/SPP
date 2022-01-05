@@ -21,7 +21,7 @@ extern "C" {
 ///      Debug Macro        ///
 ///////////////////////////////
 
-#define SPP_PRINT_DEBUG
+//#define SPP_PRINT_DEBUG
 #ifdef SPP_PRINT_DEBUG
 #  define dbg(x) x
 #else
@@ -73,22 +73,25 @@ __spp_checkbound (void * ptr)
     
     /// Returns, if it's tag-free. ///
     if (!tag) return ptr;
-    
+     
     dbg(printf("  __spp_checkbound\n");)
     dbg(printf("    tag: 0x%.16" PRIXPTR "\n", tag);)
     
+    uintptr_t newptr= (uintptr_t)__spp_cleantag(ptr); 
     /////////////////////////////////////////////////// 
     /// Now ptr is a tagged pointer.
     /// TODO: do something with a tagged pointer.   
     /////////////////////////////////////////////////// 
     
     // just testing. modify this.
+    assert(!(tag & 0x8000));
     if (tag & 0x8000) {
-        printf("\n\t--->__spp_error: at 0x%.16" PRIXPTR "\n\n", (uint64_t)ptr); 
+        printf("\n --->__spp_error: at 0x%.16" PRIXPTR " <--------------\n\n", (uint64_t)ptr); 
+        return ptr;        
     }
     
     // Or, return a tag-free pointer, if you generate one above. 
-    return __spp_cleantag(ptr); 
+    return (void*)newptr;
 }
 
 ///
@@ -168,13 +171,14 @@ __spp_updatetag(void* ptr, int64_t off) {
     uint64_t untagged= (((uint64_t)ptr)<<NUM_SPARE_BITS)>>NUM_SPARE_BITS;
     uint64_t ptrval= untagged | tempval; 
     
+    //assert(tag>0);
     if (tag <= 0) {
-        printf("    ---> __spp_warning: Out_of_bounds! Tag: %ld \n", tag);
+        dbg(printf("    ---> __spp_warning: Out_of_bounds! Tag: %ld, ptr: 0x%.16" PRIXPTR "\n", tag, (uintptr_t)ptr);)
         //exit(0); // why lnt skips this???
         ptrval=  ptrval | (1ULL<<63); // just for testing.
     }
     dbg(printf("    newptr:\t0x%.16" PRIXPTR "\n", ptrval);)
-    //assert(tag>=0 && "assert_2");
+    //assert(tag>0 && "assert_2");
 	
     return (void*)ptrval;
 }
