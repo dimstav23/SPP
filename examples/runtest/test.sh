@@ -19,13 +19,16 @@ SPPLIBSRC="${SPPLIB}/src/"
 SPPLIBOBJ="${SPPLIB}/obj/"
 TESTSRC="${SPPROOT}/examples/smallexample/src/"
 
-WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
+WRAP_LIST="-Wl,-wrap,malloc -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
 
 #   Compile spp hook functions      ###################
 
-bash ./create_spplib.sh
+. ./local_create_spplib.sh
+
+rm -rf ${TESTSRC}/../obj/*.o;
 
 #   Building examples  #########################
+
 
 CLANG=$(which clang)
 CLANGPP=$(which clang++)
@@ -40,11 +43,10 @@ $OPT_LEVEL \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
 -DTAG_BITS=15 -lpmem -lpmemobj \
-"${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mystrcpy.c" "${TESTSRC}/main.c" \
+"${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mymemcpy.c" "${TESTSRC}/main.c" \
 -o example -v
 
 rm -rf /dev/shm/spp_test.pool
-echo ".......... PMDKSRC: ${PMDKSRC}" 
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 
