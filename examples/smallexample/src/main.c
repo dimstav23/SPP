@@ -2,28 +2,37 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-extern void * mymalloc (int x);
+extern void * mymalloc (size_t n);
 extern void myfree (void * ptr);
-extern void mystrcpy (char * x, char * y);
+extern void mymemcpy (void * dest, void * src, size_t sz, int loopcount);
 
 int main (int argc, char ** argv)
 {
-    char* str_src= "spp_test";
-    char * str_dest= mymalloc(10); 
-
-    mystrcpy (str_dest, str_src);
+    unsigned elemnum= 5;
+    int * alloc= mymalloc(sizeof(int)); 
+    int arr[elemnum];
     
-    printf("print_1 str_dest: %s\n", str_dest);
+    for (unsigned i=0; i < elemnum; i++) {
+        if (i < 3) {
+           arr[i]= i*11; 
+        }
+        else { 
+            arr[i]= i*111;
+        }
+    }
     
-    char* temp= str_dest;
+    mymemcpy (alloc, arr, sizeof(int), elemnum);
+    int * temp= alloc + 3;
+    printf("> main -- arr[3]: %d\n", *temp);
     
-    temp++;
-    printf("temp_tagged_1: 0x%" PRIx64 "\n", (uintptr_t)temp);
+    temp= temp + 1; 
+    printf("> main -- arr[4]: %d\n", *temp);
     
-    temp++;
-    printf("temp_tagged_1: 0x%" PRIx64 "\n", (uintptr_t)temp);
-    
-    myfree(str_dest);
+    // out of bounds.
+    temp= temp + 1; 
+    printf("> main-- arr[5](overflow): %d\n", *temp);
+     
+    myfree(alloc);
 
     return 0;
 }
