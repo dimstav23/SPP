@@ -6,6 +6,8 @@ echo ">>>>>>> SPP. smalltest.sh starts.. (exe: example) ...."
 ##   NOTE: SET LLVMROOT PATH BELOW!  ##
 #######################################
 
+##   Jin: This test does NOT instrument malloc.
+
 # LLVMROOT: llvm install dir ################
 
 LLVMROOT=/home/mjnam/.local/spp.llvm.12.0.0/
@@ -23,9 +25,12 @@ WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -W
 
 #   Compile spp hook functions      ###################
 
-bash ./create_spplib.sh
+. ./create_spplib.sh
+
+rm -rf ${TESTSRC}/../obj/*.o;
 
 #   Building examples  #########################
+
 
 CLANG=$(which clang)
 CLANGPP=$(which clang++)
@@ -40,11 +45,10 @@ $OPT_LEVEL \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
 -DTAG_BITS=15 -lpmem -lpmemobj \
-"${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mystrcpy.c" "${TESTSRC}/main.c" \
+"${TESTSRC}/mymalloc.c" "${TESTSRC}/myfree.c" "${TESTSRC}/mymemcpy.c" "${TESTSRC}/main.c" \
 -o example -v
 
 rm -rf /dev/shm/spp_test.pool
-echo ".......... PMDKSRC: ${PMDKSRC}" 
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 

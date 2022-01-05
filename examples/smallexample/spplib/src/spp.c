@@ -159,7 +159,7 @@ __spp_updatetag(void* ptr, int64_t off) {
      
     assert((uintptr_t)ptr == (int64_t)ptr);
     
-    dbg(printf("  __spp_updatetag_DEBUG\n");)
+    dbg(printf("  __spp_updatetag\n");)
     dbg(printf("    ptr:\t0x%.16" PRIXPTR ", off:\t0x%.16" PRIXPTR "\n", (uintptr_t)ptr, off);)
     dbg(printf("    oldtag:\t0x%.16" PRIXPTR ", ", (uint64_t)tag);)
     

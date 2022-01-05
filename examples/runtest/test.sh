@@ -6,6 +6,8 @@ echo ">>>>>>> SPP. smalltest.sh starts.. (exe: example) ...."
 ##   NOTE: SET LLVMROOT PATH BELOW!  ##
 #######################################
 
+##   Jin: This test instruments malloc for tag testing.
+
 # LLVMROOT: llvm install dir ################
 
 LLVMROOT=/home/mjnam/.local/spp.llvm.12.0.0/

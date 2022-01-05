@@ -22,6 +22,6 @@ ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o
 
-$AR q \
-${SPPLIB}/obj/libspphook.a \
-${SPPLIB}/obj/spp_hookobj.o
+#$AR q \
+#${SPPLIB}/obj/libspphook.a \
+#${SPPLIB}/obj/spp_hookobj.o
