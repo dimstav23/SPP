@@ -10,7 +10,7 @@ SPPLIB=../smallexample/spplib/
 
 rm ${SPPLIB}/obj/wrappers.o
 rm ${SPPLIB}/obj/spp_hookobj.o
-rm ${SPPLIB}/obj/libspphook.a
+#rm ${SPPLIB}/obj/libspphook.a
 
 $CLANG \
 ${SPPLIB}/src/local_wrappers_spp.c \
