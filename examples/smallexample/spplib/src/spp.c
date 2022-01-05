@@ -28,7 +28,7 @@ extern "C" {
 #  define dbg(x)
 #endif
 
-#define SPP_DEBUG
+//#define SPP_DEBUG
 #ifdef SPP_DEBUG
 #  define __SPP_ATTR __optnone__ 
 #else
@@ -60,7 +60,7 @@ __spp_cleantag (void * ptr)
     return (void*)(((uintptr_t)ptr) & __SPP_MASK_TAG_OUT);
 }
 
- __attribute__((__used__))
+__attribute__((__used__))
 __attribute__((__SPP_ATTR))
 void *
 __spp_checkbound (void * ptr)
@@ -77,18 +77,19 @@ __spp_checkbound (void * ptr)
     dbg(printf("  __spp_checkbound\n");)
     dbg(printf("    tag: 0x%.16" PRIXPTR "\n", tag);)
     
-    uintptr_t newptr= (uintptr_t)__spp_cleantag(ptr); 
     /////////////////////////////////////////////////// 
     /// Now ptr is a tagged pointer.
     /// TODO: do something with a tagged pointer.   
     /////////////////////////////////////////////////// 
     
     // just testing. modify this.
-    assert(!(tag & 0x8000));
+    // careful with function body optimised away at Opt level 2
     if (tag & 0x8000) {
         printf("\n --->__spp_error: at 0x%.16" PRIXPTR " <--------------\n\n", (uint64_t)ptr); 
-        return ptr;        
+        //assert(!(tag & 0x8000));
+        //return ptr;        
     }
+    uintptr_t newptr= (uintptr_t)__spp_cleantag(ptr); 
     
     // Or, return a tag-free pointer, if you generate one above. 
     return (void*)newptr;
@@ -159,7 +160,7 @@ __spp_updatetag(void* ptr, int64_t off) {
      
     assert((uintptr_t)ptr == (int64_t)ptr);
     
-    dbg(printf("  __spp_updatetag_DEBUG\n");)
+    dbg(printf("  __spp_updatetag\n");)
     dbg(printf("    ptr:\t0x%.16" PRIXPTR ", off:\t0x%.16" PRIXPTR "\n", (uintptr_t)ptr, off);)
     dbg(printf("    oldtag:\t0x%.16" PRIXPTR ", ", (uint64_t)tag);)
     
