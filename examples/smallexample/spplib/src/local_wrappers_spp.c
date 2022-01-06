@@ -282,7 +282,7 @@ __wrap_memchr(void *str, int c, size_t n)
   #endif
   
     if (result != NULL){
-        uintptr_t tag= (uintptr_t)str & (uintptr_t)(~__SPP_MASK_TAG_OUT); 
+        uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
 
@@ -301,7 +301,7 @@ __wrap_strchr (char *str, int c)
     char* result= __real_strchr((char*)__spp_cleantag(str),c);
 
     if (result!=NULL){
-        uintptr_t tag= (uintptr_t)str & (uintptr_t)(~__SPP_MASK_TAG_OUT); 
+        uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
   
