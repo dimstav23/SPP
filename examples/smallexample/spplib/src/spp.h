@@ -21,13 +21,13 @@ extern "C" {
 
 #define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
 
-#define TAGLENGTH 15 // TODO: change to compile parameter
-#define PTRSIZEBITS (64 - TAGLENGTH)
-#define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
-#define TAGMASK (~PTRVALMASK)
+//#define TAGLENGTH 15 // TODO: change to compile parameter
+//#define PTRSIZEBITS (64 - TAGLENGTH)
+//#define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
+//#define TAGMASK (~PTRVALMASK)
 
-#define NUM_USED_BITS  48
-#define NUM_SPARE_BITS 16 
+#define NUM_SPARE_BITS 25 
+#define NUM_USED_BITS (64-NUM_SPARE_BITS) 
 
 extern void * __spp_cleantag (void * ptr);
 extern void * __spp_checkbound (void * ptr);

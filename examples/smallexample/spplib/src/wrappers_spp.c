@@ -9,6 +9,7 @@ extern "C"
 #include <stdlib.h>
 #include <string.h>
 #include "./spp.h"
+#include <inttypes.h>
 
 #define PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS
 
@@ -79,10 +80,26 @@ extern void* __spp_cleantag (void * p);
 ///                                 /// 
 ///////////////////////////////////////
 
+/*
+void* 
+__wrap_malloc (size_t sz)  
+{
+    void * ptr= __real_malloc (sz);
+     
+    uintptr_t tag= ((uintptr_t)sz)<<NUM_USED_BITS;
+    //dbg(printf("malloc_tag: 0x%.16" PRIXPTR ", size: %lu\n", tag, sz);) 
+     
+    uintptr_t tagged= (((uintptr_t)ptr) | tag);
+    dbg(printf("spp_malloc. ptr: 0x%.16" PRIXPTR ", tagged: 0x%.16" PRIXPTR ", sz: %lu\n", (uintptr_t)ptr, tagged, sz);) 
+    
+    return (void*)tagged;
+}
+*/
+
 void 
 __wrap_free (void* base)  
 {
-    printf("SPP: real free is interposed\n");
+    dbg(printf("SPP: real free is interposed\n");)
     __real_free(__spp_cleantag(base)); 
 }
 
@@ -267,7 +284,7 @@ __wrap_memchr(void *str, int c, size_t n)
   #endif
   
     if (result != NULL){
-        uintptr_t tag= (uintptr_t)str & (uintptr_t)(~__SPP_MASK_TAG_OUT); 
+        uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
 
@@ -286,7 +303,7 @@ __wrap_strchr (char *str, int c)
     char* result= __real_strchr((char*)__spp_cleantag(str),c);
 
     if (result!=NULL){
-        uintptr_t tag= (uintptr_t)str & (uintptr_t)(~__SPP_MASK_TAG_OUT); 
+        uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
   
