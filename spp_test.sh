@@ -59,22 +59,61 @@ function pending_should_crash {
   echo -e "${BLUE}$2 pending.${NC}"
 }
 
-CC=$(which clang)
-CXX=$(which clang++)
-LD_GOLD=$(which ld.gold)
+#export CC=$(which clang)
+#export CXX=$(which clang++)
 
-echo "__clang:   $CC"
-echo "__clang++: $CXX"
-echo "__ld.gold: $LD_GOLD"
+echo "__CC:      $(which clang)"
+echo "__CXX:     $(which clang++)"
+echo "__ld.gold: $(which ld.gold)"
+
+# compile runtime lib
+
+cd ./runtime
+
+SPPLIB=./
+
+#rm ${SPPLIB}/obj/wrappers.o
+#rm ${SPPLIB}/obj/spp_hookobj.o
+#rm ${SPPLIB}/obj/libspphook.a
+
+clang++ \
+"${SPPLIB}/src/wrappers_spp.c" \
+-c -o \
+${SPPLIB}/obj/wrappers.o 
+
+clang++ -emit-llvm \
+${SPPLIB}/src/spp.c \
+-c -o \
+${SPPLIB}/obj/spp_hookobj.o 
+
+cd ../
+
+# end of compiling runtime lib
+
+WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
+
+CFLAGS="-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so"
+CXXFLAGS="-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so"
+LDFLAGS="-fuse-ld=gold ${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o -Xlinker ${SPPLIBOBJ}/spp_hookobj.o"
 
 cd "$(dirname "$0")"
 mkdir -p build
 cd build
 if [ "$NDEBUG" = "1" ]
 then
-    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    echo "___N Debug____"
+    echo "__CLANG:  $(which clang)"
+    echo "__GOLD:   $(which ld.gold)"
+#    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 else
-    cmake .. -DCMAKE_BUILD_TYPE=Debug
+  cmake .. -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_BUILD_TYPE=Debug
+  #cmake ..  -DCMAKE_BUILD_TYPE=Debug
+    echo "___Debug____"
+    echo "__CLANG: $(which clang)"
+    echo "__GOLD:  $(which ld.gold)"
+#    cmake .. -DCMAKE_BUILD_TYPE=Debug
 fi
 make -j7
 cd tests

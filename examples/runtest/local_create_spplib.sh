@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 ####  Compile spp hooks  ############
 
 CLANG=$(which clang)
@@ -22,6 +22,7 @@ ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o
 
+set +e
 #$AR q \
 #${SPPLIB}/obj/libspphook.a \
 #${SPPLIB}/obj/spp_hookobj.o
