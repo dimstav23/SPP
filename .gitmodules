@@ -1,6 +1,7 @@
 [submodule "pmdk"]
 	path = pmdk
 	url = git@github.com:alexandrinapanfil/pmdk.git
+	branch = spp-main
 [submodule "llvm-project"]
 	path = llvm-project
 	url = git@github.com:poolmoo/llvm-project.git 
