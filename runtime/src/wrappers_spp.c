@@ -259,6 +259,7 @@ __wrap_strncpy(char * dest, char * src,size_t n)
 int 
 __wrap_memcmp(void *str1, void *str2, size_t n)
 {
+    printf("__wrap_memcmp/ p1: 0x%.16" PRIXPTR ", p2: 0x%.16" PRIXPTR ", sz: %lu\n", (uintptr_t)str1, (uintptr_t)str2, n);
     return __real_memcmp ((void*)__spp_cleantag(str1), 
                           (void*)__spp_cleantag(str2),n);
 }

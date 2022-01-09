@@ -19,7 +19,7 @@ extern "C" {
 #include <math.h>
 //#include <stdbool.h>
 
-#define __SPP_MASK_TAG_OUT 0xFFFFFFFFFFFF
+#define __SPP_MASK_TAG_OUT 0x7FFFFFFFFF
 
 //#define TAGLENGTH 15 // TODO: change to compile parameter
 //#define PTRSIZEBITS (64 - TAGLENGTH)

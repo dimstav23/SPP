@@ -89,30 +89,33 @@ ${SPPLIB}/obj/spp_hookobj.o
 cd ../
 
 # end of compiling runtime lib
+SPPLIBOBJ='/home/mjnam/tools/clangllvm/spp-pass/runtime/obj/'
+WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul'   
 
-WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"   
-
-CFLAGS="-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so"
-CXXFLAGS="-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so"
-LDFLAGS="-fuse-ld=gold ${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o -Xlinker ${SPPLIBOBJ}/spp_hookobj.o"
+CFLAGS='-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so'
+CXXFLAGS='-flto -O2 -Xclang -load -Xclang /home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so -include /home/mjnam/tools/clangllvm/spp-pass/runtime/src/spp.h'
+LDFLAGS='-fuse-ld=gold -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wr  ap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-  wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/wrappers.o -Xlinker /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/spp_hookobj.o'
+echo "1__CXXFLAGS: ${CXXFLAGS}"
 
 cd "$(dirname "$0")"
 mkdir -p build
 cd build
+
+echo "__CLANG:    $(which clang)"
+echo "__GOLD:     $(which ld.gold)"
+echo "__CXXFLAGS: ${CXXFLAGS}"
+echo "__LDFLAGS:  ${LDFLAGS}"
+
 if [ "$NDEBUG" = "1" ]
 then
-  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo
   #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    echo "___N Debug____"
-    echo "__CLANG:  $(which clang)"
-    echo "__GOLD:   $(which ld.gold)"
+    echo "___N Debug_________________"
 #    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 else
-  cmake .. -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_BUILD_TYPE=Debug
+  cmake .. -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=Debug
   #cmake ..  -DCMAKE_BUILD_TYPE=Debug
-    echo "___Debug____"
-    echo "__CLANG: $(which clang)"
-    echo "__GOLD:  $(which ld.gold)"
+    echo "___Debug___________________"
 #    cmake .. -DCMAKE_BUILD_TYPE=Debug
 fi
 make -j7
