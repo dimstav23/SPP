@@ -15,15 +15,14 @@ function (spp_test target)
         "-flto" "-O2" 
         "-load" "/home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so" 
         "-include" "/home/mjnam/tools/clangllvm/spp-pass/runtime/src/spp.h"
-        #        -ggdb 
+        #-ggdb 
     -v)
     target_link_options(
         "${target}" 
         PRIVATE 
         #-ggdb 
         -fuse-ld=gold 
-        -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul 
-        /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/wrappers.o 
+        -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/wrappers.o 
         -Xlinker /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/spp_hookobj.o 
         -v
     )

@@ -72,7 +72,7 @@ __real_free (void *ptr);
 ///                                 /// 
 ///////////////////////////////////////
 
-extern void* __spp_cleantag (void * p);  
+extern void* __spp_cleantag_external (void * p);  
 
 ///////////////////////////////////////
 ///                                 /// 
@@ -100,7 +100,7 @@ void
 __wrap_free (void* base)  
 {
     dbg(printf("SPP: real free is interposed\n");)
-    __real_free(__spp_cleantag(base)); 
+    __real_free(__spp_cleantag_external(base)); 
 }
 
 /////////////////////////////////
@@ -130,9 +130,9 @@ size_t __real_strlen  (const char *str);
 size_t 
 __wrap_strlen(const char * str)
 {
-  dbg(printf("HOOK Strlen at %p\n", str);)
+  dbg(printf("__wrap_strlen at %p\n", str);)
   
-  return __real_strlen((const char*)__spp_cleantag((void*)str));
+  return __real_strlen((const char*)__spp_cleantag_external((void*)str));
 }
 
 ////////////////////////
@@ -151,7 +151,7 @@ __wrap_strcpy(char * dest, char * src)
     // then return untagged_dest. 
     // (untagging src is handled in untag hook)
 
-    dbg(printf("HOOK strcpy at d: %p, s: %p\n", dest, src);)
+    dbg(printf("__wrap_strcpy at d: %p, s: %p\n", dest, src);)
     dbg(printf("\tsrc: %s\n", src);)
 
     // strlen is hooked at link time at the moment, 
@@ -159,13 +159,13 @@ __wrap_strcpy(char * dest, char * src)
   
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    __real_strcpy ((char*)__spp_cleantag(dest), 
-                   (char*)__spp_cleantag(src));
+    __real_strcpy ((char*)__spp_cleantag_external(dest), 
+                   (char*)__spp_cleantag_external(src));
   
   #else  
     
     __real_strcpy((char*)MIU_check_mem_access(dest,strlen(src)), 
-                  (char*)__spp_cleantag(src));
+                  (char*)__spp_cleantag_external(src));
     
   
   #endif  // ENABLE_SPACEMIU, PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS
@@ -186,11 +186,11 @@ __wrap_strcpy(char * dest, char * src)
 int 
 __wrap_strcmp(char * str1, char * str2)
 {
-    char * untagstr1= (char*)__spp_cleantag(str1); 
-    char * untagstr2= (char*)__spp_cleantag(str2); 
+    char * untagstr1= (char*)__spp_cleantag_external(str1); 
+    char * untagstr2= (char*)__spp_cleantag_external(str2); 
     
-    return __real_strcmp ((char*)__spp_cleantag(str1), 
-                         (char*)__spp_cleantag(str2)); 
+    return __real_strcmp ((char*)__spp_cleantag_external(str1), 
+                         (char*)__spp_cleantag_external(str2)); 
 }
 
 
@@ -206,8 +206,8 @@ __wrap_strncmp(char *str1, char *str2, size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    char * untagstr1= (char*)__spp_cleantag(str1);
-    char * untagstr2= (char*)__spp_cleantag(str2);
+    char * untagstr1= (char*)__spp_cleantag_external(str1);
+    char * untagstr2= (char*)__spp_cleantag_external(str2);
 
   #else
      
@@ -234,8 +234,8 @@ __wrap_strncpy(char * dest, char * src,size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-   __real_strncpy ((char*)__spp_cleantag((void*)dest),
-                    (char*)__spp_cleantag((void*)src),
+   __real_strncpy ((char*)__spp_cleantag_external((void*)dest),
+                    (char*)__spp_cleantag_external((void*)src),
                      n); 
 
   #else
@@ -259,9 +259,9 @@ __wrap_strncpy(char * dest, char * src,size_t n)
 int 
 __wrap_memcmp(void *str1, void *str2, size_t n)
 {
-    printf("__wrap_memcmp/ p1: 0x%.16" PRIXPTR ", p2: 0x%.16" PRIXPTR ", sz: %lu\n", (uintptr_t)str1, (uintptr_t)str2, n);
-    return __real_memcmp ((void*)__spp_cleantag(str1), 
-                          (void*)__spp_cleantag(str2),n);
+    dbg(printf("__wrap_memcmp/ p1: 0x%.16" PRIXPTR ", p2: 0x%.16" PRIXPTR ", sz: %lu\n", (uintptr_t)str1, (uintptr_t)str2, n);)
+    return __real_memcmp ((void*)__spp_cleantag_external(str1), 
+                          (void*)__spp_cleantag_external(str2),n);
 }
 
 ////////////////////////
@@ -276,7 +276,7 @@ __wrap_memchr(void *str, int c, size_t n)
   
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    void * result= __real_memchr((void*)__spp_cleantag(str),c,n); 
+    void * result= __real_memchr((void*)__spp_cleantag_external(str),c,n); 
   
   #else 
     
@@ -288,7 +288,8 @@ __wrap_memchr(void *str, int c, size_t n)
         uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
-
+    dbg(printf("__wrap_memchr.\nstr: 0x%.16" PRIXPTR "\n", (uintptr_t)str);)
+    dbg(printf("\tresult: 0x%.16" PRIXPTR "\n", (uintptr_t)result);)
     return result; 
 }
 
@@ -301,12 +302,14 @@ __wrap_memchr(void *str, int c, size_t n)
 char * 
 __wrap_strchr (char *str, int c)
 {
-    char* result= __real_strchr((char*)__spp_cleantag(str),c);
+    char* result= __real_strchr((char*)__spp_cleantag_external(str),c);
 
     if (result!=NULL){
         uintptr_t tag= (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
         result= (char*)(tag|(uintptr_t)result); 
     }
+    dbg(printf("__wrap_strchr.\nstr: 0x%.16" PRIXPTR "\n", (uintptr_t)str);)
+    dbg(printf("\tresult: 0x%.16" PRIXPTR "\n", (uintptr_t)result);)
   
   return result; 
 
@@ -327,8 +330,8 @@ __wrap_strncat (char *dest, char *src, size_t n)
 
   #if defined(ENABLE_SPACEMIU) || defined(PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS)
     
-    __real_strncat((char*)__spp_cleantag(dest),
-                    (char*)__spp_cleantag(src), n);
+    __real_strncat((char*)__spp_cleantag_external(dest),
+                    (char*)__spp_cleantag_external(src), n);
   
   #else 
 
@@ -348,11 +351,14 @@ __wrap_strncat (char *dest, char *src, size_t n)
       #endif
     }
     __real_strncat ((char*)MIU_check_mem_access(dest,destlen+srclen),
-                    (char*)__spp_cleantag(src), n);
+                    (char*)__spp_cleantag_external(src), n);
 
   #endif // ENABLE_SPACEMIU || PErform only tagging
  
   assert((uintptr_t)dest == (uintptr_t)temp); 
+  
+  dbg(printf("__wrap_strncat.\ndest: 0x%.16" PRIXPTR "\n", (uintptr_t)dest);)
+  dbg(printf("\tsrc: 0x%.16" PRIXPTR "\n", (uintptr_t)src);)
   
   return dest; 
 
@@ -368,8 +374,8 @@ __wrap_strncat (char *dest, char *src, size_t n)
 long int 
 __wrap_strtol (char *str, char **endptr, int base)
 {
-    return __real_strtol((char*)__spp_cleantag(str), 
-                      (char**)__spp_cleantag(endptr), 
+    return __real_strtol((char*)__spp_cleantag_external(str), 
+                      (char**)__spp_cleantag_external(endptr), 
                       base);
 }
 

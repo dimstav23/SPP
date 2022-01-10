@@ -29,7 +29,11 @@ extern "C" {
 #define NUM_SPARE_BITS 25 
 #define NUM_USED_BITS (64-NUM_SPARE_BITS) 
 
+#define NUM_X86_SPARE_BITS 16 
+#define NUM_X86_USED_BITS (64-NUM_X86_SPARE_BITS) 
+
 extern void * __spp_cleantag (void * ptr);
+extern void * __spp_cleantag_external (void * ptr);
 extern void * __spp_checkbound (void * ptr);
 
 extern void* __spp_updatetag(void* ptr, int64_t off);

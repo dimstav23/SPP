@@ -21,14 +21,14 @@ extern "C" {
 ///      Debug Macro        ///
 ///////////////////////////////
 
-//#define SPP_PRINT_DEBUG
+#define SPP_PRINT_DEBUG
 #ifdef SPP_PRINT_DEBUG
 #  define dbg(x) x
 #else
 #  define dbg(x)
 #endif
 
-//#define SPP_DEBUG
+#define SPP_DEBUG
 #ifdef SPP_DEBUG
 #  define __SPP_ATTR __optnone__ 
 #else
@@ -53,13 +53,47 @@ __spp_extract_tagval (void *ptr)
 
 __attribute__((__used__))
 __attribute__((__SPP_ATTR))
+uintptr_t
+__spp_extract_x86_tagval (void *ptr)
+{
+    assert(NUM_X86_USED_BITS==48);
+    return ((uintptr_t)ptr)>>NUM_X86_USED_BITS;
+}
+
+__attribute__((__used__))
+__attribute__((__SPP_ATTR))
 void *
 __spp_cleantag (void * ptr)
 {
     //return (void*)((((uintptr_t)ptr)<<NUM_SPARE_BITS)>>NUM_SPARE_BITS);
+    dbg(printf("    __spp_cleantag\n");)
+    dbg(printf("      ptr: 0x%.16" PRIXPTR "\n", (uintptr_t)ptr);)
+
+    if (!__spp_extract_x86_tagval(ptr)) {
+        dbg(printf("    :: skip. volptr\n");)
+       return ptr;  
+    }
     uintptr_t ptrval= ((((uintptr_t)ptr)<<NUM_SPARE_BITS)>>NUM_SPARE_BITS);
-    dbg(printf("  __spp_cleantag\n");)
-    dbg(printf("    ptrval: 0x%.16" PRIXPTR ", ptr: %p\n", ptrval, ptr);)
+    dbg(printf("      newptr: 0x%.16" PRIXPTR "\n", ptrval);)
+    return (void*)ptrval;
+}
+
+ __attribute__((__used__))
+__attribute__((__SPP_ATTR))
+void *
+__spp_cleantag_external (void * ptr)
+{
+    // if upper 16 bits are tag-free, returns;
+    dbg(printf("  __spp_cleantag_external --------------\n");)
+    dbg(printf("    ptr: 0x%.16" PRIXPTR "\n", (uintptr_t)ptr);)
+    
+    if (!__spp_extract_x86_tagval(ptr)) {
+        dbg(printf("    :: Skip. volptr\n");)
+        return ptr;  
+    }
+    
+    uintptr_t ptrval= ((((uintptr_t)ptr)<<NUM_SPARE_BITS)>>NUM_SPARE_BITS);
+    dbg(printf("    newptr: 0x%.16" PRIXPTR "\n", ptrval);)
     return (void*)ptrval;
 }
 
@@ -72,32 +106,31 @@ __spp_checkbound (void * ptr)
     // when performing bit operation.
     // Especially, shift opreations.
     
-    uintptr_t tag= __spp_extract_tagval(ptr);
-    
-    dbg(printf("  __spp_checkbound\n");)
-    dbg(printf("    tag: 0x%.16" PRIXPTR "\n", tag);)
+    dbg(printf("  __spp_checkbound______________\n");)
+    dbg(printf("    ptr: 0x%.16" PRIXPTR "\n", (uintptr_t)ptr);)
     
     /// Returns, if it's tag-free. ///
-    if (!tag) return ptr;
-     
+    if (!__spp_extract_x86_tagval(ptr)) {
+        dbg(printf("    :: Skip. volptr \n");)
+        return ptr;
+    } 
     
-    /////////////////////////////////////////////////// 
+    
+    uintptr_t tag= __spp_extract_tagval(ptr);
+    dbg(printf("    tag: 0x%.16" PRIXPTR "\n", tag);)
+    
     /// Now ptr is a tagged pointer.
-    /// TODO: do something with a tagged pointer.   
-    /////////////////////////////////////////////////// 
     
     // just testing. modify this.
     // careful with function body optimised away at Opt level 2
-    if (tag & 0x8000) {
+    if (tag & 0x1000000) {
         printf("\n --->__spp_error: at 0x%.16" PRIXPTR " <--------------\n\n", (uint64_t)ptr); 
         //assert(!(tag & 0x8000));
         //return ptr;        
     }
     return __spp_cleantag(ptr); 
     
-    // Or, return a tag-free pointer, if you generate one above. 
 }
-
 
 __attribute__((__used__))
 __attribute__((__SPP_ATTR))
@@ -110,16 +143,20 @@ __spp_updatetag(void* ptr, int64_t off) {
     //  when performing bit operation.           //
     //  Especially, shift opreations.            //
     ///////////////////////////////////////////////
-    
-    dbg(printf("  __spp_updatetag\n");)
+    dbg(printf("  __spp_updatetag______________\n");)
     dbg(printf("    ptr:\t0x%.16" PRIXPTR ", off:\t0x%.16" PRIXPTR "\n", (uintptr_t)ptr, off);)
+    
+    if (!__spp_extract_x86_tagval(ptr))   {
+        dbg(printf("    :: Skip. volptr\n"); )
+        return ptr; 
+    }
+    
+    
     int64_t tag= (int64_t)__spp_extract_tagval(ptr); 
     
     dbg(printf("    oldtag:\t0x%.16" PRIXPTR ", ", (uint64_t)tag);)
     
     /// Returns, if it's tag-free. ///
-    if (!(uintptr_t)tag)   return ptr; 
-    
     
     tag= tag + off;  
     
