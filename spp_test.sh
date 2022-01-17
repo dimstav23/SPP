@@ -112,20 +112,23 @@ echo "1__CXXFLAGS: ${CXXFLAGS}"
 cd "$(dirname "$0")"
 mkdir -p build
 cd build
+make clean
 
 echo "__CLANG:    $(which clang)"
 echo "__GOLD:     $(which ld.gold)"
 echo "__CXXFLAGS: ${CXXFLAGS}"
 echo "__LDFLAGS:  ${LDFLAGS}"
 
+NDEBUG=1;
+
 if [ "$NDEBUG" = "1" ]
 then
-  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" #-DCMAKE_BUILD_TYPE=RelWithDebInfo 
+  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
   #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    echo "___N Debug_________________"
+    echo "___N_Debug_________________"
 #    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 else
-  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" #-DCMAKE_BUILD_TYPE=RelWithDebInfo 
+  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
   #cmake ..  -DCMAKE_BUILD_TYPE=Debug
     echo "___Debug___________________"
 #    cmake .. -DCMAKE_BUILD_TYPE=Debug
