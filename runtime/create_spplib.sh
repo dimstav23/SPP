@@ -10,18 +10,20 @@ AR=$(which llvm-ar)
 echo "__CLANG: $CLANG"
 echo "__ld.gold: $(which ld.gold)"
 
-SPPLIB=~/tools/clangllvm/spp-pass/runtime/
+SPPLIB=.
 
-rm ${SPPLIB}/obj/wrappers.o
-rm ${SPPLIB}/obj/spp_hookobj.o
+mkdir -p ${SPPLIB}/obj
+
+[ -e ${SPPLIB}/obj/wrappers.o ] && rm ${SPPLIB}/obj/wrappers.o
+[ -e ${SPPLIB}/obj/spp_hookobj.o ] && rm ${SPPLIB}/obj/spp_hookobj.o
 #rm ${SPPLIB}/obj/libspphook.a
 
-$CLANGPP \
+$CLANG \
 ${SPPLIB}/src/wrappers_spp.c \
 -c -o \
 ${SPPLIB}/obj/wrappers.o 
 
-$CLANGPP -emit-llvm \
+$CLANG -emit-llvm \
 ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o 
