@@ -59,22 +59,23 @@ function pending_should_crash {
   echo -e "${BLUE}$2 pending.${NC}"
 }
 
-SPPLIBOBJ='./runtime/obj'
-
-WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul'   
-
-CFLAGS='-flto -O2 -Xclang -load -Xclang ./llvm-project/build/lib/LLVMSPP.so -include ./runtime/src/spp.h'
-
-CXXFLAGS='-flto -O2 -Xclang -load -Xclang ./llvm-project/build/lib/LLVMSPP.so -include ./runtime/src/spp.h'
-
-LDFLAGS='-fuse-ld=gold -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul ./runtime/obj/wrappers.o -Xlinker ./runtime/obj/spp_hookobj.o'
-
-echo "1__CXXFLAGS: ${CXXFLAGS}"
+#get the absolute path of the base of spp project
+SPPBASE=$(realpath "$(dirname "$0")")
 
 cd "$(dirname "$0")"
 mkdir -p build
 cd build
 [ -e Makefile ] && make clean
+
+SPPLIBOBJ=${SPPBASE}/runtime/obj
+
+WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul'   
+
+CFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+
+CXXFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+
+LDFLAGS='-fuse-ld=gold -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul '${SPPBASE}'/runtime/obj/wrappers.o -Xlinker '${SPPBASE}'/runtime/obj/spp_hookobj.o'
 
 echo "__CLANG:    $(which clang)"
 echo "__CLANG++:  $(which clang++)"
@@ -86,11 +87,11 @@ NDEBUG=1;
 
 if [ "$NDEBUG" = "1" ]
 then
-  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+  cmake .. -DSPPBASE="${SPPBASE}" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
     #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
     echo "___N_Debug_________________"
 else
-  cmake ..  -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+  cmake ..  -DSPPBASE="${SPPBASE}" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
     #cmake ..  -DCMAKE_BUILD_TYPE=Debug
     echo "___Debug___________________"
 fi

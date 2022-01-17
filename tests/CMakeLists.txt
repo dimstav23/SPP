@@ -8,29 +8,35 @@ cmake_minimum_required (VERSION 3.1)
 
 function (spp_test target)
 	include(CheckIPOSupported)
-    add_executable("${target}" "${target}.cpp")
+    	
+	add_executable("${target}" "${target}.cpp")
+	
 	target_compile_options(
         "${target}" 
         PRIVATE 
-        "-flto" "-O2" 
-        "-load" "/home/mjnam/.local/spp.llvm.12.0.0/lib/LLVMSPP.so" 
-        "-include" "/home/mjnam/tools/clangllvm/spp-pass/runtime/src/spp.h"
-        #-ggdb 
-    -v)
-    target_link_options(
+        "-flto" 
+	"-O2" 
+	"-load" "${SPPBASE}/llvm-project/build/lib/LLVMSPP.so" 
+	"-include" "${SPPBASE}/runtime/src/spp.h"
+    	-v)
+    	
+	target_link_options(
         "${target}" 
         PRIVATE 
-        #-ggdb 
         -fuse-ld=gold 
-        -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/wrappers.o 
-        -Xlinker /home/mjnam/tools/clangllvm/spp-pass/runtime/obj/spp_hookobj.o 
-        -v
-    )
+        -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp 
+	-Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen 
+	-Wl,-wrap,strchrnul ${SPPBASE}/runtime/obj/wrappers.o 
+        -Xlinker ${SPPBASE}/runtime/obj/spp_hookobj.o 
+        -v)
+
 	target_link_libraries(
         "${target}" 
         libpmemobj libpmem 
         ${CMAKE_DL_LIBS} 
-        ${CMAKE_THREAD_LIBS_INIT} ndctl daxctl)
+        ${CMAKE_THREAD_LIBS_INIT} 
+	ndctl daxctl)
+	
 	target_include_directories(
         "${target}" 
         PUBLIC 
