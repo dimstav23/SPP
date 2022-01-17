@@ -59,14 +59,22 @@ function pending_should_crash {
   echo -e "${BLUE}$2 pending.${NC}"
 }
 
+CC=$(which clang)
+CXX=$(which clang++)
+LD_GOLD=$(which ld.gold)
+
+echo "__clang:   $CC"
+echo "__clang++: $CXX"
+echo "__ld.gold: $LD_GOLD"
+
 cd "$(dirname "$0")"
 mkdir -p build
 cd build
 if [ "$NDEBUG" = "1" ]
 then
-  cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 else
-  cmake .. -DCMAKE_BUILD_TYPE=Debug
+    cmake .. -DCMAKE_BUILD_TYPE=Debug
 fi
 make -j7
 cd tests
