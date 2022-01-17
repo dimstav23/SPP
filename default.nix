@@ -25,6 +25,7 @@ pkgs.mkShell {
     export CC=${pkgs.gcc}/bin/gcc
     export CMAKE_CXX_COMPILER=${pkgs.gcc}/bin/g++
     export CXX=${pkgs.gcc}/bin/g++
+    export BINUTILS_DIR=${pkgs.binutils-unwrapped}/include
   '';
 
   ## Disable mapping address randomization and provide PMDK with appropriately low mapping address hint:
