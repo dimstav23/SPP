@@ -10,7 +10,7 @@ Initialise the submodules of the repository:
 git submodule update --init
 ```
 
-(optionally) To get all build dependencies to build this project, one can use [nix](https://nixos.org).
+To get all build dependencies to build this project, one can use [nix](https://nixos.org).
 A tutorial for nix can be found at https://nix.dev/
 
 ```console
@@ -18,7 +18,11 @@ $ nix-shell
 nix-shell> # in this shell all build dependencies are present
 ```
 
-Compile the `pmdk` fork:
+The nix-shell already exports the ```CC```, ```CXX```, ```CMAKE_C_COMPILER```, ```CMAKE_CXX_COMPILER```, ```BINUTILS_DIR``` environment variables.
+
+#### Inside the nix-shell:
+
+(1) Compile the `pmdk` fork:
 
 ```
 cd pmdk
@@ -26,12 +30,9 @@ git checkout spp-main
 make -j$(nproc)
 ```
 
-(1) Compile `LLVM` with gold plugin (Warning! High memory consumption):
+(2) Compile `LLVM` with gold plugin (Warning! High memory consumption):
 https://llvm.org/docs/GoldPlugin.html
 ```
-CC=/path/to/gcc 
-CXX=/path/to/g++
-
 cd llvm-project;
 mkdir build;
 mkdir install;
