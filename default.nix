@@ -17,7 +17,8 @@ pkgs.mkShell {
     pkgs.cmake
     pkgs.dos2unix
     pkgs.binutils-unwrapped
-    #(pkgs.callPackage ./impure-clang.nix {})
+    pkgs.gdb
+    (pkgs.callPackage ./impure-clang.nix {})
   ];
 
   shellHook = ''
