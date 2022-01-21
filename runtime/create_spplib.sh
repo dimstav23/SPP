@@ -10,7 +10,7 @@ AR=$(which llvm-ar)
 echo "__CLANG: $CLANG"
 echo "__ld.gold: $(which ld.gold)"
 
-SPPLIB=.
+SPPLIB="$(realpath "$(dirname "$0")")"
 
 mkdir -p ${SPPLIB}/obj
 
@@ -27,6 +27,7 @@ $CLANG -emit-llvm \
 ${SPPLIB}/src/spp.c \
 -c -o \
 ${SPPLIB}/obj/spp_hookobj.o 
+
 
 #$AR q \
 #${SPPLIB}/obj/libspphook.a \

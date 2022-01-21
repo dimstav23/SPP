@@ -2,7 +2,7 @@
 
 Compiler pass and associated runtime for Safe Persistent Pointers
 
-### Installation instructions
+## Installation instructions
 
 Initialise the submodules of the repository:
 
@@ -20,15 +20,17 @@ nix-shell> # in this shell all build dependencies are present
 
 The nix-shell already exports the ```CC```, ```CXX```, ```CMAKE_C_COMPILER```, ```CMAKE_CXX_COMPILER```, ```BINUTILS_DIR``` environment variables.
 
-#### Inside the nix-shell:
+### Inside the nix-shell:
 
 (1) Compile the `pmdk` fork:
 
 ```
 cd pmdk
 git checkout spp-main
-make -j$(nproc)
+make -j$(nproc) TAG_BITS=xx
 ```
+Optional compile parameter for `pmdk`: `TAG_BITS` to determine the tag size for the returned tagged pointer structure. 
+
 
 (2) Compile `LLVM` with gold plugin (Warning! High memory consumption):
 https://llvm.org/docs/GoldPlugin.html
@@ -51,7 +53,7 @@ make -j$(nproc);
 export PATH=$PATH:$PWD/bin
 ```
 
-### Usage instructions
+## Usage instructions
 
 Disable mapping address randomization and provide PMDK with appropriately low mapping address hint ([src](https://pmem.io/pmdk/manpages/linux/v1.0/libpmem.3.html)):
 ```
@@ -62,3 +64,32 @@ If your machine is not equipped with PM, export the following flag to use `flush
 ```
 export PMEM_IS_PMEM_FORCE=1
 ```
+
+### Minimal example execution
+
+In the `examples` folder you can find a minimal example which can be built and run with the launch.sh script.
+```
+cd $PROJECT_ROOT/examples/
+./launch.sh
+```
+The script also produces the original and transformed LLVM-IR for the simple `example.c` code.
+
+#### Note
+Currently the passes produce a lot of debug messages. In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
+
+## Code structure
+
+### Directories
+`llvm-project`: llvm fork that contains and registers the passes needed for SPP
+
+`runtime`: runtime library for the hook functions
+
+`pmdk`: pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`
+
+### Important files
+
+`runtime/src/spp.c`: hook functions implementation
+
+`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`: SPP module pass implementation
+
+`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation
