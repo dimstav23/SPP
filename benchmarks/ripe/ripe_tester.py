@@ -17,7 +17,7 @@
 
 import os
 import sys
-from sets import Set
+# from sets import Set
 
 compilers = ["gcc", "clang"]
 
@@ -49,6 +49,9 @@ print_OK = True
 print_SOME = True
 print_FAIL = False
 summary_format = "bash"
+result_file = ""
+tmp_result = "/tmp/tmp_result"
+pmdk_path = os.getcwd()+"../../src/nondebug" #default value for pmdk library path
 
 if len(sys.argv) < 2:
   print("Usage: python "+sys.argv[0] + "[direct|indirect|both] <number of times to repeat each test>")
@@ -87,7 +90,25 @@ else:
           print_FAIL = False
       elif "format" in arg:
         summary_format = arg
+      elif arg == "-o":
+        summary_format = "file"
+        i+=1
+        if (i >= len(sys.argv)):
+          print("out argument must be followed by a path for the results output")
+          exit()
+        result_file = sys.argv[i]
+      elif arg == "-pmdk":
+        i+=1
+        if (i >= len(sys.argv)):
+          print("pmdk argument must be followed by a path for the pmdk libraries directory")
+          exit()
+        pmdk_path = sys.argv[1]
+      
       i+=1
+  
+  user = os.popen('whoami').read()
+  if ("safepm_user" in user):
+    os.system("sudo chmod 777 /mnt/ripe")
 
 # Colored text
 def colored_string(string, color, size=0):
@@ -160,6 +181,7 @@ def analyze_log2(additional_info):
 if not os.path.exists("/tmp/ripe-eval"):
   os.system("mkdir /tmp/ripe-eval")
 
+progress = 0
 for compiler in compilers:
   total_ok = 0
   total_fail = 0
@@ -170,6 +192,7 @@ for compiler in compilers:
       for ptr in code_ptr:
         for attack in attacks:
           for func in funcs:
+            progress = progress + 1
             i = 0
             s_attempts = 0
             attack_possible = 1
@@ -177,10 +200,10 @@ for compiler in compilers:
             while i < repeat_times:
               i += 1
 
-              os.system("rm /tmp/ripe_log")
+              os.system("rm -f /tmp/ripe_log")
               parameters = (tech,loc,ptr,attack,func)
               parameters_str = "-t %8s -l %5s -c %18s -i %16s -f %8s" % parameters
-              sys.stdout.write('... Running %s ...\r' % parameters_str)
+              sys.stdout.write('... Running %s %d/%d...\r' % (parameters_str, progress, len(techniques) * len(locations) * len(code_ptr) * len(attacks) * len(funcs)))
               sys.stdout.flush()
               os.system("echo "+parameters_str+">> /tmp/ripe_log")
               ## Valgrind - Memcheck
@@ -188,7 +211,7 @@ for compiler in compilers:
               ## Dr. Memory
               # cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | drmemory -no_check_uninitialized -crash_at_error -- ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
 
-              cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
+              cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | LD_LIBRARY_PATH="+pmdk_path+" ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
               os.system(cmdline)
 
               log_entry = open("/tmp/ripe_log","r").read()
@@ -242,13 +265,12 @@ for compiler in compilers:
           'total_np': total_np}
 
 total_attacks = total_ok + total_some + total_fail + total_np
-if "bash" in summary_format:
-  for compiler in results:
-    print("\n"+bold("||Summary "+compiler+"||"))
-    total_attacks = results[compiler]["total_ok"] + results[compiler]["total_some"] + results[compiler]["total_fail"]
-    print("OK: %s SOME: %s FAIL: %s NP: %s Total Attacks: %s\n\n"% (
-      results[compiler]["total_ok"], results[compiler]["total_some"], results[compiler]["total_fail"],
-      results[compiler]["total_np"], total_attacks))
+for compiler in results:
+  print("\n"+bold("||Summary "+compiler+"||"))
+  total_attacks = results[compiler]["total_ok"] + results[compiler]["total_some"] + results[compiler]["total_fail"]
+  print("OK: %s SOME: %s FAIL: %s NP: %s Total Attacks: %s\n\n"% (
+    results[compiler]["total_ok"], results[compiler]["total_some"], results[compiler]["total_fail"],
+    results[compiler]["total_np"], total_attacks))
 
 if "latex" in summary_format:
   print("\\begin{tabular}{|c|c|c|c|}\\hline\n"
@@ -262,5 +284,15 @@ if "latex" in summary_format:
       ))
   print("\\end{tabular}\n")
 
-
-
+if "file" in summary_format:
+  original_stdout = sys.stdout
+  with open(tmp_result, 'w+') as f:
+    sys.stdout = f
+    for compiler in results:
+      print("\n"+bold("||Summary "+compiler+"||"))
+      total_attacks = results[compiler]["total_ok"] + results[compiler]["total_some"] + results[compiler]["total_fail"]
+      print("OK: %s SOME: %s FAIL: %s NP: %s Total Attacks: %s\n\n"% (
+        results[compiler]["total_ok"], results[compiler]["total_some"], results[compiler]["total_fail"],
+        results[compiler]["total_np"], total_attacks))
+  sys.stdout = original_stdout
+  os.system("sudo mv " + tmp_result + " " + result_file)

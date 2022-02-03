@@ -1,16 +1,48 @@
 GCC=gcc
-CLG=clang
+CLANG:=$(shell which clang)
+CLANGPP:=$(shell which clang++)
 # Add debug info and enable ASan
-CFLAGS=-g -fsanitize=address
-LFLAGS=-lpmemobj
+# CFLAGS=-g -fsanitize=address
+
+
+SPPROOT:=$(shell pwd)/../..
+LLVMROOT=${SPPROOT}/llvm-project
+PMDKSRC=${SPPROOT}/pmdk/src
+
+OPT_LEVEL=-O1
+
+SPPLIB=${SPPROOT}/runtime
+SPPLIBSRC=${SPPLIB}/src
+SPPLIBOBJ=${SPPLIB}/obj
+TESTSRC=${SPPROOT}/examples
+
+WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+           -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
+           -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
+           -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul
+
+LFLAGS=-lpmem -lpmemobj
+INCLUDEDIR=-I${PMDKSRC}/include/
+LDFLAGS=-L${PMDKSRC}/nondebug/
+
+CFLAGS=${OPT_LEVEL} \
+-flto \
+-fuse-ld=gold \
+-Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so  \
+-include ${SPPLIBSRC}/spp.h \
+-I${PMDKSRC}/include/ -L${PMDKSRC}/nondebug/ \
+${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o \
+-Xlinker ${SPPLIBOBJ}/spp_hookobj.o \
+-DTAG_BITS=24
+
 
 all: build/gcc_attack_gen build/clang_attack_gen
 
-build/gcc_attack_gen: ./source/attack_gen.c
-	${GCC} ${CFLAGS} ./source/attack_gen.c -o ./build/gcc_attack_gen ${LFLAGS}
+build/gcc_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
+	${GCC} ./source/attack_gen_pmemobj_heap.c ${INCLUDEDIR} ${LDFLAGS} ${LFLAGS} -o ./build/gcc_attack_gen_pmemobj_heap 
 
-build/clang_attack_gen: ./source/attack_gen.c
-	${CLG} ${CFLAGS} ./source/attack_gen.c -o ./build/clang_attack_gen ${LFLAGS}
+build/clang_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
+	${CLANG} ${CFLAGS} ./source/attack_gen_pmemobj_heap.c -o ./build/clang_attack_gen_pmemobj_heap ${LFLAGS}
 
 clean:
 	rm ./build/*

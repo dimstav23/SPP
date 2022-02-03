@@ -23,11 +23,6 @@
  * 2019-04
  */
 
-/*
-Edited: Kartal Kaan Bozdoğan (mstniy)
-Source repository: https://github.com/mstniy/safepm
-*/
-
 #ifndef ATTACK_GEN_H
 #define ATTACK_GEN_H
 
@@ -40,7 +35,8 @@ Source repository: https://github.com/mstniy/safepm
 #include <limits.h>
 #include <setjmp.h>
 #include <fcntl.h>
-#include <libpmemobj.h>
+
+#include <assert.h>
 
 #include "parameters.h"
 

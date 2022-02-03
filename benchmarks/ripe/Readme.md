@@ -8,7 +8,7 @@ Patched to use ASan and the PMDK's persistent heap (instead of the volatile syst
 For further details, see our paper and [Hubert ROSIER's repo](https://github.com/hrosier/ripe64)
 
 ## How to run
-
+For a sample run that will build the ripe code please run:
 ```
-$ ./run_variants.sh
+$ ./run_ripe_spp.sh
 ```

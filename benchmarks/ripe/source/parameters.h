@@ -23,11 +23,6 @@
  * 2019-04
  */
 
-/*
-Edited: Kartal Kaan Bozdoğan (mstniy)
-Source repository: https://github.com/mstniy/safepm
-*/
-
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
