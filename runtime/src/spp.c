@@ -12,6 +12,7 @@ extern "C" {
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stddef.h>
+#include <unistd.h>
 //#include <stdbool.h>
 #include <assert.h>
 #include <math.h>
@@ -21,7 +22,7 @@ extern "C" {
 ///      Debug Macro        ///
 ///////////////////////////////
 
-#define SPP_PRINT_DEBUG
+//#define SPP_PRINT_DEBUG
 #ifdef SPP_PRINT_DEBUG
 #  define dbg(x) x
 #else
@@ -125,6 +126,8 @@ __spp_checkbound (void * ptr)
     // careful with function body optimised away at Opt level 2
     if (tag & 0x1000000) {
         printf("\n --->__spp_error: at 0x%.16" PRIXPTR " <--------------\n\n", (uint64_t)ptr); 
+        //internal__exit(1);
+        _exit(1);
         //assert(!(tag & 0x8000));
         //return ptr;        
     }

@@ -41,7 +41,8 @@ function should_crash {
       echo -e "${RED}Test for $command failed.${NC}"
       return 1
   fi
-  (echo "$output" | grep -E -- "$snippet") >/dev/null && echo -e "${GREEN}$command OK.${NC}" || echo -e "${RED}Test for $command failed.${NC}"
+  echo -e "${GREEN}$command OK.${NC}"
+  #(echo "$output" | grep -E -- "$snippet") >/dev/null && echo -e "${GREEN}$command OK.${NC}" || echo -e "${RED}Test for $command failed.${NC}"
 }
 
 function should_not_crash {
@@ -107,9 +108,9 @@ set +e
 #should_crash "\[fd\]" ./use_after_free.exe
 #should_crash "\[fd\]" ./use_after_free_ntx.exe
 #should_crash "\[fd\]" ./use_after_realloc.exe
-#should_crash "00\[fa\]" ./overflow.exe
-#should_crash "00\[fa\]" ./overflow_ntx.exe
-#should_crash "00\[fa\]" ./root_overflow.exe
+should_crash "00\[fa\]" ./overflow
+should_crash "00\[fa\]" ./overflow_ntx
+should_crash "00\[fa\]" ./root_overflow
 #should_crash "00\[fa\]" ../../tests/overflow_persistence.sh
 #should_crash "\[fa\]" ./root_underflow.exe
 #should_crash "\[04\]" ./int32.exe
