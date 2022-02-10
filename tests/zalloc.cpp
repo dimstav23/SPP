@@ -18,10 +18,10 @@ struct dummy {
 
 int main()
 {
-	unlink("/dev/shm//dev/shm/spp_test.pool");
-	PMEMobjpool* pool = pmemobj_create("/dev/shm//dev/shm/spp_test.pool", "spp_test", 10*1024*1024, 0660);
+	unlink("/dev/shm/spp_test.pool");
+	PMEMobjpool* pool = pmemobj_create("/dev/shm/spp_test.pool", "spp_test", 10*1024*1024, 0660);
 	assert(pool != NULL);
-	
+
 	TOID(struct dummy) ptr;
 	
 	for (int i=0; i<1300; i++) {
@@ -29,7 +29,7 @@ int main()
 		TX_BEGIN(pool) {
 			ptr = TX_ZNEW(struct dummy);
 		} TX_ONABORT {
-			std::cerr << "Faild to allocate a dummy object" << std::endl;
+			std::cerr << "Failed to allocate a dummy object" << std::endl;
 			abort();
 		}
 		TX_END
@@ -43,13 +43,13 @@ int main()
 		TX_END
 	
 	}
-	
+
 	for (int i=0; i<1300; i++) {
 
 		TX_BEGIN(pool) {
 			ptr = pmemobj_tx_xalloc(sizeof(struct dummy), TOID_TYPE_NUM(struct dummy), POBJ_XALLOC_ZERO);
 		} TX_ONABORT {
-			std::cerr << "Faild to allocate a dummy object" << std::endl;
+			std::cerr << "Failed to allocate a dummy object" << std::endl;
 			abort();
 		}
 		TX_END

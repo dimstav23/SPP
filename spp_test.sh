@@ -102,19 +102,19 @@ make -j7
 cd tests
 
 set +e
-#should_crash "Invalid free" ./mismatched_free.exe
-#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free.exe
-#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free_ntx.exe
-#should_crash "\[fd\]" ./use_after_free.exe
-#should_crash "\[fd\]" ./use_after_free_ntx.exe
-#should_crash "\[fd\]" ./use_after_realloc.exe
+#should_crash "Invalid free" ./mismatched_free
+#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free
+#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free_ntx
+#should_crash "\[fd\]" ./use_after_free
+#should_crash "\[fd\]" ./use_after_free_ntx
+#should_crash "\[fd\]" ./use_after_realloc
 should_crash "00\[fa\]" ./overflow
 should_crash "00\[fa\]" ./overflow_ntx
 should_crash "00\[fa\]" ./root_overflow
 #should_crash "00\[fa\]" ../../tests/overflow_persistence.sh
-#should_crash "\[fa\]" ./root_underflow.exe
-#should_crash "\[04\]" ./int32.exe
-#should_crash "\[fd\]" ./alloc_tx_abort.exe
-#should_not_crash ./free_tx_abort.exe
-#should_crash "00\[fa\]" ./tx_add_overflow.exe
-#should_not_crash ./zalloc.exe
+#should_crash "\[fa\]" ./root_underflow
+#should_crash "\[04\]" ./int32
+#should_crash "\[fd\]" ./alloc_tx_abort
+should_not_crash ./free_tx_abort
+#should_crash "00\[fa\]" ./tx_add_overflow
+should_not_crash ./zalloc
