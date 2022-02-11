@@ -8,8 +8,8 @@ AR=$(which llvm-ar)
 
 SPPLIB=../smallexample/spplib/
 
-rm ${SPPLIB}/obj/wrappers.o
-rm ${SPPLIB}/obj/spp_hookobj.o
+[ -e ${SPPLIB}/obj/wrappers.o ] && rm ${SPPLIB}/obj/wrappers.o
+[ -e ${SPPLIB}/obj/spp_hookobj.o ] && rm ${SPPLIB}/obj/spp_hookobj.o
 #rm ${SPPLIB}/obj/libspphook.a
 
 $CLANG \
