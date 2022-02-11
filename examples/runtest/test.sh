@@ -10,8 +10,10 @@ echo ">>>>>>> SPP. smalltest.sh starts.. (exe: example) ...."
 
 # LLVMROOT: llvm install dir ################
 
-LLVMROOT=/home/mjnam/.local/spp.llvm.12.0.0/
-SPPROOT="../../"
+SPPBASE="$(realpath "$(dirname "$0")")/../.."
+
+LLVMROOT="${SPPBASE}/llvm-project"
+SPPROOT="${SPPBASE}"
 PMDKSRC="${SPPROOT}/pmdk/src/"
 
 OPT_LEVEL="-O2"
@@ -39,7 +41,7 @@ $CLANG \
 $OPT_LEVEL \
 -flto \
 -fuse-ld=gold \
--Xclang -load -Xclang "${LLVMROOT}/lib/LLVMSPP.so"  \
+-Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/debug/" \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
