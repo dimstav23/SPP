@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Updated version of program developed by Hubert ROSIER
 # to assist the automated testing using the 64b port of the RIPE evaluation tool
 #
@@ -17,11 +17,12 @@
 
 import os
 import sys
-# from sets import Set
+#from sets import Set
 
 compilers = ["gcc", "clang"]
 
-locations = ["stack","heap","bss","data"]
+# locations = ["stack","heap","bss","data"]
+locations = [ "heap" ]
 
 code_ptr = [
  "ret","baseptr",
@@ -37,10 +38,12 @@ attacks = [
  # "nonop","simplenop",
  "simplenopequival", "r2libc", "rop"]
 
-funcs = [
-    "memcpy", "strcpy", "strncpy", "sprintf", "snprintf",
-    "strcat", "strncat", "sscanf", "fscanf", "homebrew"
-  ]
+funcs = ["strcpy"]
+
+# funcs = [
+#    "memcpy", "strcpy", "strncpy", "sprintf", "snprintf",
+#    "strcat", "strncat", "sscanf", "fscanf", "homebrew"
+#  ]
 
 techniques = []
 repeat_times = 0
@@ -51,7 +54,7 @@ print_FAIL = False
 summary_format = "bash"
 result_file = ""
 tmp_result = "/tmp/tmp_result"
-pmdk_path = os.getcwd()+"../../src/nondebug" #default value for pmdk library path
+pmdk_path = os.getcwd()+"/../../pmdk/src/nondebug" #default value for pmdk library path
 
 if len(sys.argv) < 2:
   print("Usage: python "+sys.argv[0] + "[direct|indirect|both] <number of times to repeat each test>")
@@ -236,7 +239,7 @@ for compiler in compilers:
                 print("%5s %s %s (%s/%s) %s" % (compiler,parameters_str,
                     green("OK", 4),
                     s_attempts,repeat_times,
-                    ' '.join(Set(additional_info))))
+                    ' '.join(set(additional_info))))
               total_ok += 1
             # FAIL
             elif s_attempts == 0:
@@ -245,7 +248,7 @@ for compiler in compilers:
                 print("%5s %s %6s (%s/%s) %s" % (compiler, parameters_str,
                      red("FAIL", 4),
                      s_attempts, repeat_times,
-                     ' '.join(Set(additional_info))))
+                     ' '.join(set(additional_info))))
               total_fail += 1
             # SOME
             else:
@@ -254,7 +257,7 @@ for compiler in compilers:
                 print("%5s %s %6s (%s/%s) %s" % (compiler,parameters_str,
                     orange("SOME", 4),
                     s_attempts,repeat_times,
-                    ' '.join(Set(additional_info))))
+                    ' '.join(set(additional_info))))
               total_some += 1
 
 

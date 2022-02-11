@@ -36,7 +36,13 @@ ${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o \
 -DTAG_BITS=24
 
 
-all: build/gcc_attack_gen build/clang_attack_gen
+all: build/gcc_attack_gen_system_heap build/clang_attack_gen_system_heap build/clang_attack_gen_pmemobj_heap build/gcc_attack_gen_pmemobj_heap
+
+build/gcc_attack_gen_system_heap: ./source/attack_gen_system_heap.c
+	${GCC} -g ./source/attack_gen_system_heap.c -o ./build/gcc_attack_gen_system_heap
+
+build/clang_attack_gen_system_heap: ./source/attack_gen_system_heap.c
+	${CLANG} ./source/attack_gen_system_heap.c -o ./build/clang_attack_gen_system_heap
 
 build/gcc_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
 	${GCC} ./source/attack_gen_pmemobj_heap.c ${INCLUDEDIR} ${LDFLAGS} ${LFLAGS} -o ./build/gcc_attack_gen_pmemobj_heap 
