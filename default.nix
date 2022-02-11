@@ -18,6 +18,10 @@ pkgs.mkShell {
     pkgs.dos2unix
     pkgs.binutils-unwrapped
     pkgs.gdb
+    pkgs.python
+    #(pkgs.python39.withPackages (ps: [
+    # 	ps.matplotlib
+    #]))
     (pkgs.callPackage ./impure-clang.nix {})
   ];
 
