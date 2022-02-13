@@ -116,5 +116,5 @@ should_crash "00\[fa\]" ./root_overflow
 #should_crash "\[04\]" ./int32
 #should_crash "\[fd\]" ./alloc_tx_abort
 should_not_crash ./free_tx_abort
-#should_crash "00\[fa\]" ./tx_add_overflow
+should_crash "00\[fa\]" ./tx_add_overflow
 should_not_crash ./zalloc
