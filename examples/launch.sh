@@ -39,7 +39,7 @@ $OPT_LEVEL \
 -fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
-"-I${PMDKSRC}/include/" "-L${PMDKSRC}/debug/" \
+"-I${PMDKSRC}/include/" "-L${PMDKSRC}/nondebug/" \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
 -DTAG_BITS=24 -lpmem -lpmemobj \
@@ -49,7 +49,7 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 
 echo ">>>>>>> Run example"
 rm -rf /dev/shm/spp_test.pool
-LD_LIBRARY_PATH="${PMDKSRC}/debug" ./example
+LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 # $CLANG -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
 $CLANG $OPT_LEVEL -S -I../pmdk/src/include/ -emit-llvm example.c

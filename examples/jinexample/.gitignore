@@ -1,8 +1,0 @@
-# Ignore node_modules folder
-obj
-
-# Ignore following files
-*.o
-*.bc
-*.ll
-mytest
