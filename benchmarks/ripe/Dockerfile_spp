@@ -1,0 +1,36 @@
+#FROM ubuntu:20.04
+#ARG DEBIAN_FRONTEND=noninteractive
+
+FROM spp-llvm-clang:latest
+
+# Install dependencies for PMDK
+#RUN apt-get update && apt-get -qq install -y \
+#    pkg-config \
+#    libndctl-dev \
+#    libdaxctl-dev \
+#    pandoc \
+#    m4 \
+#    git \
+#    build-essential \
+#    python
+
+# Install PMDK
+WORKDIR /
+RUN git clone https://github.com/alexandrinapanfil/pmdk.git /pmdk
+WORKDIR /pmdk
+RUN git checkout spp-main
+RUN make -j7 install
+RUN ldconfig
+
+# Compile SPP runtime library
+WORKDIR /spp-pass/runtime
+RUN ./create_spplib.sh
+
+WORKDIR /spp-pass/benchmarks/ripe
+#COPY . /ripe64
+#WORKDIR /ripe64
+RUN mkdir -p build
+RUN mv Makefile_container Makefile
+RUN make clean
+RUN make build/clang_attack_gen_pmemobj_heap
+RUN cd build && mv clang_attack_gen_pmemobj_heap clang_attack_gen

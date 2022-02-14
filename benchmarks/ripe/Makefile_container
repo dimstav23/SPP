@@ -4,10 +4,10 @@ CLANGPP:=$(shell which clang++)
 # Add debug info and enable ASan
 # CFLAGS=-g -fsanitize=address
 
-
-SPPROOT:=$(shell pwd)/../..
-LLVMROOT=${SPPROOT}/llvm-project
-PMDKSRC=${SPPROOT}/pmdk/src
+# Container specific directories
+SPPROOT:=/spp-pass
+LLVMROOT=/llvm
+PMDKSRC=/pmdk/src
 
 OPT_LEVEL=-O1
 
@@ -28,13 +28,12 @@ LDFLAGS=-L${PMDKSRC}/nondebug/
 CFLAGS=${OPT_LEVEL} \
 -flto \
 -fuse-ld=gold \
--Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so  \
+-Xclang -load -Xclang ${LLVMROOT}/lib/LLVMSPP.so  \
 -include ${SPPLIBSRC}/spp.h \
 -I${PMDKSRC}/include/ -L${PMDKSRC}/nondebug/ \
 ${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o \
 -Xlinker ${SPPLIBOBJ}/spp_hookobj.o \
 -DTAG_BITS=24
-
 
 all: build/gcc_attack_gen_system_heap build/clang_attack_gen_system_heap build/clang_attack_gen_pmemobj_heap build/gcc_attack_gen_pmemobj_heap
 

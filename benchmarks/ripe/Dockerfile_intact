@@ -1,0 +1,32 @@
+#FROM ubuntu:20.04
+#ARG DEBIAN_FRONTEND=noninteractive
+
+FROM spp-llvm-clang:latest
+
+# Install dependencies for PMDK
+#RUN apt-get update && apt-get -qq install -y \
+#    pkg-config \
+#    libndctl-dev \
+#    libdaxctl-dev \
+#    pandoc \
+#    m4 \
+#    git \
+#    build-essential \
+#    python \
+#    sudo \
+#    clang
+
+#COPY . /ripe64
+#WORKDIR /ripe64
+#RUN mkdir -p build
+#RUN make NO_ASAN=1 build/gcc_attack_gen_system_heap
+#RUN cd build && mv gcc_attack_gen_system_heap gcc_attack_gen
+
+#COPY . /ripe64
+#WORKDIR /ripe64
+WORKDIR /spp-pass/benchmarks/ripe
+RUN mkdir -p build
+RUN mv Makefile_container Makefile
+RUN make clean 
+RUN make NO_ASAN=1 build/clang_attack_gen_system_heap
+RUN cd build && mv clang_attack_gen_system_heap clang_attack_gen
