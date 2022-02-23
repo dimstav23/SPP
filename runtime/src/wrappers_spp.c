@@ -21,7 +21,7 @@ extern "C"
 ///                           /// 
 /////////////////////////////////
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #  define dbg(x) x
 #else
@@ -119,6 +119,8 @@ char * __real_strchr    (char *str, int c);
 char * __real_strncat   (char *dest, char *src, size_t n); 
 long int __real_strtol  (const char *str, char **endptr, int base); 
 size_t __real_strlen  (const char *str); 
+void * __real_memcpy    (void *dest, const void *src, size_t n);
+char * __real_memset   (void *str, int c, size_t n); 
 
 
 ////////////////////////
@@ -378,6 +380,45 @@ __wrap_strtol (char *str, char **endptr, int base)
                       (char**)__spp_cleantag_external(endptr), 
                       base);
 }
+
+
+////////////////////////
+///                  /// 
+///      memcpy      ///
+///                  /// 
+////////////////////////
+
+
+void * 
+__wrap_memcpy (void *dest, const void *src, size_t n)
+{
+  
+  dbg(printf("__wrap_memcpy.\nstr: %lx\n", (uintptr_t)dest);)
+  dbg(printf("dest after cleaning: %lx\n", (uintptr_t)__spp_cleantag_external(dest));)
+
+  return __real_memcpy((void*)__spp_cleantag_external(dest), 
+                    (const void*)__spp_cleantag_external(src),
+                    n);
+}
+
+////////////////////////
+///                  /// 
+///      memset      ///
+///                  /// 
+////////////////////////
+
+
+char * 
+__wrap_memset (void *str, int c, size_t n)
+{
+  
+  dbg(printf("__wrap_memset.\nstr: %lx\n", (uintptr_t)str);)
+  dbg(printf("str after cleaning: %lx\n", (uintptr_t)__spp_cleantag_external(str));)
+
+  return __real_memset((void*)__spp_cleantag_external(str), 
+                      c,
+                      n);
+} 
 
 #ifdef __cplusplus
 } // extern "C"
