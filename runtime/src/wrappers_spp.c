@@ -21,7 +21,7 @@ extern "C"
 ///                           /// 
 /////////////////////////////////
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #  define dbg(x) x
 #else
@@ -155,6 +155,12 @@ __wrap_strcpy(char * dest, char * src)
 
     dbg(printf("__wrap_strcpy at d: %p, s: %p\n", dest, src);)
     dbg(printf("\tsrc: %s\n", src);)
+
+    // Preventive check for avoiding buffer overflows
+    void* src_tagged = __spp_updatetag((void*)src, strlen(src));
+    void* dest_tagged = __spp_updatetag((void*)dest, strlen(src));
+    __spp_checkbound(src_tagged);
+    __spp_checkbound(dest_tagged);
 
     // strlen is hooked at link time at the moment, 
     // so an arg of this strlen is already tag-free. 
