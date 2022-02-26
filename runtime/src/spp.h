@@ -9,15 +9,12 @@
 extern "C" {
 #endif
 
-///////////////////////////////////////////////
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <assert.h>
 #include <math.h>
-//#include <stdbool.h>
 
 #define __SPP_MASK_TAG_OUT 0x7FFFFFFFFF
 
@@ -32,16 +29,12 @@ extern "C" {
 #define NUM_X86_SPARE_BITS 16 
 #define NUM_X86_USED_BITS (64-NUM_X86_SPARE_BITS) 
 
-extern void * __spp_cleantag (void * ptr);
-extern void * __spp_cleantag_external (void * ptr);
-extern void * __spp_checkbound (void * ptr);
+extern void* __spp_cleantag (void *ptr);
+extern void* __spp_cleantag_external (void *ptr);
+extern void* __spp_checkbound (void *ptr);
 
-extern void* __spp_updatetag(void* ptr, int64_t off);
-extern void* __spp_updatetag_DEBUG(void* ptr, int64_t off, void* ptrop);
-extern void* __spp_update_pointer(void* ptr, int64_t off);
-
-///////////////////////////////////////////////
-
+extern void* __spp_updatetag(void *ptr, int64_t off);
+extern void* __spp_update_pointer(void *ptr, int64_t off);
 
 #ifdef __cplusplus
 }

@@ -36,6 +36,27 @@ void test_func_ptr(uint64_t *ptr, uint64_t set, uint64_t *ptr_2) {
 	return;
 } 
 
+void test_memcpy(PMEMobjpool* pop) {
+	
+	PMEMoid oid1,oid2;
+	pmemobj_alloc(pop, &oid1, sizeof(struct dummy), 0, NULL, NULL);
+	pmemobj_alloc(pop, &oid2, sizeof(struct dummy), 0, NULL, NULL);
+
+	struct dummy* ptr1 = pmemobj_direct(oid1);
+	struct dummy* ptr2 = pmemobj_direct(oid2);
+
+	ptr1->x[0] = 4;
+	ptr2->x[1] = 2;
+
+	memcpy(ptr2, ptr1, sizeof(struct dummy) + 1);
+
+	printf("%ld %ld\n", ptr2->x[0], ptr2->x[1]);
+
+	pmemobj_free(&oid1);
+	pmemobj_free(&oid2);
+	return;
+} 
+
 int main()
 {
 	int k = 5;
@@ -53,7 +74,8 @@ int main()
 
 	char *str = (char*)calloc(sizeof(uint64_t), STR_SIZE);
 	char *str_2 = (char*)malloc(STR_SIZE * sizeof(uint64_t));
-	memcpy(str_2, str, strlen(str));
+	memcpy(str_2, str, STR_SIZE*sizeof(uint64_t)+1); //overflow by 1
+	strcpy(str_2, str);
 	free(str);
 	free(str_2);
 
@@ -83,6 +105,8 @@ int main()
 	D_RW(proot->obj)->x[0] = 1;
 	D_RW(proot->obj)->x[1] = 2;
 	
+	test_memcpy(pool);
+
 	//D_RW(proot->obj)->x[2] = 3; // This line should crash
 	
 	pmemobj_close(pool);

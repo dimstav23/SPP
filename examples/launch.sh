@@ -21,7 +21,8 @@ TESTSRC="${SPPROOT}/examples"
 WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
-           -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul"
+           -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
+           -Wl,-wrap,memcpy -Wl,-wrap,memset"
 
 echo ">>>>>>> Compile spp hook functions"
 pushd .
@@ -35,6 +36,8 @@ CLANGPP=$(which clang++)
 
 $CLANG \
 $OPT_LEVEL \
+-U_FORTIFY_SOURCE \
+-D_FORTIFY_SOURCE=0 \
 -flto \
 -fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
@@ -45,6 +48,7 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 -DTAG_BITS=24 -lpmem -lpmemobj \
 "${TESTSRC}/example.c" \
 -ggdb -g \
+-fno-builtin \
 -o example #-v
 
 echo ">>>>>>> Run example"
@@ -52,7 +56,7 @@ rm -rf /dev/shm/spp_test.pool
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 # $CLANG -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
-$CLANG $OPT_LEVEL -S -I../pmdk/src/include/ -emit-llvm example.c
+$CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -I../pmdk/src/include/ -emit-llvm example.c
 
 #clang -O -emit-llvm ../runtime/runtime.c -c -o runtime.bc #produce runtime bitcode
 
