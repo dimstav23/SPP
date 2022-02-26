@@ -13,6 +13,7 @@ extern "C" {
 #include <unistd.h>
 #include <assert.h>
 #include <math.h>
+#include <execinfo.h>
 #include "./spp.h" ///
 
 ///////////////////////////////
