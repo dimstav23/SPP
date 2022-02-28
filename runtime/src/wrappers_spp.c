@@ -99,8 +99,7 @@ char* __real_strncat(char *dest, char *src, size_t n);
 long int __real_strtol(const char *str, char **endptr, int base); 
 size_t __real_strlen(const char *str); 
 void* __real_memcpy(void *dest, const void *src, size_t n);
-char* __real_memset(void *str, int c, size_t n); 
-
+void* __real_memset(void *str, int c, size_t n); 
 
 ////////////////////////
 ///                  /// 
@@ -331,7 +330,7 @@ __wrap_memcpy (void *dest, const void *src, size_t n)
 ///                  /// 
 ////////////////////////
 
-char* 
+void* 
 __wrap_memset (void *str, int c, size_t n)
 {
   printf(">>%s\n",__func__);
