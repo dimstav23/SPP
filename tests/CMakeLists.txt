@@ -25,8 +25,8 @@ function (spp_test target)
         PRIVATE 
         -fuse-ld=gold 
         -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp 
-	-Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen 
-	-Wl,-wrap,strchrnul ${SPPBASE}/runtime/obj/wrappers.o 
+	-Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen
+	-Wl,-wrap,strchrnul -Wl,-wrap,memcpy -Wl,-wrap,memset ${SPPBASE}/runtime/obj/wrappers.o 
         -Xlinker ${SPPBASE}/runtime/obj/spp_hookobj.o 
         -v)
 

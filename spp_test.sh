@@ -70,13 +70,13 @@ cd build
 
 SPPLIBOBJ=${SPPBASE}/runtime/obj
 
-WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul'   
+WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,strchrnul '
 
 CFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
 CXXFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
-LDFLAGS='-fuse-ld=gold -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul '${SPPBASE}'/runtime/obj/wrappers.o -Xlinker '${SPPBASE}'/runtime/obj/spp_hookobj.o'
+LDFLAGS='-fuse-ld=gold '${WRAP_LIST}' '${SPPBASE}'/runtime/obj/wrappers.o -Xlinker '${SPPBASE}'/runtime/obj/spp_hookobj.o'
 
 echo "__CLANG:    $(which clang)"
 echo "__CLANG++:  $(which clang++)"
