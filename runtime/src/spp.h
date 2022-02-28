@@ -36,6 +36,8 @@ extern void* __spp_checkbound (void *ptr);
 extern void* __spp_updatetag(void *ptr, int64_t off);
 extern void* __spp_update_pointer(void *ptr, int64_t off);
 
+extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
+
 #ifdef __cplusplus
 }
 #endif

@@ -182,6 +182,45 @@ __spp_updatetag(void *ptr, int64_t off) {
     return (void*)ptrval;
 }
 
+__attribute__((__used__))
+__attribute__((__SPP_ATTR))
+void* 
+__spp_memintr_check_and_clean(void *ptr, int64_t off) {
+    // ptr: pointer pass to LLVM memory intrinsic
+    // off: offset to be added and checked
+   
+    // calculates the final address of the ptr according to the offset
+    // performs bounds check
+    // returns the clean ptr for the memory intrinsic function
+
+    ///////////////////////////////////////////////
+    //  NOTE: BE CAREFUL with signed/unsigned,   //
+    //  when performing bit operation.           //
+    //  Especially, shift opreations.            //
+    ///////////////////////////////////////////////
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+    
+    if (!__spp_extract_x86_tagval(ptr))
+    {
+        //if ptr is not tagged, return!
+        return ptr; 
+    }
+    
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);   
+    // -1 is applied due to addressing starting from 0   
+    tag = tag + (off - 1); 
+    
+    uintptr_t tempval = ((uintptr_t)tag)<<NUM_USED_BITS;
+    uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
+    uintptr_t ptrval = untagged | tempval; 
+    
+    dbg(printf(">>%s checked ptr: %p\n", __func__, ptrval);)
+    
+    __spp_checkbound((void*)ptrval);
+	
+    return (void*)untagged;
+}
+
 // it is not desirable that this func is called
 // normally, it SHOULDN'T be called
 __attribute__((__used__))
