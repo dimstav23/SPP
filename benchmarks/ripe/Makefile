@@ -20,13 +20,14 @@ WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
-	   -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
+	   	   -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
 
 LFLAGS=-lpmem -lpmemobj
 INCLUDEDIR=-I${PMDKSRC}/include/
 LDFLAGS=-L${PMDKSRC}/nondebug/
 
 CFLAGS=${OPT_LEVEL} \
+-U_FORTIFY_SOURCE \
 -flto \
 -fuse-ld=gold \
 -Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so  \
