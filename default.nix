@@ -19,6 +19,7 @@ pkgs.mkShell {
     pkgs.binutils-unwrapped
     pkgs.gdb
     pkgs.python
+    pkgs.valgrind
     #(pkgs.python39.withPackages (ps: [
     # 	ps.matplotlib
     #]))
