@@ -69,6 +69,7 @@ void __real_free(void *ptr);
 ///////////////////////////////////////
 
 extern void* __spp_cleantag_external(void *p);  
+extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
 
 ///////////////////////////////////////
 ///                                 /// 
@@ -126,22 +127,14 @@ __wrap_strcpy(char *dest, char *src)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s dest:%p src:%p\n", __func__, dest, src);)
-  
-  char* temp = dest; 
-   
+     
   // 1. get objsize (dest) strlen(src) 
   // 2. check dest + strlen(str) (+1?) < dest_end
   // then return untagged_dest. 
   // (untagging src is handled in untag hook)
-
-  // Preventive check for avoiding buffer overflows
-  void *src_tagged = __spp_updatetag((void*)src, strlen(src));
-  void *dest_tagged = __spp_updatetag((void*)dest, strlen(src));
-  __spp_checkbound(src_tagged);
-  __spp_checkbound(dest_tagged);
-    
-  __real_strcpy((char*)__spp_cleantag_external(dest), 
-                  (char*)__spp_cleantag_external(src));
+   
+  __real_strcpy((char*)__spp_memintr_check_and_clean(dest, strlen(src)), 
+                  (char*)__spp_memintr_check_and_clean(src, strlen(src)));
 
   assert_dbg(assert((uintptr_t)temp==(uintptr_t)dest);)
 
@@ -159,12 +152,9 @@ __wrap_strcmp(char *str1, char *str2)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str1:%p str2:%p\n", __func__, str1, str1);)
-
-  char *untagstr1= (char*)__spp_cleantag_external(str1); 
-  char *untagstr2= (char*)__spp_cleantag_external(str2); 
-    
-  return __real_strcmp((char*)__spp_cleantag_external(str1), 
-                       (char*)__spp_cleantag_external(str2)); 
+   
+  return __real_strcmp((char*)__spp_memintr_check_and_clean(str1, strlen(str1)), 
+                       (char*)__spp_memintr_check_and_clean(str2, strlen(str2))); 
 }
 
 ////////////////////////
@@ -179,10 +169,8 @@ __wrap_strncmp(char *str1, char *str2, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str1, n);)
     
-  char *untagstr1= (char*)__spp_cleantag_external(str1);
-  char *untagstr2= (char*)__spp_cleantag_external(str2);
-
-  return __real_strncmp(untagstr1, untagstr2, n);
+  return __real_strncmp((char*)__spp_memintr_check_and_clean((void*)str1, n), 
+                       (char*)__spp_memintr_check_and_clean((void*)str2, n), n); 
 }
 
 ////////////////////////
@@ -197,12 +185,11 @@ __wrap_strncpy(char *dest, char *src, size_t n)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
-  char *temp = dest;
 
-  __real_strncpy((char*)__spp_cleantag_external((void*)dest),
-                  (char*)__spp_cleantag_external((void*)src), n);
+  __real_strncpy((char*)__spp_memintr_check_and_clean((void*)dest, n), 
+                  (char*)__spp_memintr_check_and_clean((void*)src, n), n);
   
-  return temp;
+  return dest;
 }
 
 ////////////////////////
@@ -216,8 +203,8 @@ __wrap_memcmp(void *str1, void *str2, size_t n)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str1, n);)
-  return __real_memcmp((void*)__spp_cleantag_external(str1), 
-                        (void*)__spp_cleantag_external(str2),n);
+  return __real_memcmp((void*)__spp_memintr_check_and_clean(str1, n), 
+                        (void*)__spp_memintr_check_and_clean(str2, n), n);
 }
 
 ////////////////////////
@@ -232,12 +219,14 @@ __wrap_memchr(void *str, int c, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str:%p c:%d size:%ld\n", __func__, str, c, n);)
 
-  void *result = __real_memchr((void*)__spp_cleantag_external(str),c,n); 
+  void *result = __real_memchr(
+                (void*)__spp_memintr_check_and_clean((void*)str , n),
+                c, n); 
     
   if (result != NULL)
   {
     uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
-    result= (char*)(tag|(uintptr_t)result); 
+    result= (char*)(tag | (uintptr_t)result); 
   }
 
   return result; 
@@ -250,7 +239,7 @@ __wrap_memchr(void *str, int c, size_t n)
 ////////////////////////
 
 char* 
-__wrap_strchr (char *str, int c)
+__wrap_strchr(char *str, int c)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str:%p c:%d\n", __func__, str, c);)
@@ -260,7 +249,7 @@ __wrap_strchr (char *str, int c)
   if (result!=NULL)
   {
     uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
-    result = (char*)(tag|(uintptr_t)result); 
+    result = (char*)(tag | (uintptr_t)result); 
   }
   
   return result; 
@@ -273,18 +262,14 @@ __wrap_strchr (char *str, int c)
 ////////////////////////
 
 char* 
-__wrap_strncat (char *dest, char *src, size_t n)
+__wrap_strncat(char *dest, char *src, size_t n)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
-
-  char *temp = dest;
   
-  __real_strncat((char*)__spp_cleantag_external(dest),
-                  (char*)__spp_cleantag_external(src), n);
-   
-  assert_dbg(assert((uintptr_t)dest == (uintptr_t)temp);)
-  
+  __real_strncat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + n),
+                  (char*)__spp_memintr_check_and_clean((void*)src, n), n);
+    
   return dest; 
 }
 
@@ -294,6 +279,7 @@ __wrap_strncat (char *dest, char *src, size_t n)
 ///                  /// 
 ////////////////////////
 
+//Dimitris: unsafe for now
 long int 
 __wrap_strtol (char *str, char **endptr, int base)
 {
@@ -316,13 +302,8 @@ __wrap_memcpy (void *dest, const void *src, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
 
-  void *src_tagged = __spp_updatetag((void*)src, n);
-  void *dest_tagged = __spp_updatetag((void*)dest, n);
-  __spp_checkbound(src_tagged);
-  __spp_checkbound(dest_tagged);
-
-  return __real_memcpy((void*)__spp_cleantag_external(dest), 
-                    (const void*)__spp_cleantag_external((void*)src), n);
+  return __real_memcpy((void*)__spp_memintr_check_and_clean(dest, n), 
+                    (const void*)__spp_memintr_check_and_clean((void*)src, n), n);
 }
 
 ////////////////////////
@@ -337,7 +318,7 @@ __wrap_memset(void *str, int c, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str:%p c:%d size:%ld\n", __func__, str, c, n);)
 
-  return __real_memset((void*)__spp_cleantag_external(str), c, n);
+  return __real_memset((void*)__spp_memintr_check_and_clean(str, n), c, n);
 } 
 
 ////////////////////////
@@ -352,8 +333,8 @@ __wrap_memmove(void *str1, const void *str2, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str2, n);)
 
-  return __real_memmove((void*)__spp_cleantag_external(str1), 
-                  (void*)__spp_cleantag_external((void*)str2), n);
+  return __real_memmove((void*)__spp_memintr_check_and_clean(str1, n), 
+                  (void*)__spp_memintr_check_and_clean((void*)str2, n), n);
 } 
 
 #ifdef __cplusplus
