@@ -100,6 +100,7 @@ long int __real_strtol(const char *str, char **endptr, int base);
 size_t __real_strlen(const char *str); 
 void* __real_memcpy(void *dest, const void *src, size_t n);
 void* __real_memset(void *str, int c, size_t n); 
+void* __real_memmove(void *str1, const void *str2, size_t n);
 
 ////////////////////////
 ///                  /// 
@@ -331,12 +332,28 @@ __wrap_memcpy (void *dest, const void *src, size_t n)
 ////////////////////////
 
 void* 
-__wrap_memset (void *str, int c, size_t n)
+__wrap_memset(void *str, int c, size_t n)
 {
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str:%p c:%d size:%ld\n", __func__, str, c, n);)
 
   return __real_memset((void*)__spp_cleantag_external(str), c, n);
+} 
+
+////////////////////////
+///                  /// 
+///      memmove     ///
+///                  /// 
+////////////////////////
+
+void* 
+__wrap_memmove(void *str1, const void *str2, size_t n)
+{
+  printf(">>%s\n",__func__);
+  dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str2, n);)
+
+  return __real_memmove((void*)__spp_cleantag_external(str1), 
+                  (void*)__spp_cleantag_external((void*)str2), n);
 } 
 
 #ifdef __cplusplus

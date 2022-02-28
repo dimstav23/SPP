@@ -22,7 +22,7 @@ WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
-           -Wl,-wrap,memcpy -Wl,-wrap,memset"
+           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove"
 
 echo ">>>>>>> Compile spp hook functions"
 pushd .
