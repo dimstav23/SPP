@@ -217,7 +217,15 @@ void perform_attack(int (*stack_func_ptr_param)(const char *),
   /* pointer array.                                                         */
   int (**heap_func_ptr)(const char *) = (void *)heap_buffer3;
   /* Target: Longjmp buffer on the heap                                     */
-  jmp_buf *heap_jmp_buffer = (jmp_buf *)pm_malloc(sizeof(jmp_buf));
+  jmp_buf *heap_jmp_buffer = 0;
+
+  while ((uintptr_t)heap_jmp_buffer < (uintptr_t)heap_buffer1 || 
+        (uintptr_t)heap_jmp_buffer < (uintptr_t)heap_buffer2 || 
+        (uintptr_t)heap_jmp_buffer < (uintptr_t)heap_buffer3)
+  {
+          heap_jmp_buffer = (jmp_buf *)pm_malloc(sizeof(jmp_buf));
+  }
+  // jmp_buf *heap_jmp_buffer = (jmp_buf *)pm_malloc(sizeof(jmp_buf));
 
   struct attackme *heap_struct = (struct attackme*)pm_malloc(sizeof(struct attackme));
   heap_struct->func_ptr = dummy_function;

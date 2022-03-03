@@ -38,7 +38,11 @@ attacks = [
  # "nonop","simplenop",
  "simplenopequival", "r2libc", "rop"]
 
-funcs = ["strcpy"]
+funcs = [
+   "memcpy", "strcpy", "strncpy", "snprintf",
+   "strcat", "strncat", "homebrew"#,
+  #"sprintf", "sscanf", "fscanf"
+ ]
 
 # funcs = [
 #    "memcpy", "strcpy", "strncpy", "sprintf", "snprintf",

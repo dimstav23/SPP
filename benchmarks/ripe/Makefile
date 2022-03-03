@@ -20,6 +20,7 @@ WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
+		   -Wl,-wrap,strcat -Wl,-wrap,snprintf \
 	   	   -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
 
 LFLAGS=-lpmem -lpmemobj
@@ -44,13 +45,15 @@ build/gcc_attack_gen_system_heap: ./source/attack_gen_system_heap.c
 	${GCC} -g ./source/attack_gen_system_heap.c -o ./build/gcc_attack_gen_system_heap
 
 build/clang_attack_gen_system_heap: ./source/attack_gen_system_heap.c
-	${CLANG} -g -ggdb ./source/attack_gen_system_heap.c -o ./build/clang_attack_gen_system_heap
+	${CLANG} -U_FORTIFY_SOURCE ./source/attack_gen_system_heap.c -o ./build/clang_attack_gen_system_heap
 
 build/gcc_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
 	${GCC} ./source/attack_gen_pmemobj_heap.c ${INCLUDEDIR} ${LDFLAGS} ${LFLAGS} -o ./build/gcc_attack_gen_pmemobj_heap 
 
 build/clang_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
-	${CLANG} -g -ggdb ${CFLAGS} ./source/attack_gen_pmemobj_heap.c -o ./build/clang_attack_gen_pmemobj_heap ${LFLAGS}
+	${CLANG} ${OPT_LEVEL} -U_FORTIFY_SOURCE -S -I${PMDKSRC}/include/ -emit-llvm ./source/attack_gen_pmemobj_heap.c -o ./build/attack_gen_pmemobj_heap.ll
+	opt ${OPT_LEVEL} -load "${LLVMROOT}/build/lib/LLVMSPP.so" -S ./build/attack_gen_pmemobj_heap.ll -o ./build/attack_gen_pmemobj_heap_transformed.ll
+	${CLANG} -ggdb ${CFLAGS} ./source/attack_gen_pmemobj_heap.c -o ./build/clang_attack_gen_pmemobj_heap ${LFLAGS}
 
 clean:
 	rm -rf ./build/*

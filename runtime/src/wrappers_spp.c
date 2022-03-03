@@ -89,8 +89,9 @@ void __wrap_free (void *base)
 ///                           /// 
 /////////////////////////////////
 
-char* __real_strcpy(char * dest, char *src);
-int __real_strcmp(char * str1, char * str2);
+char* __real_strcpy(char *dest, char *src);
+char* __real_strcat(char *dest, const char *src);
+int __real_strcmp(char *str1, char *str2);
 int __real_strncmp(char *str1, char *str2, size_t n);
 char* __real_strncpy(char *dest,char *src,size_t n);
 int __real_memcmp(void *str1, void *str2, size_t n);
@@ -102,6 +103,8 @@ size_t __real_strlen(const char *str);
 void* __real_memcpy(void *dest, const void *src, size_t n);
 void* __real_memset(void *str, int c, size_t n); 
 void* __real_memmove(void *str1, const void *str2, size_t n);
+
+int __real_snprintf(char *str, size_t size, const char *format, ...);
 
 ////////////////////////
 ///                  /// 
@@ -153,8 +156,8 @@ __wrap_strcmp(char *str1, char *str2)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s str1:%p str2:%p\n", __func__, str1, str1);)
    
-  return __real_strcmp((char*)__spp_memintr_check_and_clean(str1, strlen(str1)), 
-                       (char*)__spp_memintr_check_and_clean(str2, strlen(str2))); 
+  return __real_strcmp((char*)__spp_memintr_check_and_clean(str1, strlen(str1) + 1), 
+                       (char*)__spp_memintr_check_and_clean(str2, strlen(str2) + 1)); 
 }
 
 ////////////////////////
@@ -257,6 +260,24 @@ __wrap_strchr(char *str, int c)
 
 ////////////////////////
 ///                  /// 
+///      strcat      ///
+///                  /// 
+////////////////////////
+
+char* 
+__wrap_strcat(char *dest, const char *src)
+{
+  printf(">>%s\n",__func__);
+  dbg(printf(">>%s dest:%p %ld src:%p %ld\n", __func__, dest, strlen(dest), src, strlen(src));)
+  
+  __real_strcat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + strlen(src) + 1),
+                  (char*)__spp_memintr_check_and_clean((void*)src, strlen(src) + 1));
+    
+  return dest; 
+}
+
+////////////////////////
+///                  /// 
 ///     strncat      ///
 ///                  /// 
 ////////////////////////
@@ -267,7 +288,7 @@ __wrap_strncat(char *dest, char *src, size_t n)
   printf(">>%s\n",__func__);
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
   
-  __real_strncat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + n),
+  __real_strncat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + n + 1),
                   (char*)__spp_memintr_check_and_clean((void*)src, n), n);
     
   return dest; 
@@ -340,3 +361,17 @@ __wrap_memmove(void *str1, const void *str2, size_t n)
 #ifdef __cplusplus
 } // extern "C"
 #endif
+
+////////////////////////
+///                  /// 
+///     snprintf     ///
+///                  /// 
+////////////////////////
+int __wrap_snprintf(char *str, size_t size, const char *format, ...)
+{
+  printf(">>%s\n",__func__);
+  dbg(printf(">>%s str:%p size:%ld\n", __func__, str, size);)
+
+  return __real_snprintf((char*)__spp_memintr_check_and_clean(str, size), 
+                          size, format);
+}
