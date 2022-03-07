@@ -30,6 +30,7 @@ AR=$(which llvm-ar)
 
 echo ">>>>>>> Build shared library"
 $CLANG \
+-flto \
 -shared \
 -fPIC \
 $OPT_LEVEL \
@@ -46,6 +47,7 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 
 echo ">>>>>>> Build static library"
 $CLANG \
+-flto \
 -c \
 -fPIC \
 $OPT_LEVEL \
