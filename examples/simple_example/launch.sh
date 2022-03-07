@@ -2,7 +2,7 @@
 
 echo ">>>>>>> SPP launch.sh starts (for example.c)"
 
-SPPROOT="$(realpath "$(dirname "$0")")/.."
+SPPROOT="$(realpath "$(dirname "$0")")/../.."
 LLVMROOT="${SPPROOT}/llvm-project"
 PMDKSRC="${SPPROOT}/pmdk/src"
 
@@ -11,7 +11,7 @@ OPT_LEVEL="-O1"
 SPPLIB="${SPPROOT}/runtime"
 SPPLIBSRC="${SPPLIB}/src"
 SPPLIBOBJ="${SPPLIB}/obj"
-TESTSRC="${SPPROOT}/examples"
+TESTSRC="${SPPROOT}/examples/simple_example"
 
 # WRAP_LIST="-Wl,-wrap,malloc -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
 #            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
@@ -57,7 +57,7 @@ rm -rf /dev/shm/spp_test.pool
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 # $CLANG -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
-$CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -I../pmdk/src/include/ -emit-llvm example.c
+$CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -I${PMDKSRC}/include/ -emit-llvm example.c
 
 #clang -O -emit-llvm ../runtime/runtime.c -c -o runtime.bc #produce runtime bitcode
 

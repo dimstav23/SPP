@@ -23,6 +23,7 @@ struct root_ {
 
 struct dummy {
 	uint64_t x[2];
+	PMEMoid next;
 };
 
 
@@ -39,11 +40,16 @@ void test_func_ptr(uint64_t *ptr, uint64_t set, uint64_t *ptr_2) {
 void test_memcpy(PMEMobjpool* pop) {
 	
 	PMEMoid oid1,oid2;
-	pmemobj_alloc(pop, &oid1, sizeof(struct dummy), 0, NULL, NULL);
-	pmemobj_alloc(pop, &oid2, sizeof(struct dummy), 0, NULL, NULL);
+	PMEMoid *oid_ptr1, *oid_ptr2;
+	oid_ptr1 = (PMEMoid*)malloc(sizeof(PMEMoid));
+	oid_ptr2 = (PMEMoid*)malloc(sizeof(PMEMoid));
 
-	struct dummy* ptr1 = pmemobj_direct(oid1);
-	struct dummy* ptr2 = pmemobj_direct(oid2);
+	pmemobj_alloc(pop, oid_ptr1, sizeof(struct dummy), 0, NULL, NULL);
+	struct dummy* ptr1 = pmemobj_direct(*oid_ptr1);
+
+	pmemobj_alloc(pop, &ptr1->next, sizeof(struct dummy), 0, NULL, NULL);
+
+	struct dummy* ptr2 = pmemobj_direct(ptr1->next);
 
 	ptr1->x[0] = 4;
 	ptr2->x[1] = 2;
@@ -52,8 +58,11 @@ void test_memcpy(PMEMobjpool* pop) {
 
 	printf("%ld %ld\n", ptr2->x[0], ptr2->x[1]);
 
-	pmemobj_free(&oid1);
-	pmemobj_free(&oid2);
+	pmemobj_free(&ptr1->next);
+	pmemobj_free(oid_ptr1);
+
+	free(oid_ptr1);
+	free(oid_ptr2);
 	return;
 } 
 

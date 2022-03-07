@@ -208,7 +208,7 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);   
     // -1 is applied due to addressing starting from 0   
-    dbg(printf(">>%s with %p and offset %ld and tag %ld\n", __func__, ptr, off, tag);)
+    dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
     tag = tag + (off - 1); 
     
     uintptr_t tempval = ((uintptr_t)tag)<<NUM_USED_BITS;
