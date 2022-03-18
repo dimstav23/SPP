@@ -21,7 +21,10 @@ FILES := spp wrappers_spp
 
 TARGET := $(addprefix $(OBJ_FOLDER), $(addsuffix .o, $(FILES)))
 
-all: $(TARGET)
+all: $(OBJ_FOLDER) $(TARGET)
+
+$(OBJ_FOLDER):
+	@mkdir -p $(OBJ_FOLDER)
 
 $(OBJ_FOLDER)%.o: $(SRC_FOLDER)%.c Makefile
 	$(CC) $< -c $(CFLAGS) -o $@
