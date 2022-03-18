@@ -16,18 +16,24 @@ extern "C" {
 #include <assert.h>
 #include <math.h>
 
-#define __SPP_MASK_TAG_OUT 0x7FFFFFFFFF
+#define POINTER_BITS (sizeof (void*) * 8)
+#define OVERFLOW_BIT 1
+#define PM_PTR_BIT 1
 
-//#define TAGLENGTH 15 // TODO: change to compile parameter
-//#define PTRSIZEBITS (64 - TAGLENGTH)
-//#define PTRVALMASK ((1ULL << PTRSIZEBITS) - 1ULL)
-//#define TAGMASK (~PTRVALMASK)
+#ifndef TAG_BITS
+#define TAG_BITS 26
+#endif
 
-#define NUM_SPARE_BITS 25 
-#define NUM_USED_BITS (64-NUM_SPARE_BITS) 
+#define NUM_RESERVED_BITS (PM_PTR_BIT + OVERFLOW_BIT + TAG_BITS) 
+#define NUM_PTR_BITS (POINTER_BITS - NUM_RESERVED_BITS)
 
-#define NUM_X86_SPARE_BITS 16 
-#define NUM_X86_USED_BITS (64-NUM_X86_SPARE_BITS) 
+#define PM_PTR_SET (1ULL << (POINTER_BITS - 1))
+
+#define PTR_MASK ((1ULL << NUM_PTR_BITS) - 1)
+
+#define PM_PTR_MASK (1ULL << (POINTER_BITS - 1))
+#define OVERFLOW_MASK  (1ULL << (POINTER_BITS - PM_PTR_BIT - 1))
+#define TAG_MASK ~PM_PTR_MASK & ~PTR_MASK
 
 extern void* __spp_cleantag (void *ptr);
 extern void* __spp_cleantag_external (void *ptr);

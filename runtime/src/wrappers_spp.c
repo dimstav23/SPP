@@ -228,7 +228,7 @@ __wrap_memchr(void *str, int c, size_t n)
     
   if (result != NULL)
   {
-    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
+    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_PTR_BITS); 
     result= (char*)(tag | (uintptr_t)result); 
   }
 
@@ -251,7 +251,7 @@ __wrap_strchr(char *str, int c)
 
   if (result!=NULL)
   {
-    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_USED_BITS); 
+    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_PTR_BITS); 
     result = (char*)(tag | (uintptr_t)result); 
   }
   
