@@ -228,8 +228,13 @@ __wrap_memchr(void *str, int c, size_t n)
     
   if (result != NULL)
   {
-    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_PTR_BITS); 
-    result= (char*)(tag | (uintptr_t)result); 
+    uintptr_t tag;
+    if ( (tag = __spp_extract_tagval((void *)str)) )
+    {
+      tag += (uintptr_t)result - (uintptr_t)str;
+      tag = tag << NUM_PTR_BITS;
+      result = (char*)(tag | (uintptr_t)result);
+    }
   }
 
   return result; 
@@ -251,8 +256,13 @@ __wrap_strchr(char *str, int c)
 
   if (result!=NULL)
   {
-    uintptr_t tag = (uintptr_t)str & (((uintptr_t)(~0))<<NUM_PTR_BITS); 
-    result = (char*)(tag | (uintptr_t)result); 
+    uintptr_t tag;
+    if ( (tag = __spp_extract_tagval((void *)str)) )
+    {
+      tag += (uintptr_t)result - (uintptr_t)str;
+      tag = tag << NUM_PTR_BITS;
+      result = (char*)(tag | (uintptr_t)result);
+    }
   }
   
   return result; 

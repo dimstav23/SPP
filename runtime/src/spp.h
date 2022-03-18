@@ -44,6 +44,8 @@ extern void* __spp_update_pointer(void *ptr, int64_t off);
 
 extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
 
+extern uintptr_t __spp_extract_tagval(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif
