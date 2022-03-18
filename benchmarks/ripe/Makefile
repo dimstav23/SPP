@@ -34,9 +34,10 @@ CFLAGS=${OPT_LEVEL} \
 -Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so  \
 -include ${SPPLIBSRC}/spp.h \
 -I${PMDKSRC}/include/ -L${PMDKSRC}/nondebug/ \
-${WRAP_LIST} ${SPPLIBOBJ}/wrappers.o \
--Xlinker ${SPPLIBOBJ}/spp_hookobj.o \
--DTAG_BITS=24
+${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o \
+-Xlinker ${SPPLIBOBJ}/spp.o \
+-fno-builtin \
+-DTAG_BITS=26
 
 
 all: build/gcc_attack_gen_system_heap build/clang_attack_gen_system_heap build/clang_attack_gen_pmemobj_heap build/gcc_attack_gen_pmemobj_heap

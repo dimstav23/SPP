@@ -44,9 +44,9 @@ $OPT_LEVEL \
 -Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/nondebug/" \
-$WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
--Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
--DTAG_BITS=24 -lpmem -lpmemobj \
+$WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
+-Xlinker "${SPPLIBOBJ}/spp.o" \
+-DTAG_BITS=26 -lpmem -lpmemobj \
 "${TESTSRC}/example.c" \
 -ggdb -g \
 -fno-builtin \
@@ -71,7 +71,7 @@ opt $OPT_LEVEL -load "${LLVMROOT}/build/lib/LLVMSPP.so" -S example.ll -o example
 # rm -rf example
 
 # #https://lists.llvm.org/pipermail/llvm-dev/2013-January/058038.html
-# clang -Xclang -load -Xclang ../pass/spp.so  -O2 -I../pmdk/src/include/ -L../pmdk/src/debug/ -DTAG_BITS=15 -lpmem -lpmemobj example.c -o example
+# clang -Xclang -load -Xclang ../pass/spp.so  -O2 -I../pmdk/src/include/ -L../pmdk/src/debug/ -DTAG_BITS=26 -lpmem -lpmemobj example.c -o example
 
 # rm -rf /dev/shm/spp_test.pool
 # LD_LIBRARY_PATH=../pmdk/src/nondebug ./example

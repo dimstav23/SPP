@@ -128,7 +128,7 @@ __wrap_strlen(const char *str)
 char*
 __wrap_strcpy(char *dest, char *src)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s dest:%p src:%p\n", __func__, dest, src);)
      
   // 1. get objsize (dest) strlen(src) 
@@ -153,7 +153,7 @@ __wrap_strcpy(char *dest, char *src)
 int 
 __wrap_strcmp(char *str1, char *str2)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str1:%p str2:%p\n", __func__, str1, str1);)
    
   return __real_strcmp((char*)__spp_memintr_check_and_clean(str1, strlen(str1) + 1), 
@@ -169,7 +169,7 @@ __wrap_strcmp(char *str1, char *str2)
 int 
 __wrap_strncmp(char *str1, char *str2, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str1, n);)
     
   return __real_strncmp((char*)__spp_memintr_check_and_clean((void*)str1, n), 
@@ -186,7 +186,7 @@ __wrap_strncmp(char *str1, char *str2, size_t n)
 char*
 __wrap_strncpy(char *dest, char *src, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
 
   __real_strncpy((char*)__spp_memintr_check_and_clean((void*)dest, n), 
@@ -204,7 +204,7 @@ __wrap_strncpy(char *dest, char *src, size_t n)
 int 
 __wrap_memcmp(void *str1, void *str2, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str1, n);)
   return __real_memcmp((void*)__spp_memintr_check_and_clean(str1, n), 
                         (void*)__spp_memintr_check_and_clean(str2, n), n);
@@ -219,7 +219,7 @@ __wrap_memcmp(void *str1, void *str2, size_t n)
 void*
 __wrap_memchr(void *str, int c, size_t n) 
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str:%p c:%d size:%ld\n", __func__, str, c, n);)
 
   void *result = __real_memchr(
@@ -244,7 +244,7 @@ __wrap_memchr(void *str, int c, size_t n)
 char* 
 __wrap_strchr(char *str, int c)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str:%p c:%d\n", __func__, str, c);)
   
   char *result = __real_strchr((char*)__spp_cleantag_external(str),c);
@@ -267,7 +267,7 @@ __wrap_strchr(char *str, int c)
 char* 
 __wrap_strcat(char *dest, const char *src)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s dest:%p %ld src:%p %ld\n", __func__, dest, strlen(dest), src, strlen(src));)
   
   __real_strcat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + strlen(src) + 1),
@@ -285,7 +285,7 @@ __wrap_strcat(char *dest, const char *src)
 char* 
 __wrap_strncat(char *dest, char *src, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
   
   __real_strncat((char*)__spp_memintr_check_and_clean((void*)dest, strlen(dest) + n + 1),
@@ -304,7 +304,7 @@ __wrap_strncat(char *dest, char *src, size_t n)
 long int 
 __wrap_strtol (char *str, char **endptr, int base)
 {
-    printf(">>%s\n",__func__);
+    dbg(printf(">>%s\n",__func__);)
     dbg(printf(">>%s str:%p endptr:%p base:%d\n", __func__, str, endptr, base);)
 
     return __real_strtol((char*)__spp_cleantag_external(str), 
@@ -320,7 +320,7 @@ __wrap_strtol (char *str, char **endptr, int base)
 void* 
 __wrap_memcpy (void *dest, const void *src, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s dest:%p src:%p size:%ld\n", __func__, dest, src, n);)
 
   return __real_memcpy((void*)__spp_memintr_check_and_clean(dest, n), 
@@ -336,7 +336,7 @@ __wrap_memcpy (void *dest, const void *src, size_t n)
 void* 
 __wrap_memset(void *str, int c, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str:%p c:%d size:%ld\n", __func__, str, c, n);)
 
   return __real_memset((void*)__spp_memintr_check_and_clean(str, n), c, n);
@@ -351,7 +351,7 @@ __wrap_memset(void *str, int c, size_t n)
 void* 
 __wrap_memmove(void *str1, const void *str2, size_t n)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str1:%p str2:%p size:%ld\n", __func__, str1, str2, n);)
 
   return __real_memmove((void*)__spp_memintr_check_and_clean(str1, n), 
@@ -369,7 +369,7 @@ __wrap_memmove(void *str1, const void *str2, size_t n)
 ////////////////////////
 int __wrap_snprintf(char *str, size_t size, const char *format, ...)
 {
-  printf(">>%s\n",__func__);
+  dbg(printf(">>%s\n",__func__);)
   dbg(printf(">>%s str:%p size:%ld\n", __func__, str, size);)
 
   return __real_snprintf((char*)__spp_memintr_check_and_clean(str, size), 

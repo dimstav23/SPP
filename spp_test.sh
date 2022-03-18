@@ -33,12 +33,12 @@ function should_crash {
   erase_line
   if ! ( echo "$output" | grep PMDK_ASAN_PASS_FLAG) >/dev/null # Crashed too early
   then
-      echo -e "${RED}Test for $command failed.${NC}"
+      echo -e "${RED}Test for $command failed. Crashed too early.${NC}"
       return 1
   fi
   if ( echo "$output" | grep PMDK_ASAN_FAIL_FLAG) >/dev/null # Crashed too late
   then
-      echo -e "${RED}Test for $command failed.${NC}"
+      echo -e "${RED}Test for $command failed. Crashed too late.${NC}"
       return 1
   fi
   echo -e "${GREEN}$command OK.${NC}"
@@ -70,13 +70,13 @@ cd build
 
 SPPLIBOBJ=${SPPBASE}/runtime/obj
 
-WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,strchrnul '
+WRAP_LIST='-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,strchrnul -Wl,-wrap,strcat -Wl,-wrap,snprintf'
 
-CFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+CFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O1 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
-CXXFLAGS='-flto -O2 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+CXXFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O1 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
-LDFLAGS='-fuse-ld=gold '${WRAP_LIST}' '${SPPBASE}'/runtime/obj/wrappers.o -Xlinker '${SPPBASE}'/runtime/obj/spp_hookobj.o'
+LDFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fuse-ld=gold '${WRAP_LIST}' '${SPPBASE}'/runtime/obj/wrappers_spp.o -Xlinker '${SPPBASE}'/runtime/obj/spp.o'
 
 echo "__CLANG:    $(which clang)"
 echo "__CLANG++:  $(which clang++)"

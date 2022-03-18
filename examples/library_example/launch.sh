@@ -39,7 +39,7 @@ $OPT_LEVEL \
 -Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I${PMDKSRC}/include/" \
-$WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
+$WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
 "${TESTSRC}/libfuncs.c" \
 -ggdb -g \
 -fno-builtin \
@@ -47,8 +47,8 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
 
 echo ">>>>>>> Build static library"
 $CLANG \
--flto \
 -c \
+-flto \
 -fPIC \
 $OPT_LEVEL \
 -U_FORTIFY_SOURCE \
@@ -77,9 +77,9 @@ $OPT_LEVEL \
 -include "${SPPLIBSRC}/spp.h" \
 "-I./" "-L./" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/nondebug/" \
-$WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
--Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
--DTAG_BITS=24 -lfuncs -lpmem -lpmemobj \
+$WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
+-Xlinker "${SPPLIBOBJ}/spp.o" \
+-DTAG_BITS=26 -lfuncs -lpmem -lpmemobj \
 "${TESTSRC}/driver.c" \
 -ggdb -g \
 -fno-builtin \
@@ -91,20 +91,18 @@ $OPT_LEVEL \
 -U_FORTIFY_SOURCE \
 -D_FORTIFY_SOURCE=0 \
 -flto \
--fuse-ld=gold \
 -Xclang -load -Xclang "${LLVMROOT}/build/lib/LLVMSPP.so"  \
 -include "${SPPLIBSRC}/spp.h" \
 "-I./" \
 "-I${PMDKSRC}/include/" "-L${PMDKSRC}/nondebug/" \
-$WRAP_LIST "${SPPLIBOBJ}/wrappers.o" \
--Xlinker "${SPPLIBOBJ}/spp_hookobj.o" \
--DTAG_BITS=24 -lpmem -lpmemobj \
+$WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
+-Xlinker "${SPPLIBOBJ}/spp.o" \
+-DTAG_BITS=26 -lpmem -lpmemobj \
 "${TESTSRC}/driver.c" \
 -ggdb -g \
 -fno-builtin \
 -o driver_static \
 ./libfuncs.a
-
 
 echo ">>>>>>> Build llvm IRs"
 $CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -I${PMDKSRC}/include/ -emit-llvm libfuncs.c

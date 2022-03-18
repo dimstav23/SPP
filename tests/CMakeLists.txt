@@ -26,8 +26,9 @@ function (spp_test target)
         -fuse-ld=gold 
         -Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp 
 	-Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat -Wl,-wrap,strtol -Wl,-wrap,strlen
-	-Wl,-wrap,strchrnul -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove ${SPPBASE}/runtime/obj/wrappers.o 
-        -Xlinker ${SPPBASE}/runtime/obj/spp_hookobj.o 
+	-Wl,-wrap,strchrnul -Wl,-wrap,memcpy -Wl,-wrap,strcat -Wl,-wrap,snprintf -Wl,-wrap,memset -Wl,-wrap,memmove 
+        ${SPPBASE}/runtime/obj/wrappers_spp.o 
+        -Xlinker ${SPPBASE}/runtime/obj/spp.o 
         -v)
 
 	target_link_libraries(

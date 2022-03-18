@@ -20,9 +20,10 @@ pkgs.mkShell {
     pkgs.gdb
     pkgs.python
     pkgs.valgrind
-    #(pkgs.python39.withPackages (ps: [
-    # 	ps.matplotlib
-    #]))
+    (pkgs.python39.withPackages (ps: [
+     	ps.matplotlib
+	ps.pyyaml
+    ]))
     (pkgs.callPackage ./impure-clang.nix {})
   ];
 
