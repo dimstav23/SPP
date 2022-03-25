@@ -196,11 +196,11 @@ __spp_updatetag(void *ptr, int64_t off) {
         //if ptr is not tagged, return!
         return ptr; 
     }
-    
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
     tag = tag + off;  
     
-    uintptr_t tempval = ((uintptr_t)tag)<<NUM_PTR_BITS | PM_PTR_SET;
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS | PM_PTR_SET;
     uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
     uintptr_t ptrval = untagged | tempval; 
     
@@ -237,7 +237,7 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
     tag = tag + (off - 1); 
     
-    uintptr_t tempval = ((uintptr_t)tag)<<NUM_PTR_BITS | PM_PTR_SET;
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS | PM_PTR_SET;
     uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
     uintptr_t ptrval = untagged | tempval; 
     

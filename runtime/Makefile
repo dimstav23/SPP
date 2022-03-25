@@ -1,8 +1,13 @@
 CC := $(shell which clang)
-CFLAGS := -O1
-BMI_SUPP := $(shell lscpu | grep bmi2)
+CFLAGS := -O2
+BMI1_SUPP := $(shell lscpu | grep bmi1)
+BMI2_SUPP := $(shell lscpu | grep bmi2)
 
-ifneq ($(BMI_SUPP),)
+ifneq ($(BMI1_SUPP),)
+CFLAGS += -mbmi
+endif
+
+ifneq ($(BMI2_SUPP),)
 CFLAGS += -mbmi2
 endif
 
