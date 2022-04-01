@@ -98,7 +98,7 @@ $OPT_LEVEL \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
 -Xlinker "${SPPLIBOBJ}/spp.o" \
 -DTAG_BITS=26 -lpmem -lpmemobj \
-"${TESTSRC}/driver.c" \
+-rdynamic "${TESTSRC}/driver.c" \
 -ggdb -g \
 -fno-builtin \
 -o driver_static \

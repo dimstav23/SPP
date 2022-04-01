@@ -47,7 +47,7 @@ $OPT_LEVEL \
 $WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
 -Xlinker "${SPPLIBOBJ}/spp.o" \
 -DTAG_BITS=26 -lpmem -lpmemobj \
-"${TESTSRC}/example.c" \
+-rdynamic "${TESTSRC}/example.c" \
 -ggdb -g \
 -fno-builtin \
 -o example #-v
