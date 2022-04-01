@@ -80,6 +80,8 @@ Currently the passes produce a lot of debug messages. In order to control the de
 ## Code structure
 
 ### Directories
+`benchmarks`: folder containing the benchmark scripts
+
 `llvm-project`: llvm fork that contains and registers the passes needed for SPP
 
 `runtime`: runtime library for the hook functions
@@ -93,3 +95,30 @@ Currently the passes produce a lot of debug messages. In order to control the de
 `llvm-project/llvm/lib/Transforms/SPP/spp.cpp`: SPP module pass implementation
 
 `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation
+
+### How to run pmembench
+First make sure that you have correctly compiled `llvm/clang` as defined above and you use the `nix-shell` to use the appropriate wrappers.
+
+Compile PMDK and the instrumented pmembench benchmarks (uses the default number of tag bits):
+```
+cd $PROJECT_ROOT/pmdk/
+make clobber
+make clean
+make -j$(nproc) 
+```
+Run the `pmembench` with the `pmembench_map.cfg` (persistent indices) and `pmembench_tx_spp.cfg` (PM management operations):
+```
+cd $PROJECT_ROOT/pmdk/src/benchmarks
+LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_map.cfg
+LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_tx_spp.cfg
+```
+Note that this execution redirects the output to `stdout`. To store it in a file, simply redirect it to the file of your choice.
+
+For the PMDK baseline, compile the native PMDK with:
+```
+cd $PROJECT_ROOT/pmdk/
+make clobber
+make clean
+make -j$(nproc) SPP_OFF=1
+```
+Then run again the `pmembench` commands as explained above.
