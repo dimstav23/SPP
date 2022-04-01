@@ -10,6 +10,7 @@ pkgs.mkShell {
   ];
   # add tools here
   nativeBuildInputs = [
+    pkgs.gcc10
     pkgs.pkg-config
     pkgs.pandoc
     pkgs.m4
@@ -20,6 +21,8 @@ pkgs.mkShell {
     pkgs.gdb
     pkgs.python
     pkgs.valgrind
+    pkgs.autoreconfHook
+    pkgs.numactl
     (pkgs.python39.withPackages (ps: [
      	ps.matplotlib
 	ps.pyyaml
@@ -28,10 +31,14 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export CMAKE_C_COMPILER=${pkgs.gcc}/bin/gcc
-    export CC=${pkgs.gcc}/bin/gcc
-    export CMAKE_CXX_COMPILER=${pkgs.gcc}/bin/g++
-    export CXX=${pkgs.gcc}/bin/g++
+    export CMAKE_C_COMPILER=clang
+    export CC=clang
+    export CMAKE_CXX_COMPILER=clang++
+    export CXX=clang++
+    #export CMAKE_C_COMPILER=${pkgs.gcc}/bin/gcc
+    #export CC=${pkgs.gcc}/bin/gcc
+    #export CMAKE_CXX_COMPILER=${pkgs.gcc}/bin/g++
+    #export CXX=${pkgs.gcc}/bin/g++
     export BINUTILS_DIR=${pkgs.binutils-unwrapped}/include
   '';
 
