@@ -4,8 +4,8 @@
 	branch = spp-main
 [submodule "llvm-project"]
 	path = llvm-project
-	url = https://github.com/poolmoo/llvm-project.git
-	branch = spp-lto.llvm.12.0.0 
+	url = https://github.com/dimstav23/llvm-project.git
+	branch = transaction-handling 
 [submodule "PMDebugger"]
 	path = benchmarks/crash_consistency/PMDebugger
 	url = https://github.com/PASAUCMerced/PMDebugger.git
