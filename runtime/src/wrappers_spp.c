@@ -226,7 +226,7 @@ __wrap_memchr(void *str, int c, size_t n)
                 (void*)__spp_memintr_check_and_clean((void*)str , n),
                 c, n); 
     
-  if (result != NULL)
+  if (result != NULL && __spp_is_pm_ptr((void*)result))
   {
     uintptr_t tag;
     if ( (tag = __spp_extract_tagval((void *)str)) )
@@ -254,7 +254,7 @@ __wrap_strchr(char *str, int c)
   
   char *result = __real_strchr((char*)__spp_cleantag_external(str),c);
 
-  if (result!=NULL)
+  if (result!=NULL && __spp_is_pm_ptr((void*)result))
   {
     uintptr_t tag;
     if ( (tag = __spp_extract_tagval((void *)str)) )
