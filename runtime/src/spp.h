@@ -46,6 +46,8 @@ extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
 
 extern uintptr_t __spp_extract_tagval(void *ptr);
 
+extern uintptr_t __spp_is_pm_ptr(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif
