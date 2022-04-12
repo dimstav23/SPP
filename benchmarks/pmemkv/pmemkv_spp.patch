@@ -1,0 +1,75 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a2f5c7a..0db014d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -38,6 +38,10 @@ option(ENGINE_TREE3 "enable experimental tree3 engine" OFF)
+ option(ENGINE_RADIX "enable experimental radix engine" OFF)
+ option(ENGINE_ROBINHOOD "enable experimental robinhood engine (requires CXX_STANDARD to be set to value >= 14)" OFF)
+ 
++## SPP specific paths
++set(LLVMROOT "../../llvm-project" CACHE STRING "path to LLVM root directory")
++set(SPPLIBOBJ "../../runtime/obj" CACHE STRING "path to SPP runtime object files")
++
+ # ----------------------------------------------------------------- #
+ ## Set required and useful variables
+ # ----------------------------------------------------------------- #
+@@ -233,7 +237,36 @@ add_common_flag(-Wsign-conversion)
+ add_common_flag(-ggdb DEBUG)
+ add_common_flag(-DDEBUG DEBUG)
+ 
+-add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" RELEASE)
++add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
++
++# ----------------------------------------------------------------- #
++## Setup SPP flags
++# ----------------------------------------------------------------- #
++
++message(STATUS "LLVM root directory is ${LLVMROOT}")
++if(NOT(EXISTS "${LLVMROOT}/build/lib/LLVMSPP.so"))
++	message(FATAL_ERROR "Couldn't locate SPP Pass in LLVM installation")
++endif()
++
++message(STATUS "SPP runtime library object directory is ${SPPLIBOBJ}")
++if(NOT((EXISTS "${SPPLIBOBJ}/wrappers_spp.o") AND (EXISTS "${SPPLIBOBJ}/wrappers_spp.o")))
++	message(FATAL_ERROR "Couldn't locate SPP runtime lib object files")
++endif()
++
++add_common_flag(-fno-builtin)
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
++add_common_flag("-Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so")
++
++set(WRAP_LIST "-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
++-Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
++-Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
++-Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
++-Wl,-wrap,strcat -Wl,-wrap,snprintf \
++-Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove")
++
++set(BUILD_EXEC_FLAGS "${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o -Xlinker ${SPPLIBOBJ}/spp.o")
++
++set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BUILD_EXEC_FLAGS}")
+ 
+ # ----------------------------------------------------------------- #
+ ## Setup environment, find packages,
+@@ -278,7 +311,7 @@ string(REPLACE ";" ", " DEB_PACKAGE_REQUIRES "${DEB_DEPENDS}")
+ # ----------------------------------------------------------------- #
+ ## Link libraries, setup targets
+ # ----------------------------------------------------------------- #
+-add_library(pmemkv SHARED ${SOURCE_FILES})
++add_library(pmemkv STATIC ${SOURCE_FILES})
+ set_target_properties(pmemkv PROPERTIES SOVERSION 1)
+ target_link_libraries(pmemkv PRIVATE
+ 	-Wl,--version-script=${PMEMKV_ROOT_DIR}/src/libpmemkv.map)
+diff --git a/src/engines/cmap.cc b/src/engines/cmap.cc
+index 01b10d1..0946f6a 100644
+--- a/src/engines/cmap.cc
++++ b/src/engines/cmap.cc
+@@ -14,7 +14,7 @@ namespace kv
+ cmap::cmap(std::unique_ptr<internal::config> cfg) : pmemobj_engine_base(cfg, "pmemkv")
+ {
+ 	static_assert(
+-		sizeof(internal::cmap::string_t) == 40,
++		sizeof(internal::cmap::string_t) == 40 || sizeof(internal::cmap::string_t) == 48,
+ 		"Wrong size of cmap value and key. This probably means that std::string has size > 32");
+ 
+ 	LOG("Started ok");

@@ -1,0 +1,427 @@
+diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
+index 01feea1a..8d3a4eb5 100644
+--- a/examples/CMakeLists.txt
++++ b/examples/CMakeLists.txt
+@@ -17,7 +17,7 @@ if(MSVC_VERSION)
+ 	add_flag("-D_FORTIFY_SOURCE=2" RELEASE)
+ else()
+ 	add_flag(-Wall)
+-	add_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" RELEASE)
++	add_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" RELEASE)
+ endif()
+ add_flag(-Wpointer-arith)
+ add_flag(-Wsign-compare)
+@@ -31,6 +31,40 @@ add_flag(-Wno-maybe-uninitialized)
+ add_flag(-ggdb DEBUG)
+ add_flag(-DDEBUG DEBUG)
+ 
++# ----------------------------------------------------------------- #
++## Setup SPP flags
++# ----------------------------------------------------------------- #
++
++## SPP specific paths
++set(LLVMROOT "../../llvm-project" CACHE STRING "path to LLVM root directory")
++set(SPPLIBOBJ "../../runtime/obj" CACHE STRING "path to SPP runtime object files")
++
++message(STATUS "LLVM root directory is ${LLVMROOT}")
++if(NOT(EXISTS "${LLVMROOT}/build/lib/LLVMSPP.so"))
++	message(FATAL_ERROR "Couldn't locate SPP Pass in LLVM installation")
++endif()
++
++message(STATUS "SPP runtime library object directory is ${SPPLIBOBJ}")
++if(NOT((EXISTS "${SPPLIBOBJ}/wrappers_spp.o") AND (EXISTS "${SPPLIBOBJ}/wrappers_spp.o")))
++	message(FATAL_ERROR "Couldn't locate SPP runtime lib object files")
++endif()
++
++add_flag(-fno-builtin)
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
++add_flag("-Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so")
++
++set(WRAP_LIST "-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
++           -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
++           -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
++           -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
++           -Wl,-wrap,strcat -Wl,-wrap,snprintf \
++           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove")
++
++set(BUILD_EXEC_FLAGS "${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o -Xlinker ${SPPLIBOBJ}/spp.o")
++
++set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BUILD_EXEC_FLAGS}")
++
++
+ if(USE_ASAN)
+ 	add_sanitizer_flag(address)
+ endif()
+diff --git a/include/libpmemobj++/container/concurrent_hash_map.hpp b/include/libpmemobj++/container/concurrent_hash_map.hpp
+index 051dee49..0aa4ced3 100644
+--- a/include/libpmemobj++/container/concurrent_hash_map.hpp
++++ b/include/libpmemobj++/container/concurrent_hash_map.hpp
+@@ -1368,7 +1368,8 @@ public:
+ 	get_pool_base()
+ 	{
+ 		PMEMobjpool *pop =
+-			pmemobj_pool_by_oid(PMEMoid{my_pool_uuid, 0});
++			// pmemobj_pool_by_oid(PMEMoid{my_pool_uuid, 0});
++			pmemobj_pool_by_oid(PMEMoid{my_pool_uuid, 0, 0});
+ 
+ 		return pool_base(pop);
+ 	}
+diff --git a/include/libpmemobj++/detail/persistent_pool_ptr.hpp b/include/libpmemobj++/detail/persistent_pool_ptr.hpp
+index 4c37d561..6f21bca2 100644
+--- a/include/libpmemobj++/detail/persistent_pool_ptr.hpp
++++ b/include/libpmemobj++/detail/persistent_pool_ptr.hpp
+@@ -30,7 +30,7 @@ public:
+ 	 */
+ 	typedef typename pmem::detail::sp_element<T>::type element_type;
+ 
+-	persistent_pool_ptr() : off(0)
++	persistent_pool_ptr() : off(0), size(0)
+ 	{
+ 		verify_type();
+ 	}
+@@ -38,7 +38,7 @@ public:
+ 	/**
+ 	 *  Default null constructor, zeroes the off.
+ 	 */
+-	persistent_pool_ptr(std::nullptr_t) noexcept : off(0)
++	persistent_pool_ptr(std::nullptr_t) noexcept : off(0), size(0)
+ 	{
+ 		verify_type();
+ 	}
+@@ -50,7 +50,7 @@ public:
+ 	 *
+ 	 * @param oid C-style persistent pointer
+ 	 */
+-	persistent_pool_ptr(PMEMoid oid) noexcept : off(oid.off)
++	persistent_pool_ptr(PMEMoid oid) noexcept : off(oid.off), size(oid.size)
+ 	{
+ 		verify_type();
+ 	}
+@@ -62,8 +62,9 @@ public:
+ 	 *
+ 	 * @param off offset inside persistent memory pool
+ 	 */
+-	persistent_pool_ptr(uint64_t _off) noexcept : off(_off)
++	persistent_pool_ptr(uint64_t _off) noexcept : off(_off), size(0)
+ 	{
++		std::cout << "FIXME: erroneous behaviour -- unsafe ptr\n";
+ 		verify_type();
+ 	}
+ 
+@@ -77,7 +78,7 @@ public:
+ 		  typename = typename std::enable_if<
+ 			  std::is_convertible<Y *, T *>::value>::type>
+ 	persistent_pool_ptr(const persistent_pool_ptr<Y> &r) noexcept
+-	    : off(r.off)
++	    : off(r.off), size(r.size)
+ 	{
+ 		verify_type();
+ 	}
+@@ -92,7 +93,7 @@ public:
+ 		  typename = typename std::enable_if<
+ 			  std::is_convertible<Y *, T *>::value>::type>
+ 	persistent_pool_ptr(const pmem::obj::persistent_ptr<Y> &r) noexcept
+-	    : off(r.raw().off)
++	    : off(r.raw().off), size(r.raw().size)
+ 	{
+ 		verify_type();
+ 	}
+@@ -102,7 +103,7 @@ public:
+ 	 *
+ 	 * @param r Persistent pool pointer to the same type.
+ 	 */
+-	persistent_pool_ptr(const persistent_pool_ptr &r) noexcept : off(r.off)
++	persistent_pool_ptr(const persistent_pool_ptr &r) noexcept : off(r.off), size(r.size)
+ 	{
+ 		verify_type();
+ 	}
+@@ -113,7 +114,7 @@ public:
+ 	 * @param r Persistent pointer to the same type.
+ 	 */
+ 	persistent_pool_ptr(const pmem::obj::persistent_ptr<T> &r) noexcept
+-	    : off(r.raw().off)
++	    : off(r.raw().off), size(r.raw().size)
+ 	{
+ 		verify_type();
+ 	}
+@@ -122,7 +123,7 @@ public:
+ 	 * Move constructor.
+ 	 */
+ 	persistent_pool_ptr(persistent_pool_ptr &&r) noexcept
+-	    : off(std::move(r.off))
++	    : off(std::move(r.off)), size(std::move(r.size))
+ 	{
+ 		verify_type();
+ 	}
+@@ -135,7 +136,8 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = std::move(r.off);
+-
++		this->size = std::move(r.size);
++		
+ 		return *this;
+ 	}
+ 
+@@ -162,6 +164,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = r.off;
++		this->size = r.size;
+ 
+ 		return *this;
+ 	}
+@@ -181,6 +184,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = r.raw().off;
++		this->size = r.raw().size;
+ 
+ 		return *this;
+ 	}
+@@ -200,6 +204,8 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = oid.off;
++		this->size = oid.size;
++
+ 		return *this;
+ 	}
+ 
+@@ -222,6 +228,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = r.off;
++		this->size = r.size;
+ 
+ 		return *this;
+ 	}
+@@ -245,6 +252,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off = r.raw().off;
++		this->size = r.raw().size;
+ 
+ 		return *this;
+ 	}
+@@ -259,7 +267,8 @@ public:
+ 	element_type *
+ 	get(uint64_t pool_uuid) const noexcept
+ 	{
+-		PMEMoid oid = {pool_uuid, this->off};
++		// PMEMoid oid = {pool_uuid, this->off};
++		PMEMoid oid = {pool_uuid, this->off, this->size};
+ 		return static_cast<element_type *>(pmemobj_direct(oid));
+ 	}
+ 
+@@ -279,7 +288,8 @@ public:
+ 	pmem::obj::persistent_ptr<T>
+ 	get_persistent_ptr(uint64_t pool_uuid) const noexcept
+ 	{
+-		PMEMoid oid = {pool_uuid, this->off};
++		// PMEMoid oid = {pool_uuid, this->off};
++		PMEMoid oid = {pool_uuid, this->off, this->size};
+ 		return pmem::obj::persistent_ptr<T>(oid);
+ 	}
+ 
+@@ -292,6 +302,7 @@ public:
+ 		conditional_add_to_tx(this);
+ 		conditional_add_to_tx(&other);
+ 		std::swap(this->off, other.off);
++		std::swap(this->size, other.size);
+ 	}
+ 
+ 	/*
+@@ -312,7 +323,8 @@ public:
+ 	PMEMoid
+ 	raw_oid(uint64_t pool_uuid) const noexcept
+ 	{
+-		PMEMoid oid = {pool_uuid, this->off};
++		// PMEMoid oid = {pool_uuid, this->off};
++		PMEMoid oid = {pool_uuid, this->off, this->size};
+ 		return oid;
+ 	}
+ 
+@@ -337,6 +349,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off += sizeof(T);
++		this->size -= sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -349,7 +362,7 @@ public:
+ 	{
+ 		persistent_pool_ptr<T> ret(*this);
+ 		++(*this);
+-
++		std::cout << "FIXME: erroneous behaviour -- unsafe ptr\n";
+ 		return ret;
+ 	}
+ 
+@@ -361,6 +374,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off -= sizeof(T);
++		this->size += sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -373,7 +387,7 @@ public:
+ 	{
+ 		persistent_pool_ptr<T> ret(*this);
+ 		--(*this);
+-
++		std::cout << "FIXME: erroneous behaviour -- unsafe ptr\n";
+ 		return ret;
+ 	}
+ 
+@@ -385,6 +399,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off += s * sizeof(T);
++		this->size -= s *sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -397,6 +412,7 @@ public:
+ 	{
+ 		conditional_add_to_tx(this);
+ 		this->off -= s * sizeof(T);
++		this->size += s * sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -406,6 +422,7 @@ public:
+ 	{
+ 		persistent_pool_ptr<T> ret(*this);
+ 		ret.off += s * sizeof(T);
++		ret.size -= s *sizeof(T);
+ 
+ 		return ret;
+ 	}
+@@ -415,6 +432,7 @@ public:
+ 	{
+ 		persistent_pool_ptr<T> ret(*this);
+ 		ret.off -= s * sizeof(T);
++		ret.size += s *sizeof(T);
+ 
+ 		return ret;
+ 	}
+@@ -422,6 +440,7 @@ public:
+ private:
+ 	/* offset of persistent object in a persistent memory pool*/
+ 	uint64_t off;
++	uint64_t size;
+ 
+ 	void
+ 	verify_type()
+@@ -501,7 +520,8 @@ static_persistent_pool_pointer_cast(const persistent_pool_ptr<U> &r)
+ {
+ 	static_assert(std::is_convertible<T *, U *>::value,
+ 		      "Cannot cast persistent_pool_ptr");
+-	return persistent_pool_ptr<T>(r.raw());
++	// return persistent_pool_ptr<T>(r.raw());
++	return persistent_pool_ptr<T>(r);
+ }
+ 
+ } // namespace detail
+diff --git a/include/libpmemobj++/persistent_ptr.hpp b/include/libpmemobj++/persistent_ptr.hpp
+index 8ed05dc6..8d8ca677 100644
+--- a/include/libpmemobj++/persistent_ptr.hpp
++++ b/include/libpmemobj++/persistent_ptr.hpp
+@@ -214,6 +214,8 @@ public:
+ 	{
+ 		this->oid.off +=
+ 			static_cast<std::uint64_t>(calculate_offset<U>());
++		this->oid.size -=
++			static_cast<std::uint64_t>(calculate_offset<U>());
+ 		verify_type();
+ 	}
+ 
+@@ -235,6 +237,8 @@ public:
+ 	{
+ 		this->oid.off +=
+ 			static_cast<std::uint64_t>(calculate_offset<U>());
++		this->oid.size -=
++			static_cast<std::uint64_t>(calculate_offset<U>());
+ 		verify_type();
+ 	}
+ 
+@@ -293,6 +297,7 @@ public:
+ 	{
+ 		detail::conditional_add_to_tx(this);
+ 		this->oid.off += sizeof(T);
++		this->oid.size -= sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -305,6 +310,7 @@ public:
+ 	{
+ 		PMEMoid noid = this->oid;
+ 		++(*this);
++		std::cout << "FIXME: erroneous behaviour -- unsafe ptr\n";
+ 
+ 		return persistent_ptr<T>(noid);
+ 	}
+@@ -317,6 +323,7 @@ public:
+ 	{
+ 		detail::conditional_add_to_tx(this);
+ 		this->oid.off -= sizeof(T);
++		this->oid.size += sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -329,6 +336,7 @@ public:
+ 	{
+ 		PMEMoid noid = this->oid;
+ 		--(*this);
++		std::cout << "FIXME: erroneous behaviour -- unsafe ptr\n";
+ 
+ 		return persistent_ptr<T>(noid);
+ 	}
+@@ -341,6 +349,7 @@ public:
+ 	{
+ 		detail::conditional_add_to_tx(this);
+ 		this->oid.off += static_cast<std::uint64_t>(s) * sizeof(T);
++		this->oid.size -= static_cast<std::uint64_t>(s) * sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -353,6 +362,7 @@ public:
+ 	{
+ 		detail::conditional_add_to_tx(this);
+ 		this->oid.off -= static_cast<std::uint64_t>(s) * sizeof(T);
++		this->oid.size += static_cast<std::uint64_t>(s) * sizeof(T);
+ 
+ 		return *this;
+ 	}
+@@ -810,6 +820,7 @@ operator+(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
+ 	PMEMoid noid;
+ 	noid.pool_uuid_lo = lhs.raw().pool_uuid_lo;
+ 	noid.off = lhs.raw().off + static_cast<std::uint64_t>(s) * sizeof(T);
++	noid.size = lhs.raw().size - static_cast<std::uint64_t>(s) * sizeof(T);
+ 
+ 	return persistent_ptr<T>(noid);
+ }
+@@ -824,6 +835,7 @@ operator-(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
+ 	PMEMoid noid;
+ 	noid.pool_uuid_lo = lhs.raw().pool_uuid_lo;
+ 	noid.off = lhs.raw().off - static_cast<std::uint64_t>(s) * sizeof(T);
++	noid.size = lhs.raw().size + static_cast<std::uint64_t>(s) * sizeof(T);
+ 
+ 	return persistent_ptr<T>(noid);
+ }
+diff --git a/include/libpmemobj++/persistent_ptr_base.hpp b/include/libpmemobj++/persistent_ptr_base.hpp
+index f221fadf..acba79dc 100644
+--- a/include/libpmemobj++/persistent_ptr_base.hpp
++++ b/include/libpmemobj++/persistent_ptr_base.hpp
+@@ -123,7 +123,7 @@ public:
+ 	operator=(std::nullptr_t &&)
+ 	{
+ 		detail::conditional_add_to_tx(this);
+-		this->oid = {0, 0};
++		this->oid = {0, 0, 0};
+ 		return *this;
+ 	}
+ 
