@@ -116,7 +116,7 @@ int main()
 	
 	test_memcpy(pool);
 
-	//D_RW(proot->obj)->x[2] = 3; // This line should crash
+	D_RW(proot->obj)->x[2] = 3; // This line should crash
 	
 	pmemobj_close(pool);
 	
