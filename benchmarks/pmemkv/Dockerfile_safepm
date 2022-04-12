@@ -38,21 +38,11 @@ RUN git checkout pmasan-1.9.2
 RUN make -j7
 RUN make -j7 install
 
-# Install memkind
-WORKDIR /
-RUN git clone https://github.com/memkind/memkind.git /memkind
-WORKDIR /memkind
-RUN git checkout v1.11.0
-RUN ./autogen.sh
-RUN ./configure
-RUN make -j7
-RUN make -j7 install
-
 # Install libpmemobj-cpp
 WORKDIR /
 RUN git clone https://github.com/pmem/libpmemobj-cpp.git /libpmemobj-cpp
 WORKDIR /libpmemobj-cpp
-RUN git checkout stable-1.12
+RUN git checkout stable-1.13
 RUN mkdir build
 WORKDIR /libpmemobj-cpp/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF -DBUILD_BENCHMARKS=OFF
