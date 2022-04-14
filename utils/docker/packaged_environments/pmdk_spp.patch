@@ -1,0 +1,60 @@
+diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
+index da51acdee..312e48f1b 100644
+--- a/src/benchmarks/Makefile
++++ b/src/benchmarks/Makefile
+@@ -171,7 +171,6 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+ CXXFLAGS += -DSPP_OFF
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+-LLVMROOT:=$(SPPROOT)/llvm-project
+ SPPLIB:=$(SPPROOT)/runtime
+ SPPLIBSRC:=$(SPPLIB)/src
+ SPPLIBOBJ:=$(SPPLIB)/obj
+@@ -192,7 +191,7 @@ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ 
+ CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ PROGFLAGS := $(CXXFLAGS)
+-CXXFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
++CXXFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
+ BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
+ 
+ INCS += -I$(SPPLIBSRC)/spp.h
+diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
+index b363377f4..4e10995e7 100644
+--- a/src/examples/Makefile.inc
++++ b/src/examples/Makefile.inc
+@@ -34,7 +34,6 @@ CFLAGS += -DSPP_OFF
+ CXXFLAGS += -DSPP_OFF
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+-LLVMROOT:=$(SPPROOT)/llvm-project
+ SPPLIB:=$(SPPROOT)/runtime
+ SPPLIBSRC:=$(SPPLIB)/src
+ SPPLIBOBJ:=$(SPPLIB)/obj
+@@ -55,7 +54,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ 
+ CFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+-CFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
++CFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
+ BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
+ 
+ INCS += -I$(SPPLIBSRC)/spp.h
+@@ -169,7 +168,7 @@ else #----------------------------------
+ %.o: %.c $(MAKEFILE_DEPS)
+ 	$(call check-cstyle, $<)
+ 	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -emit-llvm $< 
+-	opt -O1 -load $(LLVMROOT)/build/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
++	opt -O1 -load /llvm/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
+ 	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
+ 
+ lib%.o:
+@@ -181,7 +180,7 @@ libmap%.o:
+ libmap.o:
+ 	$(AR) rcv $@ $^
+ 
+-$(STATIC_LIBRARIES):
++$(STATIC_LIBRARIES): $(eval SHELL:=/bin/bash)
+ 	@if [[ $@ == "libmap"*".a" ]]; then \
+ 		echo "cp $^ $@"; \
+ 		cp $^ $@; \

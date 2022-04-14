@@ -1,0 +1,63 @@
+FROM ubuntu:20.04 AS clang_12_build
+ARG git_token
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get -qq install -y \
+    autoconf \
+    automake \
+    pkg-config \
+    libndctl-dev \
+    libdaxctl-dev \
+    libglib2.0-dev \
+    libncurses5-dev \
+    libfuse-dev \
+    libuv1-dev \
+    pandoc \
+    libfabric-dev \
+    gdb \
+    python3.9 \
+    binutils-dev \
+    m4 \
+    bash \
+    valgrind \
+    # Dependencies to compile PMDK
+    git \
+    build-essential \
+    # Install dependencies for memkind
+    libnuma-dev \
+    libtool \
+    numactl \
+    unzip \
+    # Install dependencies for libpmemobj-cpp
+    cmake \
+    # Install dependencies for pmemkv
+    libtbb-dev
+
+# Fetch the repository for future use
+WORKDIR /
+RUN git clone https://${git_token}@github.com/alexandrinapanfil/spp-pass.git /spp-pass
+WORKDIR /spp-pass
+RUN git checkout spp_lto-pm_ptr_bit
+RUN git submodule update --init pmdk
+
+# Install LLVM/CLANG
+WORKDIR /
+RUN git clone https://github.com/llvm/llvm-project.git /llvm-project
+WORKDIR /llvm-project
+RUN git checkout d28af7c654d8db0b68c175db5ce212d74fb5e9bc
+
+WORKDIR /
+COPY ./install_llvm.sh /install_llvm.sh
+RUN chmod +x /install_llvm.sh
+RUN /install_llvm.sh
+
+#/llvm/ is the directory that llvm is installed
+ENV PATH=$PATH:/llvm/bin
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/llvm/lib
+RUN ldconfig
+
+ENV PMEM_MMAP_HINT=0
+ENV PMEM_IS_PMEM_FORCE=1
+
+WORKDIR /

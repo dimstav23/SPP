@@ -1,0 +1,26 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a2f5c7a..22ad1ad 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -233,7 +233,11 @@ add_common_flag(-Wsign-conversion)
+ add_common_flag(-ggdb DEBUG)
+ add_common_flag(-DDEBUG DEBUG)
+ 
+-add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" RELEASE)
++#add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
++
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -DSPP_OFF")
++#add_common_flag(-fno-builtin)
++#add_common_flag(-DSPP_OFF)
+ 
+ # ----------------------------------------------------------------- #
+ ## Setup environment, find packages,
+@@ -278,7 +282,7 @@ string(REPLACE ";" ", " DEB_PACKAGE_REQUIRES "${DEB_DEPENDS}")
+ # ----------------------------------------------------------------- #
+ ## Link libraries, setup targets
+ # ----------------------------------------------------------------- #
+-add_library(pmemkv SHARED ${SOURCE_FILES})
++add_library(pmemkv STATIC ${SOURCE_FILES})
+ set_target_properties(pmemkv PROPERTIES SOVERSION 1)
+ target_link_libraries(pmemkv PRIVATE
+ 	-Wl,--version-script=${PMEMKV_ROOT_DIR}/src/libpmemkv.map)

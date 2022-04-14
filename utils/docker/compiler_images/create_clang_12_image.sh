@@ -6,4 +6,4 @@ then
 	exit 1
 fi
 
-docker build -t spp-llvm-clang-test -f=Dockerfile_spp --build-arg git_token=${GIT_TOKEN} .
+docker build -t llvm-clang-12-test -f=Dockerfile_clang_12 --build-arg git_token=${GIT_TOKEN} .

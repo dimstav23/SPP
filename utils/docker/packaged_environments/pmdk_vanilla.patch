@@ -1,0 +1,211 @@
+diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
+index da51acdee..ff5cc2343 100644
+--- a/src/benchmarks/Makefile
++++ b/src/benchmarks/Makefile
+@@ -166,9 +166,18 @@ CXXFLAGS += $(EXTRA_CXXFLAGS)
+ 
+ objdir=.
+ 
++# https://llvm.org/docs/GoldPlugin.html#quickstart-for-using-lto-with-autotooled-projects
++CC:=$(shell which clang)
++CXX:=$(shell which clang++)
++NM:=$(shell which llvm-nm)
++OPT_LEVEL:=-O1
++FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++LDFLAGS += -fuse-ld=gold
++
+ #if SPP_OFF is set, enable PMDK's original functions
+ ifeq ($(SPP_OFF),1) #----------------------------------
+ CXXFLAGS += -DSPP_OFF
++CXXFLAGS += -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+ LLVMROOT:=$(SPPROOT)/llvm-project
+@@ -215,7 +224,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+ 	$(create-deps)
+ 
+ $(BENCHMARK): $(TMP_HEADERS) $(OBJS) $(LIBMAP)
+-	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
++	$(CXX) -fno-builtin $(OPT_LEVEL) $(FORTIFY) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
+ else #----------------------------------
+ 
+ pmembench.o: pmembench.cpp Makefile
+diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
+index b363377f4..6e81e9ef3 100644
+--- a/src/examples/Makefile.inc
++++ b/src/examples/Makefile.inc
+@@ -26,12 +26,23 @@ endif
+ INCS = -I$(INCDIR) -I. -I$(TOP_SRC)/examples $(OS_INCS)
+ LIBS += $(OS_LIBS) $(LIBUUID)
+ 
++
++# https://llvm.org/docs/GoldPlugin.html#quickstart-for-using-lto-with-autotooled-projects
++CC:=$(shell which clang)
++CXX:=$(shell which clang++)
++AR:=$(shell which llvm-ar)
++NM:=$(shell which llvm-nm)
++#LD:=$(shell which ld.gold)
++
+ OPT_LEVEL:=-O1
++FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++LDFLAGS += -fuse-ld=gold
+ 
+ #if SPP_OFF is set, enable PMDK's original functions
+ ifeq ($(SPP_OFF),1) #----------------------------------
+ CFLAGS += -DSPP_OFF
+ CXXFLAGS += -DSPP_OFF
++CFLAGS += -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+ LLVMROOT:=$(SPPROOT)/llvm-project
+@@ -96,9 +107,8 @@ all-dirs clean-dirs clobber-dirs cstyle-dirs format-dirs sparse-dirs: $(DIRS)
+ all-progs: $(PROGS)
+ 
+ ifeq ($(SPP_OFF),1) #----------------------------------
+-all-libraries: $(DYNAMIC_LIBRARIES) $(STATIC_LIBRARIES)
+-$(foreach l, $(LIBRARIES), $(eval lib$(l).so: lib$(l).o))
+-$(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).so lib$(l).a))
++all-libraries: $(STATIC_LIBRARIES)
++$(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).a))
+ else #----------------------------------
+ all-libraries: $(STATIC_LIBRARIES)
+ $(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).a))
+@@ -150,19 +160,28 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+ 
+ %.o: %.c $(MAKEFILE_DEPS)
+ 	$(call check-cstyle, $<)
+-	$(CC) -c $(OPT_LEVEL) -o $@ $(CFLAGS) $(INCS) $<
++	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
+ 
+ lib%.o:
+-	$(LD) $(OPT_LEVEL) -o $@ -r $^
++	cp $^ $@
+ 
+-$(STATIC_LIBRARIES):
+-	$(AR) rv $@ $<
++libmap%.o:
++	$(AR) rcv $@ $^
+ 
+-$(DYNAMIC_LIBRARIES):
+-	$(LINKER) $(OPT_LEVEL) -shared -o $@ $(LDFLAGS) -Wl,-shared,-soname=$@ $(LIBS) $<
++libmap.o:
++	$(AR) rcv $@ $^
++
++$(STATIC_LIBRARIES): $(eval SHELL:=/bin/bash)
++	@if [[ $@ == "libmap"*".a" ]]; then \
++		echo "cp $^ $@"; \
++		cp $^ $@; \
++	else \
++		echo "$(AR) rcv $@ $<"; \
++		$(AR) rcv $@ $<; \
++	fi
+ 
+ $(PROGS): | $(TMP_HEADERS)
+-	LD_LIBRARY_PATH=$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS):$(LD_LIBRARY_PATH) $(LINKER) $(OPT_LEVEL) -o $@ $^ $(LDFLAGS) $(LIBS)
++	LD_LIBRARY_PATH=$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS):$(LD_LIBRARY_PATH) $(LINKER) $(CFLAGS) $(BUILD_EXEC_FLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
+ 
+ else #----------------------------------
+ 
+diff --git a/src/examples/libpmemobj/map/Makefile b/src/examples/libpmemobj/map/Makefile
+index 3dd3a589d..0f6a7a87d 100644
+--- a/src/examples/libpmemobj/map/Makefile
++++ b/src/examples/libpmemobj/map/Makefile
+@@ -38,53 +38,53 @@ data_store: data_store.o libmap.a
+ kv_server: kv_server.o libmap.a
+ 
+ #if SPP_OFF is set, enable PMDK's original functions
+-ifeq ($(SPP_OFF),1) #----------------------------------
++# ifeq ($(SPP_OFF),1) #----------------------------------
+ 
+-libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.a
+-libmap_btree.o: map_btree.o map.o ../tree_map/libbtree_map.a
+-libmap_rtree.o: map_rtree.o map.o ../tree_map/librtree_map.a
+-libmap_rbtree.o: map_rbtree.o map.o ../tree_map/librbtree_map.a
+-libmap_hashmap_atomic.o: map_hashmap_atomic.o map.o ../hashmap/libhashmap_atomic.a
+-libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.a
+-libmap_hashmap_rp.o: map_hashmap_rp.o map.o ../hashmap/libhashmap_rp.a
+-libmap_skiplist.o: map_skiplist.o map.o ../list_map/libskiplist_map.a
++# libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.a
++# libmap_btree.o: map_btree.o map.o ../tree_map/libbtree_map.a
++# libmap_rtree.o: map_rtree.o map.o ../tree_map/librtree_map.a
++# libmap_rbtree.o: map_rbtree.o map.o ../tree_map/librbtree_map.a
++# libmap_hashmap_atomic.o: map_hashmap_atomic.o map.o ../hashmap/libhashmap_atomic.a
++# libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.a
++# libmap_hashmap_rp.o: map_hashmap_rp.o map.o ../hashmap/libhashmap_rp.a
++# libmap_skiplist.o: map_skiplist.o map.o ../list_map/libskiplist_map.a
+ 
+-libmap.o: map.o map_ctree.o map_btree.o map_rtree.o map_rbtree.o map_skiplist.o\
+-	map_hashmap_atomic.o map_hashmap_tx.o map_hashmap_rp.o\
+-	../tree_map/libctree_map.a\
+-	../tree_map/libbtree_map.a\
+-	../tree_map/librtree_map.a\
+-	../tree_map/librbtree_map.a\
+-	../list_map/libskiplist_map.a\
+-	../hashmap/libhashmap_atomic.a\
+-	../hashmap/libhashmap_tx.a\
+-	../hashmap/libhashmap_rp.a
+-
+-../tree_map/libctree_map.a:
+-	$(MAKE) -C ../tree_map ctree_map
++# libmap.o: map.o map_ctree.o map_btree.o map_rtree.o map_rbtree.o map_skiplist.o\
++# 	map_hashmap_atomic.o map_hashmap_tx.o map_hashmap_rp.o\
++# 	../tree_map/libctree_map.a\
++# 	../tree_map/libbtree_map.a\
++# 	../tree_map/librtree_map.a\
++# 	../tree_map/librbtree_map.a\
++# 	../list_map/libskiplist_map.a\
++# 	../hashmap/libhashmap_atomic.a\
++# 	../hashmap/libhashmap_tx.a\
++# 	../hashmap/libhashmap_rp.a
+ 
+-../tree_map/libbtree_map.a:
+-	$(MAKE) -C ../tree_map btree_map
++# ../tree_map/libctree_map.a:
++# 	$(MAKE) -C ../tree_map ctree_map
+ 
+-../tree_map/librtree_map.a:
+-	$(MAKE) -C ../tree_map rtree_map
++# ../tree_map/libbtree_map.a:
++# 	$(MAKE) -C ../tree_map btree_map
+ 
+-../tree_map/librbtree_map.a:
+-	$(MAKE) -C ../tree_map rbtree_map
++# ../tree_map/librtree_map.a:
++# 	$(MAKE) -C ../tree_map rtree_map
+ 
+-../list_map/libskiplist_map.a:
+-	$(MAKE) -C ../list_map skiplist_map
++# ../tree_map/librbtree_map.a:
++# 	$(MAKE) -C ../tree_map rbtree_map
+ 
+-../hashmap/libhashmap_atomic.a:
+-	$(MAKE) -C ../hashmap hashmap_atomic
++# ../list_map/libskiplist_map.a:
++# 	$(MAKE) -C ../list_map skiplist_map
+ 
+-../hashmap/libhashmap_tx.a:
+-	$(MAKE) -C ../hashmap hashmap_tx
++# ../hashmap/libhashmap_atomic.a:
++# 	$(MAKE) -C ../hashmap hashmap_atomic
+ 
+-../hashmap/libhashmap_rp.a:
+-	$(MAKE) -C ../hashmap hashmap_rp
++# ../hashmap/libhashmap_tx.a:
++# 	$(MAKE) -C ../hashmap hashmap_tx
++
++# ../hashmap/libhashmap_rp.a:
++# 	$(MAKE) -C ../hashmap hashmap_rp
+ 
+-else #----------------------------------
++# else #----------------------------------
+ 
+ libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.o
+ libmap_btree.o: map_btree.o map.o ../tree_map/libbtree_map.o
+@@ -130,4 +130,4 @@ libmap.o: map.o map_ctree.o map_btree.o map_rtree.o map_rbtree.o map_skiplist.o\
+ ../hashmap/libhashmap_rp.o:
+ 	$(MAKE) -C ../hashmap hashmap_rp
+ 
+-endif
+\ No newline at end of file
++# endif
+\ No newline at end of file

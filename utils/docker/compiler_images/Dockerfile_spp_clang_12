@@ -1,0 +1,57 @@
+FROM ubuntu:20.04 AS spp_clang_build
+ARG git_token
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get -qq install -y \
+    autoconf \
+    automake \
+    pkg-config \
+    libndctl-dev \
+    libdaxctl-dev \
+    libglib2.0-dev \
+    libncurses5-dev \
+    libfuse-dev \
+    libuv1-dev \
+    pandoc \
+    libfabric-dev \
+    gdb \
+    python3.9 \
+    binutils-dev \
+    m4 \
+    bash \
+    valgrind \
+    # Dependencies to compile PMDK
+    git \
+    build-essential \
+    # Install dependencies for memkind
+    libnuma-dev \
+    libtool \
+    numactl \
+    unzip \
+    # Install dependencies for libpmemobj-cpp
+    cmake \
+    # Install dependencies for pmemkv
+    libtbb-dev
+
+# Install LLVM/CLANG
+WORKDIR /
+RUN git clone https://${git_token}@github.com/alexandrinapanfil/spp-pass.git /spp-pass
+WORKDIR /spp-pass
+RUN git checkout spp_lto-pm_ptr_bit
+RUN git submodule update --init
+
+WORKDIR /
+COPY ./install_llvm_spp.sh /install_llvm_spp.sh
+RUN chmod +x /install_llvm_spp.sh
+RUN /install_llvm_spp.sh
+
+#/llvm/ is the directory that llvm is installed
+ENV PATH=/llvm/bin:$PATH
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/llvm/lib
+RUN ldconfig
+
+ENV PMEM_MMAP_HINT=0
+ENV PMEM_IS_PMEM_FORCE=1
+
+WORKDIR /spp-pass
