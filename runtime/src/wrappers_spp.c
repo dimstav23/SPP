@@ -80,7 +80,8 @@ extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
 void __wrap_free (void *base)  
 {
   dbg(printf("SPP: real free is interposed\n");)
-  __real_free(__spp_cleantag_external(base)); 
+  // __real_free(__spp_cleantag_external(base)); 
+  __real_free(base); 
 }
 
 /////////////////////////////////

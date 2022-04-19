@@ -54,6 +54,45 @@ extern "C" {
 ///  End of Debug Macro     ///
 ///////////////////////////////
 
+///////////////////////////////
+///      Stats Macro        ///
+///////////////////////////////
+
+// #define SPP_STATS
+#ifdef SPP_STATS
+    #define stats(x) x
+    long int __spp_extract_tagval_cnt = 0;
+    long int __spp_is_pm_ptr_cnt = 0;
+    long int __spp_vol_ptr_check_cnt = 0;
+    long int __spp_cleantag_cnt = 0;
+    long int __spp_cleantag_external_cnt = 0;
+    long int __spp_checkbound_cnt = 0;
+    long int useless__spp_checkbound_cnt = 0;
+    long int __spp_updatetag_cnt = 0;
+    long int __spp_memintr_check_and_clean_cnt = 0;
+
+    void __spp_runtime_stats() {
+        printf("***** SPP runtime statistics *****\n");
+        printf("__spp_extract_tagval_cnt\t\t: %ld \n", __spp_extract_tagval_cnt);
+        printf("__spp_is_pm_ptr_cnt\t\t\t: %ld \n", __spp_is_pm_ptr_cnt);
+        printf("__spp_vol_ptr_check_cnt\t\t\t: %ld \n", __spp_vol_ptr_check_cnt);
+        printf("__spp_cleantag_cnt\t\t\t: %ld \n", __spp_cleantag_cnt);
+        printf("__spp_cleantag_external_cnt\t\t: %ld \n", __spp_cleantag_external_cnt);
+        printf("__spp_checkbound_cnt\t\t\t: %ld \n", __spp_checkbound_cnt);
+        printf("USELESS__spp_checkbound_cnt\t\t: %ld \n", useless__spp_checkbound_cnt);
+        printf("__spp_updatetag_cnt\t\t\t: %ld \n", __spp_updatetag_cnt);
+        printf("__spp_memintr_check_and_clean_cnt\t: %ld \n", __spp_memintr_check_and_clean_cnt);
+        return;
+    }
+    int declared = 0;
+#else
+    #define stats(x) 
+#endif
+
+///////////////////////////////
+///  End of Stats Macro     ///
+///////////////////////////////
+
 /* 
  * https://stackoverflow.com/questions/3899870/print-call-stack-in-c-or-c
  */
@@ -78,6 +117,7 @@ __SPP_ATTR
 uintptr_t
 __spp_extract_tagval(void *ptr)
 {
+    stats(__spp_extract_tagval_cnt++;)
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
     return _pext_u64((uintptr_t)ptr, TAG_MASK);
 #else
@@ -89,6 +129,7 @@ __SPP_ATTR
 uintptr_t
 __spp_is_pm_ptr(void *ptr)
 {
+    stats(__spp_is_pm_ptr_cnt++;)
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
     return _pext_u64((uintptr_t)ptr, PM_PTR_MASK);
 #else 
@@ -100,10 +141,12 @@ __SPP_ATTR
 void*
 __spp_cleantag(void *ptr)
 {
+    stats(__spp_cleantag_cnt++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
 
     if (!__spp_is_pm_ptr(ptr)) 
     {
+        stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr;  
     }
@@ -123,10 +166,19 @@ __SPP_ATTR
 void*
 __spp_cleantag_external(void *ptr)
 {
+    stats(
+        if (!declared) 
+        {
+            atexit(__spp_runtime_stats);
+            declared=1;
+        }
+    )
+    stats(__spp_cleantag_external_cnt++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
     
     if (!__spp_is_pm_ptr(ptr)) 
     {
+        stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr;  
     }
@@ -146,6 +198,7 @@ __SPP_ATTR
 void*
 __spp_checkbound(void *ptr)
 {
+    stats(__spp_checkbound_cnt++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
     
     // NOTE: BE CAREFUL with signed/unsigned,
@@ -154,7 +207,9 @@ __spp_checkbound(void *ptr)
     
     if (!__spp_is_pm_ptr(ptr)) 
     {
+        stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
+        stats(useless__spp_checkbound_cnt++;)
         return ptr;
     }    
     
@@ -182,6 +237,7 @@ __spp_checkbound(void *ptr)
 __SPP_ATTR
 void* 
 __spp_updatetag(void *ptr, int64_t off) {
+    stats(__spp_updatetag_cnt++;)
     // ptr:  after pointer arithmetic  (i.e. GEP itself)
    
     ///////////////////////////////////////////////
@@ -193,6 +249,7 @@ __spp_updatetag(void *ptr, int64_t off) {
     
     if (!__spp_is_pm_ptr(ptr))
     {
+        stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr; 
     }
@@ -200,7 +257,7 @@ __spp_updatetag(void *ptr, int64_t off) {
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
     tag = tag + off;  
     
-    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS | PM_PTR_SET;
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
     uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
     uintptr_t ptrval = untagged | tempval; 
     
@@ -212,6 +269,7 @@ __spp_updatetag(void *ptr, int64_t off) {
 __SPP_ATTR
 void* 
 __spp_memintr_check_and_clean(void *ptr, int64_t off) {
+    stats(__spp_memintr_check_and_clean_cnt++;)
     // ptr: pointer pass to LLVM memory intrinsic
     // off: offset to be added and checked
    
@@ -228,6 +286,7 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     
     if (!__spp_is_pm_ptr(ptr))
     {
+        stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr; 
     }
@@ -237,17 +296,24 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
     tag = tag + (off - 1); 
     
-    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS | PM_PTR_SET;
+    uintptr_t tagval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
     uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
-    uintptr_t ptrval = untagged | tempval; 
+    // uintptr_t ptrval = untagged | tempval; 
     
-    dbg(printf(">>%s checked ptr: %p\n", __func__, ptrval);)
+    dbg(printf(">>%s checked ptr: tag %p addr %p\n", __func__, tagval, untagged);)
     
-    if (__spp_checkbound((void*)ptrval) == NULL)
+    // if (__spp_checkbound((void*)tagval) == NULL)
+    if ((uintptr_t)tagval & OVERFLOW_MASK)
     {
-        printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);
-        printf(">>%s checked ptr: %p\n", __func__, ptrval);
-        return NULL;
+        //simply print it in red
+        printf("\033[0;31m");
+        printf("!!!!>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);
+        printf("!!!!>%s checked ptr: tag %p addr %p \n", __func__, tagval, untagged);
+        print_trace();
+        printf("\033[0m");
+        fflush(stdout);
+        raise(SIGINT);
+        _exit(1);
     }
 	
     return (void*)untagged;
