@@ -1,5 +1,5 @@
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index da51acdee..312e48f1b 100644
+index fdfd7715b..554f002a3 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
 @@ -171,7 +171,6 @@ ifeq ($(SPP_OFF),1) #----------------------------------
@@ -10,9 +10,9 @@ index da51acdee..312e48f1b 100644
  SPPLIB:=$(SPPROOT)/runtime
  SPPLIBSRC:=$(SPPLIB)/src
  SPPLIBOBJ:=$(SPPLIB)/obj
-@@ -192,7 +191,7 @@ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
- 
- CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+@@ -193,7 +192,7 @@ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ # CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ CXXFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
  PROGFLAGS := $(CXXFLAGS)
 -CXXFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
 +CXXFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
@@ -20,7 +20,7 @@ index da51acdee..312e48f1b 100644
  
  INCS += -I$(SPPLIBSRC)/spp.h
 diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
-index b363377f4..4e10995e7 100644
+index bec5ee16a..949710481 100644
 --- a/src/examples/Makefile.inc
 +++ b/src/examples/Makefile.inc
 @@ -34,7 +34,6 @@ CFLAGS += -DSPP_OFF
@@ -34,7 +34,7 @@ index b363377f4..4e10995e7 100644
 @@ -55,7 +54,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
  FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
  
- CFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ CFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
 -CFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
 +CFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
  BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
@@ -43,7 +43,7 @@ index b363377f4..4e10995e7 100644
 @@ -169,7 +168,7 @@ else #----------------------------------
  %.o: %.c $(MAKEFILE_DEPS)
  	$(call check-cstyle, $<)
- 	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -emit-llvm $< 
+ 	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
 -	opt -O1 -load $(LLVMROOT)/build/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
 +	opt -O1 -load /llvm/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
  	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
