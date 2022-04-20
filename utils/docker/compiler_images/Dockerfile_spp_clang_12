@@ -41,6 +41,9 @@ WORKDIR /spp-pass
 RUN git checkout spp_lto-pm_ptr_bit
 RUN git submodule update --init
 
+WORKDIR /spp-pass/llvm-project
+RUN git submodule update --init
+
 WORKDIR /
 COPY ./install_llvm_spp.sh /install_llvm_spp.sh
 RUN chmod +x /install_llvm_spp.sh
