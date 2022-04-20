@@ -29,7 +29,7 @@ index 0d934da..27eab58 100644
 +OPT_LEVEL:=-O2
 +FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 +
-+CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
++CXXFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
 +PROGFLAGS := $(CXXFLAGS)
 +CXXFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
 +BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker ${SPPLIBOBJ}/spp.o

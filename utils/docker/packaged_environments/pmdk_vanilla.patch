@@ -17,7 +17,7 @@ index da51acdee..ff5cc2343 100644
  #if SPP_OFF is set, enable PMDK's original functions
  ifeq ($(SPP_OFF),1) #----------------------------------
  CXXFLAGS += -DSPP_OFF
-+CXXFLAGS += -fno-builtin $(OPT_LEVEL) $(FORTIFY)
++CXXFLAGS += $(OPT_LEVEL) $(FORTIFY)
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project
@@ -26,7 +26,7 @@ index da51acdee..ff5cc2343 100644
  
  $(BENCHMARK): $(TMP_HEADERS) $(OBJS) $(LIBMAP)
 -	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
-+	$(CXX) -fno-builtin $(OPT_LEVEL) $(FORTIFY) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
++	$(CXX) $(OPT_LEVEL) $(FORTIFY) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
  else #----------------------------------
  
  pmembench.o: pmembench.cpp Makefile
@@ -54,7 +54,7 @@ index b363377f4..6e81e9ef3 100644
  ifeq ($(SPP_OFF),1) #----------------------------------
  CFLAGS += -DSPP_OFF
  CXXFLAGS += -DSPP_OFF
-+CFLAGS += -fno-builtin $(OPT_LEVEL) $(FORTIFY)
++CFLAGS += $(OPT_LEVEL) $(FORTIFY)
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project

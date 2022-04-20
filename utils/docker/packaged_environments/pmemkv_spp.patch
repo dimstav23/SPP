@@ -34,7 +34,7 @@ index a2f5c7a..3c8df98 100644
 +	message(FATAL_ERROR "Couldn't locate SPP runtime lib object files")
 +endif()
 +
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -flto -Xclang -load -Xclang /llvm/lib/LLVMSPP.so")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -Xclang -load -Xclang /llvm/lib/LLVMSPP.so")
 +
 +set(WRAP_LIST "-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
 +-Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \

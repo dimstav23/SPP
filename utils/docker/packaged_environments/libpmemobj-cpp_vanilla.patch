@@ -33,7 +33,7 @@ index 01feea1a..a9d8aeb8 100644
 +	message(FATAL_ERROR "Couldn't locate SPP runtime lib object files")
 +endif()
 +
-+add_flag(-fno-builtin)
++
 +add_flag(-DSPP_OFF)
 +set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
 +add_flag("-Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so")
