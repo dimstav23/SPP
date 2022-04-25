@@ -12,10 +12,17 @@ printSection (){
     echo -e "###### $1 ######"
 }
 
+if [ $# -eq 0 ]; then
+    echo "Please provide as first argument the directory of the PMDK libraries installation." 2>&1
+    exit 1
+fi
+
+PMDK_PATH=$1
+
 rm -rf $MOUNT_PM/pmemkv
 
-# No arguments means execute all benchmarks
-if [ $# -eq 0 ]; then
+# No additional arguments means execute all benchmarks
+if [ $# -eq 1 ]; then
     declare -a operations=( "read" "randomreadwrite" "delete" ) # "fill" "numops" )
     for op in "${operations[@]}"; do
         cd ${PMEMKVBENCH_SCRIPTS}
