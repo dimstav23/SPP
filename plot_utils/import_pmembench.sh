@@ -1,12 +1,12 @@
 set -e
 
-# declare -a variants_plotter=("pmdk" "safepm" "spp")
-# declare -a variants_results=("vanilla" "safepm" "spp")
-# declare -a pmembench_benchmark=("pmembench_map" "pmembench_tx")
-
-declare -a variants_plotter=("pmdk" "spp")
-declare -a variants_results=("vanilla" "spp")
+declare -a variants_plotter=("pmdk" "safepm" "spp")
+declare -a variants_results=("vanilla" "safepm" "spp")
 declare -a pmembench_benchmark=("pmembench_map" "pmembench_tx")
+
+# declare -a variants_plotter=("pmdk" "spp")
+# declare -a variants_results=("vanilla" "spp")
+# declare -a pmembench_benchmark=("pmembench_map" "pmembench_tx")
 
 if [ "$#" -ne 1 ]
 then

@@ -3,6 +3,8 @@
     lib_versions:
       pmdk:
         - pmembench_map
+      safepm:
+        - pmembench_map
       spp:
         - pmembench_map
 

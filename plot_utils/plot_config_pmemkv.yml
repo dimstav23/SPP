@@ -3,8 +3,8 @@
     lib_versions:
       pmdk:
         - pmemkv
-      # safepm:
-      #   - pmemkv
+      safepm:
+        - pmemkv
       spp:
         - pmemkv
       

@@ -1,10 +1,10 @@
 set -e
 
-# declare -a variants_plotter=("pmdk" "safepm" "spp")
-# declare -a variants_results=("vanilla" "safepm" "spp")
+declare -a variants_plotter=("pmdk" "safepm" "spp")
+declare -a variants_results=("vanilla_pmdk" "safepm" "spp")
 
-declare -a variants_plotter=("pmdk" "spp")
-declare -a variants_results=("vanilla_pmdk" "spp")
+# declare -a variants_plotter=("pmdk" "spp")
+# declare -a variants_results=("vanilla_pmdk" "spp")
 
 if [ "$#" -ne 1 ]
 then

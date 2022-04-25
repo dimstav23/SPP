@@ -7,7 +7,7 @@ from analyse import metrics,bench_info
 versions_map = {
     "pmdk"                  :   "PMDK",    
     "asan"                  :   "ASan",
-    "wrappers_only"         :   "SafePM w/o Asan",
+    "safepm"                :   "SafePM",
     "spp"                   :   "SPP"
 }
 
