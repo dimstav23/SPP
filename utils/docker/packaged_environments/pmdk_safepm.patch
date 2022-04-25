@@ -1,0 +1,296 @@
+diff --git a/src/Makefile.inc b/src/Makefile.inc
+index 4e465ea8a..c9c56fc42 100644
+--- a/src/Makefile.inc
++++ b/src/Makefile.inc
+@@ -121,7 +121,7 @@ else
+ CFLAGS += $(EXTRA_CFLAGS_RELEASE)
+ endif
+ 
+-LDFLAGS += -Wl,-z,relro -Wl,--fatal-warnings -Wl,--warn-common $(EXTRA_LDFLAGS)
++LDFLAGS += -Wl,-z,relro -Wl,--fatal-warnings $(EXTRA_LDFLAGS)
+ 
+ ifneq ($(NORPATH),1)
+ LDFLAGS += -Wl,-rpath=$(libdir)$(LIB_SUBDIR):$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS)
+diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
+index 2162b9660..295e10062 100644
+--- a/src/benchmarks/Makefile
++++ b/src/benchmarks/Makefile
+@@ -144,7 +144,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
+ OBJS += pmemobj.o
+ 
+ ifeq ($(DEBUG),)
+-CXXFLAGS += -O3
++CXXFLAGS += -O1
+ LIBS_PATH=../nondebug
+ else
+ CXXFLAGS += -ggdb
+@@ -163,6 +163,15 @@ CXXFLAGS += $(EXTRA_CXXFLAGS)
+ 
+ objdir=.
+ 
++# https://llvm.org/docs/GoldPlugin.html#quickstart-for-using-lto-with-autotooled-projects
++CC:=$(shell which clang)
++CXX:=$(shell which clang++)
++NM:=$(shell which llvm-nm)
++OPT_LEVEL:=-O1
++FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++LDFLAGS += -fuse-ld=gold
++CXXFLAGS += $(OPT_LEVEL) $(FORTIFY)
++
+ %.o: %.cpp Makefile
+ 	$(call check-cstyle, $<)
+ 	@mkdir -p .deps
+@@ -177,7 +186,7 @@ objdir=.
+ 	$(call check-cstyle, $<, $@)
+ 
+ $(BENCHMARK): $(TMP_HEADERS) $(OBJS) $(LIBMAP)
+-	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
++	$(CXX) $(OPT_LEVEL) $(FORTIFY) -o $@ $(LDFLAGS) $(OBJS) $(LIBMAP) $(LIBS)
+ 
+ $(LIBMAP):
+ 	$(MAKE) -C $(LIBMAP_DIR) map
+diff --git a/src/common/Makefile b/src/common/Makefile
+index 535b1088e..786f02c54 100644
+--- a/src/common/Makefile
++++ b/src/common/Makefile
+@@ -12,4 +12,4 @@ include pmemcommon.inc
+ include ../Makefile.inc
+ 
+ CFLAGS += $(LIBNDCTL_CFLAGS)
+-CFLAGS += -DUSE_LIBDL
++CFLAGS += -DUSE_LIBDL
+\ No newline at end of file
+diff --git a/src/examples/Makefile b/src/examples/Makefile
+index ff0e6781d..b13957ccf 100644
+--- a/src/examples/Makefile
++++ b/src/examples/Makefile
+@@ -7,7 +7,9 @@
+ 
+ include ../common.inc
+ 
+-DIRS = libpmem libpmemblk libpmemlog libpmemobj librpmem libpmempool pmreorder libpmem2
++#DIRS = libpmem libpmemblk libpmemlog libpmemobj librpmem libpmempool pmreorder libpmem2
++
++DIRS = libpmemobj
+ 
+ include Makefile.inc
+ 
+diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
+index a449f89f4..61fa8de97 100644
+--- a/src/examples/Makefile.inc
++++ b/src/examples/Makefile.inc
+@@ -23,12 +23,22 @@ CFLAGS += -fsanitize=$(SANITIZE)
+ CXXFLAGS += -fsanitize=$(SANITIZE)
+ LDFLAGS += -fsanitize=$(SANITIZE)
+ endif
+-ifeq ($(DEBUG),)
+-CFLAGS += -O2
+-endif
+ INCS = -I$(INCDIR) -I. -I$(TOP_SRC)/examples $(OS_INCS)
+ LIBS += $(OS_LIBS) $(LIBUUID)
+ 
++# https://llvm.org/docs/GoldPlugin.html#quickstart-for-using-lto-with-autotooled-projects
++CC:=$(shell which clang)
++CXX:=$(shell which clang++)
++AR:=$(shell which llvm-ar)
++NM:=$(shell which llvm-nm)
++LD:=$(shell which ld.gold)
++
++OPT_LEVEL:=-O1
++FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++LDFLAGS += -fuse-ld=gold
++
++CFLAGS += $(OPT_LEVEL) $(FORTIFY)
++
+ LINKER=$(CC)
+ ifeq ($(COMPILE_LANG), cpp)
+ LINKER=$(CXX)
+@@ -54,13 +64,12 @@ STATIC_LIBRARIES = $(addprefix lib, $(addsuffix .a, $(LIBRARIES)))
+ 
+ all-dirs clean-dirs clobber-dirs cstyle-dirs format-dirs sparse-dirs: $(DIRS)
+ all-progs: $(PROGS)
+-all-libraries: $(DYNAMIC_LIBRARIES) $(STATIC_LIBRARIES)
++all-libraries: $(STATIC_LIBRARIES)
++$(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).a))
+ 
+-$(foreach l, $(LIBRARIES), $(eval lib$(l).so: lib$(l).o))
+ $(foreach l, $(LIBRARIES), $(eval lib$(l).a: lib$(l).o))
+ $(foreach l, $(LIBRARIES), $(eval lib$(l).o: CFLAGS+=-fPIC))
+ $(foreach l, $(LIBRARIES), $(eval lib$(l).o: CXXFLAGS+=-fPIC))
+-$(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).so lib$(l).a))
+ $(foreach l, $(LIBRARIES), $(eval .PHONY: $(l)))
+ 
+ $(DIRS):
+@@ -104,17 +113,26 @@ all: $(TMP_HEADERS)
+ %.hpptmp: %.hpp
+ 	$(call check-cstyle, $<, $@)
+ 
+-$(PROGS): | $(TMP_HEADERS)
+-	LD_LIBRARY_PATH=$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS):$(LD_LIBRARY_PATH) $(LINKER) -o $@ $^ $(LDFLAGS) $(LIBS)
+-
+ lib%.o:
+-	$(LD) -o $@ -r $^
++	cp $^ $@
++
++libmap%.o:
++	$(AR) rcv $@ $^
+ 
+-$(STATIC_LIBRARIES):
+-	$(AR) rv $@ $<
++libmap.o:
++	$(AR) rcv $@ $^
+ 
+-$(DYNAMIC_LIBRARIES):
+-	$(LINKER) -shared -o $@ $(LDFLAGS) -Wl,-shared,-soname=$@ $(LIBS) $<
++$(STATIC_LIBRARIES): $(eval SHELL:=/bin/bash)
++	@if [[ $@ == "libmap"*".a" ]]; then \
++                echo "cp $^ $@"; \
++                cp $^ $@; \
++        else \
++                echo "$(AR) rcv $@ $<"; \
++                $(AR) rcv $@ $<; \
++        fi
++
++$(PROGS): | $(TMP_HEADERS)
++	LD_LIBRARY_PATH=$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS):$(LD_LIBRARY_PATH) $(LINKER) $(CFLAGS) $(BUILD_EXEC_FLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
+ 
+ .PHONY: all clean clobber cstyle\
+ 	all-dirs clean-dirs clobber-dirs cstyle-dirs\
+diff --git a/src/examples/libpmemobj/Makefile b/src/examples/libpmemobj/Makefile
+index b1f4f8c78..bdffd7bdd 100644
+--- a/src/examples/libpmemobj/Makefile
++++ b/src/examples/libpmemobj/Makefile
+@@ -4,10 +4,13 @@
+ #
+ # examples/libpmemobj/Makefile -- build the libpmemobj examples
+ #
+-PROGS = manpage btree pi lists setjmp buffons_needle_problem
+-DIRS = pminvaders pmemlog pmemblk string_store string_store_tx\
+-	string_store_tx_type hashmap tree_map pmemobjfs map libart array\
+-	linkedlist list_map slab_allocator queue
++#PROGS = manpage btree pi lists setjmp buffons_needle_problem
++#DIRS = pminvaders pmemlog pmemblk string_store string_store_tx\
++#	string_store_tx_type hashmap tree_map pmemobjfs map libart array\
++#	linkedlist list_map slab_allocator queue
++
++PROGS = manpage btree
++DIRS = hashmap tree_map map array list_map
+ 
+ LIBS = -lpmemobj -lpmem -pthread -lm -pthread
+ 
+diff --git a/src/examples/libpmemobj/map/Makefile b/src/examples/libpmemobj/map/Makefile
+index a8a9a4239..d9b6fe36f 100644
+--- a/src/examples/libpmemobj/map/Makefile
++++ b/src/examples/libpmemobj/map/Makefile
+@@ -37,46 +37,46 @@ mapcli: mapcli.o libmap.a
+ data_store: data_store.o libmap.a
+ kv_server: kv_server.o libmap.a
+ 
+-libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.a
+-libmap_btree.o: map_btree.o map.o ../tree_map/libbtree_map.a
+-libmap_rtree.o: map_rtree.o map.o ../tree_map/librtree_map.a
+-libmap_rbtree.o: map_rbtree.o map.o ../tree_map/librbtree_map.a
+-libmap_hashmap_atomic.o: map_hashmap_atomic.o map.o ../hashmap/libhashmap_atomic.a
+-libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.a
+-libmap_hashmap_rp.o: map_hashmap_rp.o map.o ../hashmap/libhashmap_rp.a
+-libmap_skiplist.o: map_skiplist.o map.o ../list_map/libskiplist_map.a
++libmap_ctree.o: map_ctree.o map.o ../tree_map/libctree_map.o
++libmap_btree.o: map_btree.o map.o ../tree_map/libbtree_map.o
++libmap_rtree.o: map_rtree.o map.o ../tree_map/librtree_map.o
++libmap_rbtree.o: map_rbtree.o map.o ../tree_map/librbtree_map.o
++libmap_hashmap_atomic.o: map_hashmap_atomic.o map.o ../hashmap/libhashmap_atomic.o
++libmap_hashmap_tx.o: map_hashmap_tx.o map.o ../hashmap/libhashmap_tx.o
++libmap_hashmap_rp.o: map_hashmap_rp.o map.o ../hashmap/libhashmap_rp.o
++libmap_skiplist.o: map_skiplist.o map.o ../list_map/libskiplist_map.o
+ 
+ libmap.o: map.o map_ctree.o map_btree.o map_rtree.o map_rbtree.o map_skiplist.o\
+-	map_hashmap_atomic.o map_hashmap_tx.o map_hashmap_rp.o\
+-	../tree_map/libctree_map.a\
+-	../tree_map/libbtree_map.a\
+-	../tree_map/librtree_map.a\
+-	../tree_map/librbtree_map.a\
+-	../list_map/libskiplist_map.a\
+-	../hashmap/libhashmap_atomic.a\
+-	../hashmap/libhashmap_tx.a\
+-	../hashmap/libhashmap_rp.a
+-
+-../tree_map/libctree_map.a:
++        map_hashmap_atomic.o map_hashmap_tx.o map_hashmap_rp.o\
++        ../tree_map/libctree_map.o\
++        ../tree_map/libbtree_map.o\
++        ../tree_map/librtree_map.o\
++        ../tree_map/librbtree_map.o\
++        ../list_map/libskiplist_map.o\
++        ../hashmap/libhashmap_atomic.o\
++        ../hashmap/libhashmap_tx.o\
++        ../hashmap/libhashmap_rp.o
++
++../tree_map/libctree_map.o:
+ 	$(MAKE) -C ../tree_map ctree_map
+ 
+-../tree_map/libbtree_map.a:
++../tree_map/libbtree_map.o:
+ 	$(MAKE) -C ../tree_map btree_map
+ 
+-../tree_map/librtree_map.a:
++../tree_map/librtree_map.o:
+ 	$(MAKE) -C ../tree_map rtree_map
+ 
+-../tree_map/librbtree_map.a:
++../tree_map/librbtree_map.o:
+ 	$(MAKE) -C ../tree_map rbtree_map
+ 
+-../list_map/libskiplist_map.a:
++../list_map/libskiplist_map.o:
+ 	$(MAKE) -C ../list_map skiplist_map
+ 
+-../hashmap/libhashmap_atomic.a:
++../hashmap/libhashmap_atomic.o:
+ 	$(MAKE) -C ../hashmap hashmap_atomic
+ 
+-../hashmap/libhashmap_tx.a:
++../hashmap/libhashmap_tx.o:
+ 	$(MAKE) -C ../hashmap hashmap_tx
+ 
+-../hashmap/libhashmap_rp.a:
++../hashmap/libhashmap_rp.o:
+ 	$(MAKE) -C ../hashmap hashmap_rp
+diff --git a/src/libpmemobj/Makefile b/src/libpmemobj/Makefile
+index ccf52d213..e1da43c28 100644
+--- a/src/libpmemobj/Makefile
++++ b/src/libpmemobj/Makefile
+@@ -39,7 +39,7 @@ SOURCE +=\
+ 
+ include ../Makefile.inc
+ 
+-CFLAGS += -DUSE_LIBDL -D_PMEMOBJ_INTRNL $(LIBNDCTL_CFLAGS)
++CFLAGS += -DUSE_LIBDL -D_PMEMOBJ_INTRNL $(LIBNDCTL_CFLAGS) -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp
+ 
+ LIBS += -pthread -lpmem $(LIBDL) $(LIBNDCTL_LIBS)
+ 
+diff --git a/src/test/Makefile.inc b/src/test/Makefile.inc
+index cd3c5cd3d..a2ec2d1fd 100644
+--- a/src/test/Makefile.inc
++++ b/src/test/Makefile.inc
+@@ -510,7 +510,7 @@ endif
+ 
+ CFLAGS += $(EXTRA_CFLAGS)
+ 
+-LDFLAGS += -Wl,--warn-common -Wl,--fatal-warnings $(EXTRA_LDFLAGS)
++LDFLAGS += -Wl,--fatal-warnings $(EXTRA_LDFLAGS)
+ 
+ ifeq ($(OS_DIMM),ndctl)
+ CFLAGS += $(OS_DIMM_CFLAG)
+diff --git a/src/tools/Makefile.inc b/src/tools/Makefile.inc
+index 8c378a07b..67d5f53aa 100644
+--- a/src/tools/Makefile.inc
++++ b/src/tools/Makefile.inc
+@@ -82,7 +82,7 @@ LDFLAGS += $(OS_LIBS)
+ 
+ CFLAGS += $(EXTRA_CFLAGS)
+ 
+-LDFLAGS += -Wl,-z,relro -Wl,--warn-common -Wl,--fatal-warnings $(EXTRA_LDFLAGS)
++LDFLAGS += -Wl,-z,relro -Wl,--fatal-warnings $(EXTRA_LDFLAGS)
+ ifeq ($(DEBUG),1)
+ LDFLAGS += -L$(TOP)/src/debug
+ else
