@@ -15,6 +15,7 @@ extern "C" {
 #include <stddef.h>
 #include <assert.h>
 #include <math.h>
+#include "./uthash.h"
 
 #define __SPP_MASK_TAG_OUT 0x7FFFFFFFFF
 

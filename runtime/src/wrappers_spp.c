@@ -10,7 +10,6 @@ extern "C"
 #include <string.h>
 #include <inttypes.h>
 #include "./spp.h"
-
 #define PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS
 
 // if defined above, performing only tag cleaning.
@@ -21,7 +20,7 @@ extern "C"
 ///                           /// 
 /////////////////////////////////
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #  define dbg(x) x
 #else

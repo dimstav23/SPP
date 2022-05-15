@@ -53,6 +53,7 @@ void test_memcpy(PMEMobjpool* pop) {
 
 	ptr1->x[0] = 4;
 	ptr2->x[1] = 2;
+	//ptr2->x[2] = 2;
 
 	memcpy(ptr2, ptr1, sizeof(struct dummy) + 1);
 
@@ -86,7 +87,9 @@ int main()
 	memcpy(str_2, str, STR_SIZE*sizeof(uint64_t)+1); //overflow by 1
 	strcpy(str_2, str);
 	free(str);
+	printf("HELLO");
 	free(str_2);
+	printf("HELLO");
 
 	unlink("/dev/shm/spp_test.pool");
 
@@ -94,6 +97,7 @@ int main()
 	assert(pool != NULL);
 
 	PMEMoid proot_ = pmemobj_root(pool, sizeof(struct root_));
+	printf("HELLO");
 	assert(!OID_IS_NULL(proot_));
 
 	struct root_* proot = (struct root_*)pmemobj_direct(proot_);

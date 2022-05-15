@@ -11,6 +11,8 @@ echo "__CLANG: $CLANG"
 echo "__ld.gold: $(which ld.gold)"
 
 SPPLIB="$(realpath "$(dirname "$0")")"
+PMDKSRC=${SPPLIB}/../pmdk/src
+LFLAGS=-lpmem -lpmemobj
 
 mkdir -p ${SPPLIB}/obj
 
@@ -24,9 +26,11 @@ ${SPPLIB}/src/wrappers_spp.c \
 ${SPPLIB}/obj/wrappers_spp.o 
 
 $CLANG \
+-I${PMDKSRC}/include/ \
+-L${PMDKSRC}/nondebug/ \
 ${SPPLIB}/src/spp.c \
 -c -O1 -o \
-${SPPLIB}/obj/spp.o 
+${SPPLIB}/obj/spp.o ${LFLAGS}
 
 
 #$AR q \
