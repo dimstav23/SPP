@@ -26,7 +26,7 @@ The nix-shell already exports the ```CC```, ```CXX```, ```CMAKE_C_COMPILER```, `
 
 ```
 cd pmdk
-git checkout spp-main
+git checkout spp-pm_ptr_bit
 make -j$(nproc) TAG_BITS=xx
 ```
 Optional compile parameter for `pmdk`: `TAG_BITS` to determine the tag size for the returned tagged pointer structure. 
@@ -36,6 +36,7 @@ Optional compile parameter for `pmdk`: `TAG_BITS` to determine the tag size for 
 https://llvm.org/docs/GoldPlugin.html
 ```
 cd llvm-project;
+git submodule update --init
 mkdir build;
 mkdir install;
 cd build;
@@ -51,6 +52,12 @@ make -j$(nproc);
 // Optional for fast build: LLVM_OPTIMIZED_TABLEGEN=ON
 
 export PATH=$PATH:$PWD/bin
+```
+
+(3) Compile the runtime library:
+```
+cd runtime;
+make
 ```
 
 ## Usage instructions
