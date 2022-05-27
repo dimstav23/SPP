@@ -58,7 +58,7 @@ extern "C" {
 ///      Stats Macro        ///
 ///////////////////////////////
 
-// #define SPP_STATS
+#define SPP_STATS
 #ifdef SPP_STATS
     #define stats(x) x
     long int __spp_extract_tagval_cnt = 0;
@@ -232,6 +232,42 @@ __spp_checkbound(void *ptr)
     }
 
     return __spp_cleantag(ptr);
+}
+
+__SPP_ATTR
+void*
+__spp_checkbound_direct(void *ptr)
+{
+    stats(__spp_checkbound_cnt++;)
+    dbg(printf(">>%s with %p\n", __func__, ptr);)
+    
+    // NOTE: BE CAREFUL with signed/unsigned,
+    // when performing bit operation.
+    // Especially, shift opreations.  
+    
+    // careful with function body optimised away at Opt level 2
+#if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    if (_pext_u64((uintptr_t)ptr, OVERFLOW_MASK))
+#else
+    if ((uintptr_t)ptr & OVERFLOW_MASK)
+#endif
+    {
+        //simply print it in red
+        printf("\033[0;31m");
+        printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);
+        print_trace();
+        printf("\033[0m");
+        fflush(stdout);
+        raise(SIGINT);
+        _exit(1);
+        // return NULL;      
+    }
+
+#if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    return (void*)(_bzhi_u64((uintptr_t)ptr, NUM_PTR_BITS));
+#else
+    return (void*)((uintptr_t)ptr & PTR_MASK);
+#endif
 }
 
 __SPP_ATTR
