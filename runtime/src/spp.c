@@ -58,7 +58,7 @@ extern "C" {
 ///      Stats Macro        ///
 ///////////////////////////////
 
-#define SPP_STATS
+// #define SPP_STATS
 #ifdef SPP_STATS
     #define stats(x) x
     long int __spp_extract_tagval_cnt = 0;
