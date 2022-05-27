@@ -36,7 +36,7 @@ RUN apt-get update && apt-get -qq install -y \
 
 # Fetch the repository for future use
 WORKDIR /
-RUN git clone https://${git_token}@github.com/alexandrinapanfil/spp-pass.git /spp-pass
+RUN git clone https://${git_token}@github.com/dimstav23/spp-pass.git /spp-pass
 WORKDIR /spp-pass
 RUN git checkout spp_lto-pm_ptr_bit
 RUN git submodule update --init pmdk
