@@ -14,7 +14,7 @@ mkdir -p $RESULT_PATH
 ##### Different threads #####
 # Run test for 50%, and 95% reads
 declare -a readpercentages=(50 95)
-declare -a num_threads=(1 2 4 8 16 24)
+declare -a num_threads=(1 2 4 8 16 32)
 for readpercentage in "${readpercentages[@]}"; do
     declare -a files=( )
     bench=readrandomwriterandom

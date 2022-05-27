@@ -14,7 +14,7 @@ mkdir -p $RESULT_PATH
 # Execute the benchmarks
 ##### Different Threads #####
 declare -a benchmarks=(deleteseq deleterandom)
-declare -a num_threads=(1 2 4 8 16 24)
+declare -a num_threads=(1 2 4 8 16 32)
 for bench in "${benchmarks[@]}"; do
     declare -a files=( )
     # Run multiple times the same test

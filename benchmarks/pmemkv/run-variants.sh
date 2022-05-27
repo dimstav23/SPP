@@ -6,8 +6,8 @@ then
   exit 1
 fi
 
-# declare -a variants=("vanilla_pmdk" "spp" "safepm")
-declare -a variants=("safepm")
+declare -a variants=("vanilla_pmdk" "spp" "safepm")
+#declare -a variants=("safepm")
 
 for variant in "${variants[@]}"
 do
