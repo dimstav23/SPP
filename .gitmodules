@@ -1,7 +1,7 @@
 [submodule "pmdk"]
 	path = pmdk
 	url = https://github.com/alexandrinapanfil/pmdk.git
-	branch = spp-main
+	branch = spp-pm_ptr_bit
 [submodule "llvm-project"]
 	path = llvm-project
 	url = https://github.com/dimstav23/llvm-project.git
