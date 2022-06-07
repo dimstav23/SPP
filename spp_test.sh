@@ -50,7 +50,7 @@ function should_not_crash {
   shift 1
   
   print_line "Running $command $@..."
-  
+
   ( "$command" "$@" >/dev/null 2>&1 ) || { erase_line; echo -e "${RED}$command crashed.${NC}"; return 1; }
   erase_line
   echo -e "${GREEN}$command OK.${NC}"
@@ -89,32 +89,25 @@ NDEBUG=1;
 if [ "$NDEBUG" = "1" ]
 then
   cmake .. -DSPPBASE="${SPPBASE}" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
-    #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    echo "___N_Debug_________________"
+  #cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  echo "___N_Debug_________________"
 else
-  cmake ..  -DSPPBASE="${SPPBASE}" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=RelWithDebInfo 
-    #cmake ..  -DCMAKE_BUILD_TYPE=Debug
-    echo "___Debug___________________"
+  cmake ..  -DSPPBASE="${SPPBASE}" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_CFLAGS="${CFLAGS}" -DCMAKE_LDFLAGS="${LDFLAGS}" -DCMAKE_BUILD_TYPE=Debug 
+  #cmake ..  -DCMAKE_BUILD_TYPE=Debug
+  echo "___Debug___________________"
 fi
 
-make -j7
+make -j$(nproc) VERBOSE=1
 
 cd tests
 
 set +e
-#should_crash "Invalid free" ./mismatched_free
-#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free
-#should_crash "(Invalid free| palloc_heap_action_exec\] assertion failure)" ./double_free_ntx
-#should_crash "\[fd\]" ./use_after_free
-#should_crash "\[fd\]" ./use_after_free_ntx
-#should_crash "\[fd\]" ./use_after_realloc
+
 should_crash "00\[fa\]" ./overflow
 should_crash "00\[fa\]" ./overflow_ntx
 should_crash "00\[fa\]" ./root_overflow
-#should_crash "00\[fa\]" ../../tests/overflow_persistence.sh
-#should_crash "\[fa\]" ./root_underflow
-#should_crash "\[04\]" ./int32
-#should_crash "\[fd\]" ./alloc_tx_abort
+should_not_crash ./root_underflow
+should_crash "00\[fa\]" ../../tests/overflow_persistence.sh
 should_not_crash ./free_tx_abort
 should_crash "00\[fa\]" ./tx_add_overflow
 should_not_crash ./zalloc

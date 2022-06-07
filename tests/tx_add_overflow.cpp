@@ -19,8 +19,8 @@ struct root {
 
 int main()
 {
-	unlink("/dev/shm/spp_test.pool");
-	PMEMobjpool* pool = pmemobj_create("/dev/shm/spp_test.pool", "spp_test", 32*1024*1024, 0660);
+	unlink("/mnt/pmem0/dimitrios/spp_test.pool");
+	PMEMobjpool* pool = pmemobj_create("/mnt/pmem0/dimitrios/spp_test.pool", "spp_test", 32*1024*1024, 0660);
 	assert(pool != NULL);
 
 	PMEMoid proot_ = pmemobj_root(pool, sizeof(struct root));

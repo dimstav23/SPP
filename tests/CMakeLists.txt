@@ -16,7 +16,7 @@ function (spp_test target)
         PRIVATE 
         "-flto" 
 	"-O2" 
-	"-load" "${SPPBASE}/llvm-project/build/lib/LLVMSPP.so" 
+	"-Xclang -load -Xclang" "${SPPBASE}/llvm-project/build/lib/LLVMSPP.so" 
 	"-include" "${SPPBASE}/runtime/src/spp.h"
     	-v)
     	
@@ -44,19 +44,11 @@ function (spp_test target)
         "${PMDK_INSTALL_DIR}/include")
 endfunction()
 
-spp_test(double_free)
-spp_test(double_free_ntx)
-spp_test(use_after_free)
-spp_test(use_after_free_ntx)
-spp_test(use_after_realloc)
-spp_test(mismatched_free)
 spp_test(overflow)
-spp_test(tx_add_overflow)
 spp_test(overflow_ntx)
 spp_test(root_overflow)
 spp_test(root_underflow)
-spp_test(int32)
-spp_test(alloc_tx_abort)
-spp_test(free_tx_abort)
-spp_test(zalloc)
 spp_test(overflow_persistence_helper)
+spp_test(free_tx_abort)
+spp_test(tx_add_overflow)
+spp_test(zalloc)
