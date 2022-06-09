@@ -17,13 +17,15 @@ POBJ_LAYOUT_ROOT(spp_test, struct root);
 POBJ_LAYOUT_TOID(spp_test, struct dummy);
 POBJ_LAYOUT_END(spp_test);
 
+struct dummy* my_glob_ptr;
+
 struct root_ {
 	TOID(struct dummy) obj;
 };
 
 struct dummy {
-	uint64_t x[2];
 	PMEMoid next;
+	uint64_t x[2];
 };
 
 
@@ -41,8 +43,10 @@ void test_memcpy(PMEMobjpool* pop) {
 	
 	PMEMoid oid1,oid2;
 	PMEMoid *oid_ptr1, *oid_ptr2;
-	oid_ptr1 = (PMEMoid*)malloc(sizeof(PMEMoid));
+	oid_ptr1 = (PMEMoid*)malloc(sizeof(PMEMoid)*2);
 	oid_ptr2 = (PMEMoid*)malloc(sizeof(PMEMoid));
+
+	oid_ptr1 = (PMEMoid*)realloc(oid_ptr1,sizeof(PMEMoid));
 
 	pmemobj_alloc(pop, oid_ptr1, sizeof(struct dummy), 0, NULL, NULL);
 	struct dummy* ptr1 = pmemobj_direct(*oid_ptr1);
@@ -53,7 +57,7 @@ void test_memcpy(PMEMobjpool* pop) {
 
 	ptr1->x[0] = 4;
 	ptr2->x[1] = 2;
-
+	
 	memcpy(ptr2, ptr1, sizeof(struct dummy) + 1);
 
 	printf("%ld %ld\n", ptr2->x[0], ptr2->x[1]);
@@ -88,9 +92,9 @@ int main()
 	free(str);
 	free(str_2);
 
-	unlink("/dev/shm/spp_test.pool");
+	unlink("/dev/shm/spp_test.pool_dim");
 
-	PMEMobjpool* pool = pmemobj_create("/dev/shm/spp_test.pool", "spp_test", 32*1024*1024, 0666);
+	PMEMobjpool* pool = pmemobj_create("/dev/shm/spp_test.pool_dim", "spp_test", 32*1024*1024, 0666);
 	assert(pool != NULL);
 
 	PMEMoid proot_ = pmemobj_root(pool, sizeof(struct root_));
@@ -113,8 +117,13 @@ int main()
 
 	D_RW(proot->obj)->x[0] = 1;
 	D_RW(proot->obj)->x[1] = 2;
-	
-	test_memcpy(pool);
+	my_glob_ptr = D_RW(proot->obj);
+	my_glob_ptr->x[0] = 3;
+	D_RW(proot->obj)->x[2] = 16; // This line should crash
+
+	test_memcpy(pool); // This line should crash
+
+	D_RW(proot->obj)->x[1] = 3;
 
 	D_RW(proot->obj)->x[2] = 3; // This line should crash
 	

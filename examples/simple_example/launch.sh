@@ -49,15 +49,14 @@ $WRAP_LIST "${SPPLIBOBJ}/wrappers_spp.o" \
 -DTAG_BITS=26 -lpmem -lpmemobj \
 -rdynamic "${TESTSRC}/example.c" \
 -ggdb -g \
--fno-builtin \
 -o example #-v
 
 echo ">>>>>>> Run example"
-rm -rf /dev/shm/spp_test.pool
+rm -rf /dev/shm/spp_test.pool_dim
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
 # $CLANG -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
-$CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-builtin -S -I${PMDKSRC}/include/ -emit-llvm example.c
+$CLANG $OPT_LEVEL -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -I${PMDKSRC}/include/ -emit-llvm example.c
 
 #clang -O -emit-llvm ../runtime/runtime.c -c -o runtime.bc #produce runtime bitcode
 

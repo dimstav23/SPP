@@ -65,10 +65,13 @@ extern "C" {
     long int __spp_is_pm_ptr_cnt = 0;
     long int __spp_vol_ptr_check_cnt = 0;
     long int __spp_cleantag_cnt = 0;
+    long int useless__spp_cleantag_cnt = 0;
     long int __spp_cleantag_external_cnt = 0;
+    long int useless__spp_cleantag_external_cnt = 0;
     long int __spp_checkbound_cnt = 0;
     long int useless__spp_checkbound_cnt = 0;
     long int __spp_updatetag_cnt = 0;
+    long int useless__spp_updatetag_cnt = 0;
     long int __spp_memintr_check_and_clean_cnt = 0;
 
     void __spp_runtime_stats() {
@@ -77,10 +80,13 @@ extern "C" {
         printf("__spp_is_pm_ptr_cnt\t\t\t: %ld \n", __spp_is_pm_ptr_cnt);
         printf("__spp_vol_ptr_check_cnt\t\t\t: %ld \n", __spp_vol_ptr_check_cnt);
         printf("__spp_cleantag_cnt\t\t\t: %ld \n", __spp_cleantag_cnt);
+        printf("USELESS__spp_cleantag_cnt\t\t: %ld \n", useless__spp_cleantag_cnt);
         printf("__spp_cleantag_external_cnt\t\t: %ld \n", __spp_cleantag_external_cnt);
+        printf("USELESS__spp_cleantag_external_cnt\t: %ld \n", useless__spp_cleantag_external_cnt);
         printf("__spp_checkbound_cnt\t\t\t: %ld \n", __spp_checkbound_cnt);
         printf("USELESS__spp_checkbound_cnt\t\t: %ld \n", useless__spp_checkbound_cnt);
         printf("__spp_updatetag_cnt\t\t\t: %ld \n", __spp_updatetag_cnt);
+        printf("USELESS__spp_updatetag_cnt\t\t: %ld \n", useless__spp_updatetag_cnt);
         printf("__spp_memintr_check_and_clean_cnt\t: %ld \n", __spp_memintr_check_and_clean_cnt);
         return;
     }
@@ -96,9 +102,11 @@ extern "C" {
 /* 
  * https://stackoverflow.com/questions/3899870/print-call-stack-in-c-or-c
  */
-void 
-print_trace(void) 
+static void 
+error_report(const char* func, void* ptr) 
 {
+    printf("\033[0;31m");
+    printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);
     printf("\033[0;34m");
     char **strings;
     size_t i, size;
@@ -111,6 +119,9 @@ print_trace(void)
     puts("");
     free(strings);
     printf("\033[0m");
+    fflush(stdout);
+    raise(SIGINT);
+    exit(1);
 }
 
 __SPP_ATTR
@@ -146,6 +157,7 @@ __spp_cleantag(void *ptr)
 
     if (!__spp_is_pm_ptr(ptr)) 
     {
+        stats(useless__spp_cleantag_cnt++;)
         stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr;  
@@ -178,6 +190,7 @@ __spp_cleantag_external(void *ptr)
     
     if (!__spp_is_pm_ptr(ptr)) 
     {
+        stats(useless__spp_cleantag_external_cnt++;)
         stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
         return ptr;  
@@ -213,7 +226,6 @@ __spp_checkbound(void *ptr)
         return ptr;
     }    
     
-    // careful with function body optimised away at Opt level 2
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
     if (_pext_u64((uintptr_t)ptr, OVERFLOW_MASK))
 #else
@@ -221,14 +233,9 @@ __spp_checkbound(void *ptr)
 #endif
     {
         //simply print it in red
-        printf("\033[0;31m");
-        printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);
-        print_trace();
-        printf("\033[0m");
-        fflush(stdout);
-        raise(SIGINT);
-        _exit(1);
-        // return NULL;      
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);)
+        error_report(__func__, ptr);    
     }
 
     return __spp_cleantag(ptr);
@@ -253,14 +260,9 @@ __spp_checkbound_direct(void *ptr)
 #endif
     {
         //simply print it in red
-        printf("\033[0;31m");
-        printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);
-        print_trace();
-        printf("\033[0m");
-        fflush(stdout);
-        raise(SIGINT);
-        _exit(1);
-        // return NULL;      
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, ptr);)
+        error_report(__func__, ptr);
     }
 
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
@@ -287,6 +289,7 @@ __spp_updatetag(void *ptr, int64_t off) {
     {
         stats(__spp_vol_ptr_check_cnt++;)
         //if ptr is not tagged, return!
+        stats(useless__spp_updatetag_cnt++;)
         return ptr; 
     }
     dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
@@ -342,14 +345,10 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     if ((uintptr_t)tagval & OVERFLOW_MASK)
     {
         //simply print it in red
-        printf("\033[0;31m");
-        printf("!!!!>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);
-        printf("!!!!>%s checked ptr: tag %p addr %p \n", __func__, tagval, untagged);
-        print_trace();
-        printf("\033[0m");
-        fflush(stdout);
-        raise(SIGINT);
-        _exit(1);
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
+        dbg(printf("!!!!>%s checked ptr: tag %p addr %p \n", __func__, tagval, untagged);)
+        error_report(__func__, ptr);
     }
 	
     return (void*)untagged;
