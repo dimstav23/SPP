@@ -3,6 +3,10 @@ set -e
 
 cd /pmdk_safepm/src/benchmarks
 
+# copy to have the same config files
+cp /spp-pass/pmdk/src/benchmarks/pmembench_map.cfg ./
+cp /spp-pass/pmdk/src/benchmarks/pmembench_tx_spp.cfg ./pmembench_tx_safepm.cfg
+
 sed -i 's|/dev/shm/testfile.map|/mnt/pmembench/benchfile.map|' pmembench_map.cfg
 sed -i 's|/dev/shm/testfile.tx|/mnt/pmembench/benchfile.tx|' pmembench_tx_safepm.cfg
 
