@@ -75,7 +75,10 @@ def print_stats(version_lib, bench_config, abs_val, rel_val):
     abs_val = [float(x) for x in abs_val]
     rel_val = [float(x) for x in rel_val]
     for i in range(len(bench_config)):
-        print("{:12}".format(bench_config[i]) + "throughput: " + "{:14.4f}".format(abs_val[i]) + "\tspeed-down: " + "{:5.2f}".format(rel_val[i]))
+        if (rel_val[i] > 1.3 or rel_val[i] == 1.0): #non-prod
+            print("{:12}".format(bench_config[i]) + "throughput: " + "{:14.4f}".format(abs_val[i]) + "\tspeed-down: " + "{:5.2f}".format(rel_val[i]))
+        else: #production ok
+            print("{:12}".format(bench_config[i]) + "throughput: " + "{:14.4f}".format(abs_val[i]) + "\tspeed-down: " + "{:5.2f}".format(rel_val[i]) + "\tOK")
     exit
 
 def pmembench_tx_plot_single(x_values, y_values, info, x_axis_label, y_axis_label, overhead_annot, plot_folder):
@@ -717,7 +720,7 @@ def pmemkv_plot_overhead(x_values, y_values, info, x_axis_label, y_axis_label, o
                     print_stats(version_lib, x_values[benchmark][variant][version_lib],
                                 y_values[benchmark][variant][version_lib], values_to_plot)
             print("------------------------------------------------------------")
-            
+
             #configure the look of the plot
             custom_x_ticks = list(map(float,x_values[benchmark][variant][version_lib]))
             custom_x_ticks = [round(a) for a in custom_x_ticks]
