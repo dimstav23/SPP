@@ -65,6 +65,19 @@ def save_plot(plot_dir, plot_file_path, fig, lgd):
     fig.savefig(plot_file_path + ".pdf", dpi=300, format='pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')
     fig.savefig(plot_file_path + ".png", dpi=300, format='png', bbox_extra_artists=(lgd,), bbox_inches='tight')
     
+
+def print_stats(version_lib, bench_config, abs_val, rel_val):
+    
+    # print("| Recovery time (s)   ||" + "{:5.2f}".format(recovery_50000_10_4_1000["time_taken"][0]) + " |" + "{:5.2f}".format(recovery_50000_10_4_5000["time_taken"][0]) + " |" + "{:5.2f}".format(recovery_50000_10_8_1000["time_taken"][0]) + " |" + "{:5.2f}".format(recovery_50000_10_8_5000["time_taken"][0]) + " |")
+    # print("----------------------------------------------------")
+
+    print(version_lib + " variant")
+    abs_val = [float(x) for x in abs_val]
+    rel_val = [float(x) for x in rel_val]
+    for i in range(len(bench_config)):
+        print("{:12}".format(bench_config[i]) + "throughput: " + "{:14.4f}".format(abs_val[i]) + "\tspeed-down: " + "{:5.2f}".format(rel_val[i]))
+    exit
+
 def pmembench_tx_plot_single(x_values, y_values, info, x_axis_label, y_axis_label, overhead_annot, plot_folder):
     print("pmembench_tx_plot_single")
     fig, ax = plt.subplots(1, 1)
@@ -230,9 +243,14 @@ def pmembench_tx_plot_single_vertical(x_values, y_values, info, x_axis_label, y_
             x_axis_spacing = np.linspace(-bar_area_percentage/2 + w/2, bar_area_percentage/2 - w/2, num=number_of_bars)
 
             #append values to the plot
+            print("------------------------------------------------------------")
+            print("Benchmark: " + benchmark)
             for version_lib in x_values[benchmark][variant]:     
                 if (version_lib == "pmdk"):
                     reference = [float(i) for i in y_values[benchmark][variant][version_lib]]
+                    #stats print
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], np.ones(len(reference)))
                 else:
                     x_index = np.arange(0, len(x_values[benchmark][variant][version_lib]), 1) + x_axis_spacing[plot_idx]
                     lib_values = [float(i) for i in y_values[benchmark][variant][version_lib]]
@@ -241,7 +259,10 @@ def pmembench_tx_plot_single_vertical(x_values, y_values, info, x_axis_label, y_
                                         color = colour_local[plot_idx], hatch = hatch_local[plot_idx],
                                         edgecolor = 'black', align='center', label=pmembench_tx[benchmark])
                     plot_idx = plot_idx + 1
-            
+                    #stats print   
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], values_to_plot)
+            print("------------------------------------------------------------")
             #configure the look of the plot
             plt.xticks(range(0,len(x_values[benchmark][variant][version_lib])), x_values[benchmark][variant][version_lib])
             ax.xaxis.set_ticks(range(0,len(x_values[benchmark][variant][version_lib])))
@@ -483,9 +504,14 @@ def pmembench_map_plot(x_values, y_values, info, x_axis_label, y_axis_label, ove
             x_axis_spacing = np.linspace(-bar_area_percentage/2 + w/2, bar_area_percentage/2 - w/2, num=number_of_bars)
     
             #append values to the plot
+            print("------------------------------------------------------------")
+            print("Benchmark: " + benchmark)
             for version_lib in x_values[benchmark][variant]:     
                 if (version_lib == "pmdk"):
                     reference = [float(i) for i in y_values[benchmark][variant][version_lib]]
+                    #stats print
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], np.ones(len(reference)))
                 else:
                     internal_idx = (list(x_values[benchmark][variant].keys()).index(version_lib))-1
                     x_index = np.arange(0, len(x_values[benchmark][variant][version_lib]), 1) + x_axis_spacing[internal_idx]
@@ -493,8 +519,11 @@ def pmembench_map_plot(x_values, y_values, info, x_axis_label, y_axis_label, ove
                     values_to_plot = [x/y for x, y in zip(reference, lib_values)]
                     rect = ax.bar(x_index, values_to_plot, width = w, 
                                         color = colour[internal_idx], hatch = hatch[internal_idx],
-                                        edgecolor = 'black', align='center', label=version_lib)
-            
+                                        edgecolor = 'black', align='center', label=version_lib)   
+                    #stats print   
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], values_to_plot)
+            print("------------------------------------------------------------")
             #configure the look of the plot
             plt.xticks(range(0,len(x_values[benchmark][variant][version_lib])), x_values[benchmark][variant][version_lib])
             ax.xaxis.set_ticks(range(0,len(x_values[benchmark][variant][version_lib])))
@@ -668,9 +697,14 @@ def pmemkv_plot_overhead(x_values, y_values, info, x_axis_label, y_axis_label, o
             w = float(bar_area_percentage / number_of_bars) #bar width to cover 80% of the dedicated space
             x_axis_spacing = np.linspace(-bar_area_percentage/2 + w/2, bar_area_percentage/2 - w/2, num=number_of_bars)
             #append values to the plot
+            print("------------------------------------------------------------")
+            print("Benchmark: " + benchmark)
             for version_lib in x_values[benchmark][variant]:     
                 if (version_lib == "pmdk"):
                     reference = [float(i) for i in y_values[benchmark][variant][version_lib]]
+                    #stats print
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], np.ones(len(reference)))
                 else:
                     internal_idx = (list(x_values[benchmark][variant].keys()).index(version_lib))-1
                     x_index = np.arange(0, len(x_values[benchmark][variant][version_lib]), 1) + x_axis_spacing[internal_idx]
@@ -679,7 +713,11 @@ def pmemkv_plot_overhead(x_values, y_values, info, x_axis_label, y_axis_label, o
                     rect = ax[ax_idx].bar(x_index, values_to_plot, width = w, 
                                         color = colour[internal_idx], hatch = hatch[internal_idx],
                                         edgecolor = 'black', align='center', label=version_lib)
-
+                    #stats print   
+                    print_stats(version_lib, x_values[benchmark][variant][version_lib],
+                                y_values[benchmark][variant][version_lib], values_to_plot)
+            print("------------------------------------------------------------")
+            
             #configure the look of the plot
             custom_x_ticks = list(map(float,x_values[benchmark][variant][version_lib]))
             custom_x_ticks = [round(a) for a in custom_x_ticks]
