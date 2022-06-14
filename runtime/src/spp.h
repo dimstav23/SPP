@@ -35,15 +35,22 @@ extern "C" {
 #define OVERFLOW_MASK  (1ULL << (POINTER_BITS - PM_PTR_BIT - 1))
 #define TAG_MASK ~PTR_MASK
 
-extern void* __spp_cleantag (void *ptr);
-extern void* __spp_cleantag_external (void *ptr);
-extern void* __spp_checkbound (void *ptr);
-extern void* __spp_checkbound_direct (void *ptr);
+extern void* __spp_cleantag(void *ptr);
+extern void* __spp_cleantag_direct(void *ptr);
+
+extern void* __spp_cleantag_external(void *ptr);
+extern void* __spp_cleantag_external_direct(void *ptr);
+
+extern void* __spp_checkbound(void *ptr);
+extern void* __spp_checkbound_direct(void *ptr);
 
 extern void* __spp_updatetag(void *ptr, int64_t off);
+extern void* __spp_updatetag_direct(void *ptr, int64_t off);
+
 extern void* __spp_update_pointer(void *ptr, int64_t off);
 
 extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
+extern void* __spp_memintr_check_and_clean_direct(void *ptr, int64_t off);
 
 extern uintptr_t __spp_extract_tagval(void *ptr);
 

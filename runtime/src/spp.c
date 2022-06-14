@@ -176,6 +176,24 @@ __spp_cleantag(void *ptr)
 
 __SPP_ATTR
 void*
+__spp_cleantag_direct(void *ptr)
+{
+    stats(__spp_cleantag_cnt++;)
+    dbg(printf(">>%s with %p\n", __func__, ptr);)
+
+    //MASK OUT THE TAG
+#if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    uintptr_t ptrval = _bzhi_u64((uintptr_t)ptr, NUM_PTR_BITS);
+#else
+    uintptr_t ptrval = (uintptr_t)ptr & PTR_MASK;
+#endif
+
+    dbg(printf(">>%s new_ptr: %p\n", __func__, ptrval);)
+    return (void*)ptrval;
+}
+
+__SPP_ATTR
+void*
 __spp_cleantag_external(void *ptr)
 {
     stats(
@@ -195,6 +213,31 @@ __spp_cleantag_external(void *ptr)
         //if ptr is not tagged, return!
         return ptr;  
     }
+    
+    //MASK OUT THE TAG
+#if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    uintptr_t ptrval = _bzhi_u64((uintptr_t)ptr, NUM_PTR_BITS);
+#else
+    uintptr_t ptrval = (uintptr_t)ptr & PTR_MASK;
+#endif
+    
+    dbg(printf(">>%s old_ptr: %p new_ptr: %p\n", __func__, ptr, ptrval);)
+    return (void*)ptrval;
+}
+
+__SPP_ATTR
+void*
+__spp_cleantag_external_direct(void *ptr)
+{
+    stats(
+        if (!declared) 
+        {
+            atexit(__spp_runtime_stats);
+            declared=1;
+        }
+    )
+    stats(__spp_cleantag_external_cnt++;)
+    dbg(printf(">>%s with %p\n", __func__, ptr);)
     
     //MASK OUT THE TAG
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
@@ -307,6 +350,32 @@ __spp_updatetag(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
+__spp_updatetag_direct(void *ptr, int64_t off) {
+    stats(__spp_updatetag_cnt++;)
+    // ptr:  after pointer arithmetic  (i.e. GEP itself)
+   
+    ///////////////////////////////////////////////
+    //  NOTE: BE CAREFUL with signed/unsigned,   //
+    //  when performing bit operation.           //
+    //  Especially, shift opreations.            //
+    ///////////////////////////////////////////////
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+    
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
+    tag = tag + off;  
+    
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
+    uintptr_t ptrval = untagged | tempval; 
+    
+    dbg(printf(">>%s new_ptr: %p\n", __func__, ptrval);)
+	
+    return (void*)ptrval;
+}
+
+__SPP_ATTR
+void* 
 __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     stats(__spp_memintr_check_and_clean_cnt++;)
     // ptr: pointer pass to LLVM memory intrinsic
@@ -330,6 +399,48 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
         return ptr; 
     }
     
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);   
+    // -1 is applied due to addressing starting from 0   
+    dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
+    tag = tag + (off - 1); 
+    
+    uintptr_t tagval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);
+    // uintptr_t ptrval = untagged | tempval; 
+    
+    dbg(printf(">>%s checked ptr: tag %p addr %p\n", __func__, tagval, untagged);)
+    
+    // if (__spp_checkbound((void*)tagval) == NULL)
+    if ((uintptr_t)tagval & OVERFLOW_MASK)
+    {
+        //simply print it in red
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
+        dbg(printf("!!!!>%s checked ptr: tag %p addr %p \n", __func__, tagval, untagged);)
+        error_report(__func__, ptr);
+    }
+	
+    return (void*)untagged;
+}
+
+__SPP_ATTR
+void* 
+__spp_memintr_check_and_clean_direct(void *ptr, int64_t off) {
+    stats(__spp_memintr_check_and_clean_cnt++;)
+    // ptr: pointer pass to LLVM memory intrinsic
+    // off: offset to be added and checked
+   
+    // calculates the final address of the ptr according to the offset
+    // performs bounds check
+    // returns the clean ptr for the memory intrinsic function
+
+    ///////////////////////////////////////////////
+    //  NOTE: BE CAREFUL with signed/unsigned,   //
+    //  when performing bit operation.           //
+    //  Especially, shift opreations.            //
+    ///////////////////////////////////////////////
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+       
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);   
     // -1 is applied due to addressing starting from 0   
     dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
