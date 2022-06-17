@@ -65,14 +65,19 @@ extern "C" {
     long int __spp_is_pm_ptr_cnt = 0;
     long int __spp_vol_ptr_check_cnt = 0;
     long int __spp_cleantag_cnt = 0;
+    long int __spp_cleantag_cnt_direct = 0;
     long int useless__spp_cleantag_cnt = 0;
     long int __spp_cleantag_external_cnt = 0;
+    long int __spp_cleantag_external_cnt_direct = 0;
     long int useless__spp_cleantag_external_cnt = 0;
     long int __spp_checkbound_cnt = 0;
+    long int __spp_checkbound_cnt_direct = 0;
     long int useless__spp_checkbound_cnt = 0;
     long int __spp_updatetag_cnt = 0;
+    long int __spp_updatetag_cnt_direct = 0;
     long int useless__spp_updatetag_cnt = 0;
     long int __spp_memintr_check_and_clean_cnt = 0;
+    long int __spp_memintr_check_and_clean_cnt_direct = 0;
 
     void __spp_runtime_stats() {
         printf("***** SPP runtime statistics *****\n");
@@ -88,6 +93,13 @@ extern "C" {
         printf("__spp_updatetag_cnt\t\t\t: %ld \n", __spp_updatetag_cnt);
         printf("USELESS__spp_updatetag_cnt\t\t: %ld \n", useless__spp_updatetag_cnt);
         printf("__spp_memintr_check_and_clean_cnt\t: %ld \n", __spp_memintr_check_and_clean_cnt);
+        printf("\n\n");
+        printf("***** SPP direct runtime statistics *****\n");
+        printf("__spp_cleantag_cnt_direct\t\t: %ld \n", __spp_cleantag_cnt_direct);
+        printf("__spp_cleantag_external_cnt_direct\t: %ld \n", __spp_cleantag_external_cnt_direct);
+        printf("__spp_checkbound_cnt_direct\t\t: %ld \n", __spp_checkbound_cnt_direct);
+         printf("__spp_updatetag_cnt_direct\t\t: %ld \n", __spp_updatetag_cnt_direct);
+         printf("__spp_memintr_check_and_clean_cnt_direct: %ld \n", __spp_memintr_check_and_clean_cnt_direct);
         return;
     }
     int declared = 0;
@@ -179,6 +191,7 @@ void*
 __spp_cleantag_direct(void *ptr)
 {
     stats(__spp_cleantag_cnt++;)
+    stats(__spp_cleantag_cnt_direct++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
 
     //MASK OUT THE TAG
@@ -237,6 +250,7 @@ __spp_cleantag_external_direct(void *ptr)
         }
     )
     stats(__spp_cleantag_external_cnt++;)
+    stats(__spp_cleantag_external_cnt_direct++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
     
     //MASK OUT THE TAG
@@ -289,6 +303,7 @@ void*
 __spp_checkbound_direct(void *ptr)
 {
     stats(__spp_checkbound_cnt++;)
+    stats(__spp_checkbound_cnt_direct++;)
     dbg(printf(">>%s with %p\n", __func__, ptr);)
     
     // NOTE: BE CAREFUL with signed/unsigned,
@@ -352,6 +367,7 @@ __SPP_ATTR
 void* 
 __spp_updatetag_direct(void *ptr, int64_t off) {
     stats(__spp_updatetag_cnt++;)
+    stats(__spp_updatetag_cnt_direct++;)
     // ptr:  after pointer arithmetic  (i.e. GEP itself)
    
     ///////////////////////////////////////////////
@@ -427,6 +443,7 @@ __SPP_ATTR
 void* 
 __spp_memintr_check_and_clean_direct(void *ptr, int64_t off) {
     stats(__spp_memintr_check_and_clean_cnt++;)
+    stats(__spp_memintr_check_and_clean_cnt_direct++;)
     // ptr: pointer pass to LLVM memory intrinsic
     // off: offset to be added and checked
    
