@@ -33,7 +33,7 @@ index 01feea1a..8d3a4eb5 100644
 +	message(FATAL_ERROR "Couldn't locate SPP runtime lib object files")
 +endif()
 +
-+
++add_flag(-fno-builtin)
 +set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
 +add_flag("-Xclang -load -Xclang ${LLVMROOT}/build/lib/LLVMSPP.so")
 +
@@ -327,10 +327,36 @@ index 4c37d561..6f21bca2 100644
  
  } // namespace detail
 diff --git a/include/libpmemobj++/persistent_ptr.hpp b/include/libpmemobj++/persistent_ptr.hpp
-index 8ed05dc6..8d8ca677 100644
+index 8ed05dc6..c5342eae 100644
 --- a/include/libpmemobj++/persistent_ptr.hpp
 +++ b/include/libpmemobj++/persistent_ptr.hpp
-@@ -214,6 +214,8 @@ public:
+@@ -52,6 +52,12 @@ public:
+ 
+ 	element_type *
+ 	get() const noexcept
++	{
++		return spp_get();
++	}
++
++	element_type *
++	spp_get() const noexcept
+ 	{
+ 		if (this->oid.pool_uuid_lo ==
+ 		    std::numeric_limits<decltype(oid.pool_uuid_lo)>::max())
+@@ -98,6 +104,12 @@ public:
+ 
+ 	element_type *
+ 	get() const noexcept
++	{
++		return spp_get();
++	}
++	
++	element_type *
++	spp_get() const noexcept
+ 	{
+ 		if (this->oid.pool_uuid_lo ==
+ 		    std::numeric_limits<decltype(oid.pool_uuid_lo)>::max())
+@@ -214,6 +226,8 @@ public:
  	{
  		this->oid.off +=
  			static_cast<std::uint64_t>(calculate_offset<U>());
@@ -339,7 +365,7 @@ index 8ed05dc6..8d8ca677 100644
  		verify_type();
  	}
  
-@@ -235,6 +237,8 @@ public:
+@@ -235,6 +249,8 @@ public:
  	{
  		this->oid.off +=
  			static_cast<std::uint64_t>(calculate_offset<U>());
@@ -348,7 +374,7 @@ index 8ed05dc6..8d8ca677 100644
  		verify_type();
  	}
  
-@@ -293,6 +297,7 @@ public:
+@@ -293,6 +309,7 @@ public:
  	{
  		detail::conditional_add_to_tx(this);
  		this->oid.off += sizeof(T);
@@ -356,7 +382,7 @@ index 8ed05dc6..8d8ca677 100644
  
  		return *this;
  	}
-@@ -305,6 +310,7 @@ public:
+@@ -305,6 +322,7 @@ public:
  	{
  		PMEMoid noid = this->oid;
  		++(*this);
@@ -364,7 +390,7 @@ index 8ed05dc6..8d8ca677 100644
  
  		return persistent_ptr<T>(noid);
  	}
-@@ -317,6 +323,7 @@ public:
+@@ -317,6 +335,7 @@ public:
  	{
  		detail::conditional_add_to_tx(this);
  		this->oid.off -= sizeof(T);
@@ -372,7 +398,7 @@ index 8ed05dc6..8d8ca677 100644
  
  		return *this;
  	}
-@@ -329,6 +336,7 @@ public:
+@@ -329,6 +348,7 @@ public:
  	{
  		PMEMoid noid = this->oid;
  		--(*this);
@@ -380,7 +406,7 @@ index 8ed05dc6..8d8ca677 100644
  
  		return persistent_ptr<T>(noid);
  	}
-@@ -341,6 +349,7 @@ public:
+@@ -341,6 +361,7 @@ public:
  	{
  		detail::conditional_add_to_tx(this);
  		this->oid.off += static_cast<std::uint64_t>(s) * sizeof(T);
@@ -388,7 +414,7 @@ index 8ed05dc6..8d8ca677 100644
  
  		return *this;
  	}
-@@ -353,6 +362,7 @@ public:
+@@ -353,6 +374,7 @@ public:
  	{
  		detail::conditional_add_to_tx(this);
  		this->oid.off -= static_cast<std::uint64_t>(s) * sizeof(T);
@@ -396,7 +422,28 @@ index 8ed05dc6..8d8ca677 100644
  
  		return *this;
  	}
-@@ -810,6 +820,7 @@ operator+(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
+@@ -476,6 +498,12 @@ public:
+ 	 */
+ 	element_type *
+ 	get() const noexcept
++	{
++		return spp_get();
++	}
++
++	element_type *
++	spp_get() const noexcept
+ 	{
+ 		if (this->oid.pool_uuid_lo ==
+ 		    std::numeric_limits<decltype(oid.pool_uuid_lo)>::max())
+@@ -484,7 +512,6 @@ public:
+ 			return static_cast<element_type *>(
+ 				pmemobj_direct(this->oid));
+ 	}
+-
+ 	/**
+ 	 * Rebind to a different type of pointer.
+ 	 */
+@@ -810,6 +837,7 @@ operator+(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
  	PMEMoid noid;
  	noid.pool_uuid_lo = lhs.raw().pool_uuid_lo;
  	noid.off = lhs.raw().off + static_cast<std::uint64_t>(s) * sizeof(T);
@@ -404,7 +451,7 @@ index 8ed05dc6..8d8ca677 100644
  
  	return persistent_ptr<T>(noid);
  }
-@@ -824,6 +835,7 @@ operator-(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
+@@ -824,6 +852,7 @@ operator-(persistent_ptr<T> const &lhs, std::ptrdiff_t s)
  	PMEMoid noid;
  	noid.pool_uuid_lo = lhs.raw().pool_uuid_lo;
  	noid.off = lhs.raw().off - static_cast<std::uint64_t>(s) * sizeof(T);
