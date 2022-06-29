@@ -56,6 +56,9 @@ extern uintptr_t __spp_extract_tagval(void *ptr);
 
 extern uintptr_t __spp_is_pm_ptr(void *ptr);
 
+extern void* __spp_update_check_clean(void *ptr, int64_t off);
+extern void* __spp_update_check_clean_direct(void *ptr, int64_t off);
+
 extern void __spp_runtime_stats();
 
 #ifdef __cplusplus

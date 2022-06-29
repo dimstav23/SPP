@@ -392,6 +392,86 @@ __spp_updatetag_direct(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
+__spp_update_check_clean(void *ptr, int64_t off) {
+    stats(__spp_updatetag_cnt++;)
+    stats(__spp_checkbound_cnt++;)
+    ///////////////////////////////////////////////
+    //  NOTE: BE CAREFUL with signed/unsigned,   //
+    //  when performing bit operation.           //
+    //  Especially, shift opreations.            //
+    ///////////////////////////////////////////////
+    
+    if (!__spp_is_pm_ptr(ptr))
+    {
+        stats(__spp_vol_ptr_check_cnt++;)
+        //if ptr is not tagged, return!
+        stats(useless__spp_updatetag_cnt++;)
+        stats(useless__spp_checkbound_cnt++;)
+        return ptr; 
+    }
+
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
+    tag = tag + off;  
+    
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);	
+
+    #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    if (_pext_u64((uintptr_t)tempval, OVERFLOW_MASK))
+    #else
+    if ((uintptr_t)tempval & OVERFLOW_MASK)
+    #endif
+    {
+        void* updatedPtr = (void*)(untagged | tempval);
+        //simply print it in red
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, updatedPtr);)
+        error_report(__func__, updatedPtr);    
+    }
+
+    return (void*)(untagged);
+}
+
+__SPP_ATTR
+void* 
+__spp_update_check_clean_direct(void *ptr, int64_t off) {
+    stats(__spp_updatetag_cnt++;)
+    stats(__spp_updatetag_cnt_direct++;)
+    stats(__spp_checkbound_cnt++;)
+    stats(__spp_checkbound_cnt_direct++;)
+    ///////////////////////////////////////////////
+    //  NOTE: BE CAREFUL with signed/unsigned,   //
+    //  when performing bit operation.           //
+    //  Especially, shift opreations.            //
+    ///////////////////////////////////////////////
+
+    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
+    tag = tag + off;  
+    
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    uintptr_t untagged = (uintptr_t)__spp_cleantag(ptr);	
+
+    #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
+    if (_pext_u64((uintptr_t)tempval, OVERFLOW_MASK))
+    #else
+    if ((uintptr_t)tempval & OVERFLOW_MASK)
+    #endif
+    {
+        void* updatedPtr = (void*)(untagged | tempval);
+        //simply print it in red
+        dbg(printf("\033[0;31m");)
+        dbg(printf("!!!!> OVERFLOW detected at %s for %p\n", __func__, updatedPtr);)
+        error_report(__func__, updatedPtr);    
+    }
+
+    return (void*)(untagged);
+}
+
+
+__SPP_ATTR
+void* 
 __spp_memintr_check_and_clean(void *ptr, int64_t off) {
     stats(__spp_memintr_check_and_clean_cnt++;)
     // ptr: pointer pass to LLVM memory intrinsic
