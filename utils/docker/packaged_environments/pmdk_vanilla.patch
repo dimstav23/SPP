@@ -1,7 +1,16 @@
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index da51acdee..ff5cc2343 100644
+index fdfd7715b..d9f030e6e 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
+@@ -147,7 +147,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
+ OBJS += pmemobj.o
+ 
+ ifeq ($(DEBUG),)
+-CXXFLAGS += -O1
++CXXFLAGS += -O3
+ LIBS_PATH=../nondebug
+ else
+ CXXFLAGS += -ggdb
 @@ -166,9 +166,18 @@ CXXFLAGS += $(EXTRA_CXXFLAGS)
  
  objdir=.
@@ -10,7 +19,7 @@ index da51acdee..ff5cc2343 100644
 +CC:=$(shell which clang)
 +CXX:=$(shell which clang++)
 +NM:=$(shell which llvm-nm)
-+OPT_LEVEL:=-O1
++OPT_LEVEL:=-O3
 +FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 +LDFLAGS += -fuse-ld=gold
 +
@@ -21,7 +30,7 @@ index da51acdee..ff5cc2343 100644
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project
-@@ -215,7 +224,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+@@ -216,7 +225,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
  	$(create-deps)
  
  $(BENCHMARK): $(TMP_HEADERS) $(OBJS) $(LIBMAP)
@@ -31,13 +40,14 @@ index da51acdee..ff5cc2343 100644
  
  pmembench.o: pmembench.cpp Makefile
 diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
-index b363377f4..6e81e9ef3 100644
+index bec5ee16a..e9a949c55 100644
 --- a/src/examples/Makefile.inc
 +++ b/src/examples/Makefile.inc
 @@ -26,12 +26,23 @@ endif
  INCS = -I$(INCDIR) -I. -I$(TOP_SRC)/examples $(OS_INCS)
  LIBS += $(OS_LIBS) $(LIBUUID)
  
+-OPT_LEVEL:=-O1
 +
 +# https://llvm.org/docs/GoldPlugin.html#quickstart-for-using-lto-with-autotooled-projects
 +CC:=$(shell which clang)
@@ -46,7 +56,7 @@ index b363377f4..6e81e9ef3 100644
 +NM:=$(shell which llvm-nm)
 +#LD:=$(shell which ld.gold)
 +
- OPT_LEVEL:=-O1
++OPT_LEVEL:=-O2
 +FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 +LDFLAGS += -fuse-ld=gold
  

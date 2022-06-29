@@ -12,18 +12,9 @@ index 4e465ea8a..c9c56fc42 100644
  ifneq ($(NORPATH),1)
  LDFLAGS += -Wl,-rpath=$(libdir)$(LIB_SUBDIR):$(LIBFABRIC_LD_LIBRARY_PATHS):$(LIBNDCTL_LD_LIBRARY_PATHS)
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index 2162b9660..295e10062 100644
+index 2162b9660..279c24bb9 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
-@@ -144,7 +144,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
- OBJS += pmemobj.o
- 
- ifeq ($(DEBUG),)
--CXXFLAGS += -O3
-+CXXFLAGS += -O1
- LIBS_PATH=../nondebug
- else
- CXXFLAGS += -ggdb
 @@ -163,6 +163,15 @@ CXXFLAGS += $(EXTRA_CXXFLAGS)
  
  objdir=.
@@ -32,7 +23,7 @@ index 2162b9660..295e10062 100644
 +CC:=$(shell which clang)
 +CXX:=$(shell which clang++)
 +NM:=$(shell which llvm-nm)
-+OPT_LEVEL:=-O1
++OPT_LEVEL:=-O3
 +FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 +LDFLAGS += -fuse-ld=gold
 +CXXFLAGS += $(OPT_LEVEL) $(FORTIFY)
@@ -49,17 +40,6 @@ index 2162b9660..295e10062 100644
  
  $(LIBMAP):
  	$(MAKE) -C $(LIBMAP_DIR) map
-diff --git a/src/common/Makefile b/src/common/Makefile
-index 535b1088e..786f02c54 100644
---- a/src/common/Makefile
-+++ b/src/common/Makefile
-@@ -12,4 +12,4 @@ include pmemcommon.inc
- include ../Makefile.inc
- 
- CFLAGS += $(LIBNDCTL_CFLAGS)
--CFLAGS += -DUSE_LIBDL
-+CFLAGS += -DUSE_LIBDL
-\ No newline at end of file
 diff --git a/src/examples/Makefile b/src/examples/Makefile
 index ff0e6781d..b13957ccf 100644
 --- a/src/examples/Makefile
@@ -76,7 +56,7 @@ index ff0e6781d..b13957ccf 100644
  include Makefile.inc
  
 diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
-index a449f89f4..61fa8de97 100644
+index a449f89f4..4132b4746 100644
 --- a/src/examples/Makefile.inc
 +++ b/src/examples/Makefile.inc
 @@ -23,12 +23,22 @@ CFLAGS += -fsanitize=$(SANITIZE)
@@ -96,7 +76,7 @@ index a449f89f4..61fa8de97 100644
 +NM:=$(shell which llvm-nm)
 +LD:=$(shell which ld.gold)
 +
-+OPT_LEVEL:=-O1
++OPT_LEVEL:=-O2
 +FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 +LDFLAGS += -fuse-ld=gold
 +
