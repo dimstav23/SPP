@@ -1,5 +1,5 @@
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index fdfd7715b..d9f030e6e 100644
+index fdfd7715b..bc6b9d19c 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
 @@ -147,7 +147,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
@@ -30,6 +30,15 @@ index fdfd7715b..d9f030e6e 100644
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project
+@@ -187,7 +196,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
+            -Wl,-wrap,strcat -Wl,-wrap,snprintf \
+            -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
+-OPT_LEVEL:=-O1
++OPT_LEVEL:=-O3
+ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ 
+ # CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
 @@ -216,7 +225,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
  	$(create-deps)
  
