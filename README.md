@@ -60,6 +60,11 @@ cd runtime;
 make
 ```
 
+For manual check bound (in case of failure oblivious computing) use the following compilation flag:
+```
+make FAIL_OBL_COMP=1
+```
+
 ## Usage instructions
 
 Disable mapping address randomization and provide PMDK with appropriately low mapping address hint ([src](https://pmem.io/pmdk/manpages/linux/v1.0/libpmem.3.html)):
