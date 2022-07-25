@@ -19,6 +19,10 @@ ifeq ($(HW), OFF)
 CFLAGS += -DHW_OFF
 endif
 
+ifneq ($(FAIL_OBL_COMP),)
+CFLAGS += -DFAIL_OBL_COMP
+endif
+
 SPPLIB := $(shell realpath .)
 SRC_FOLDER := $(SPPLIB)/src/
 OBJ_FOLDER := $(SPPLIB)/obj/
