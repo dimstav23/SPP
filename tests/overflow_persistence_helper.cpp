@@ -36,9 +36,10 @@ void attemptOverflow() {
 	assert(OID_IS_NULL(proot_) == false);
 	struct root* proot = (struct root*)pmemobj_direct(proot_);
 
+	print_pass_flag(); // print moved here as the gep preemption detects the overflow earlier
 	proot->arr[0] = 1;
 	proot->arr[1] = 1;
-	print_pass_flag();
+	// print_pass_flag();
 	proot->arr[2] = 1; // This line should crash
 	print_fail_flag();
 	
