@@ -104,6 +104,7 @@ cd tests
 set +e
 
 should_crash "00\[fa\]" ./overflow
+should_crash "00\[fa\]" ./type_overflow
 should_crash "00\[fa\]" ./overflow_ntx
 should_crash "00\[fa\]" ./root_overflow
 should_not_crash ./root_underflow

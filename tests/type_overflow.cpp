@@ -19,7 +19,7 @@ struct root {
 };
 
 struct dummy {
-	uint64_t x[2];
+	uint32_t x[2];
 };
 
 int main()
@@ -42,11 +42,10 @@ int main()
 	}
 	TX_END
 	
-	print_pass_flag(); // print moved here as the gep preemption detects the overflow earlier
-	D_RW(proot->obj)->x[0] = 1;
-	D_RW(proot->obj)->x[1] = 2;
-	//print_pass_flag();
-	D_RW(proot->obj)->x[2] = 3; // This line should crash
+	D_RW(proot->obj)->x[0] = (uint32_t) 1;
+    print_pass_flag();
+	uint64_t *exploit = (uint64_t*)calloc(48, sizeof(uint64_t));
+	memcpy(&D_RW(proot->obj)->x[1], exploit, sizeof(*exploit)); // This line should crash
 	print_fail_flag();
 	
 	pmemobj_close(pool);
