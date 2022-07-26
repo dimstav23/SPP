@@ -210,7 +210,7 @@ __SPP_ATTR
 void
 __spp_manual_checkbound(void *ptr)
 {
-    printf("%s %p\n", __func__, ptr);
+    dbg(printf("%s %p\n", __func__, ptr);)
 #if defined(__x86_64__) && defined(__BMI2__) && !defined(HW_OFF)
     if (_pext_u64((uintptr_t)ptr, OVERFLOW_MASK))
 #else
@@ -310,14 +310,10 @@ __spp_cleantag_external_direct(void *ptr)
 
 __SPP_ATTR
 void*
-__spp_checkbound(void *ptr)
+__spp_checkbound(void *ptr, int64_t deref_size)
 {
     stats(__spp_checkbound_cnt++;)
-    dbg(printf(">>%s with %p\n", __func__, ptr);)
-    
-    // NOTE: BE CAREFUL with signed/unsigned,
-    // when performing bit operation.
-    // Especially, shift opreations.
+    dbg(printf(">>%s with %p and deref size: %ld\n", __func__, ptr, deref_size);)
     
     if (!__spp_is_pm_ptr(ptr)) 
     {
@@ -325,32 +321,46 @@ __spp_checkbound(void *ptr)
         //if ptr is not tagged, return!
         stats(useless__spp_checkbound_cnt++;)
         return ptr;
-    }    
+    }
+
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
+    tag = tag + deref_size; // -1 to the deref size is applied from the pass
+    
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    tempval = tempval & OVERFLOW_MASK; // keep only the tag overflow bit
+    uintptr_t untagged = (uintptr_t)__spp_cleantag_direct(ptr);	
+    untagged = untagged & ~OVERFLOW_MASK; // remove previous overflow bit
+    void* updated_clean_ptr = (void*)(untagged | tempval);
 
 #ifdef FAIL_OBL_COMP
-    __spp_manual_checkbound(ptr);
+    __spp_manual_checkbound(updated_clean_ptr);
 #endif
 
-    return __spp_cleantag_direct(ptr);
+    return updated_clean_ptr;
 }
 
 __SPP_ATTR
 void*
-__spp_checkbound_direct(void *ptr)
+__spp_checkbound_direct(void *ptr, int64_t deref_size)
 {
     stats(__spp_checkbound_cnt++;)
     stats(__spp_checkbound_cnt_direct++;)
-    dbg(printf(">>%s with %p\n", __func__, ptr);)
+    dbg(printf(">>%s with %p and deref size: %ld\n", __func__, ptr, deref_size);)
     
-    // NOTE: BE CAREFUL with signed/unsigned,
-    // when performing bit operation.
-    // Especially, shift opreations.  
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
+    tag = tag + deref_size; // -1 to the deref size is applied from the pass
+    
+    uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
+    tempval = tempval & OVERFLOW_MASK; // keep only the tag overflow bit
+    uintptr_t untagged = (uintptr_t)__spp_cleantag_direct(ptr);	
+    untagged = untagged & ~OVERFLOW_MASK; // remove previous overflow bit
+    void* updated_clean_ptr = (void*)(untagged | tempval);
 
 #ifdef FAIL_OBL_COMP
-    __spp_manual_checkbound(ptr);
+    __spp_manual_checkbound(updated_clean_ptr);
 #endif
 
-    return __spp_cleantag_direct(ptr);
+    return updated_clean_ptr;
 }
 
 __SPP_ATTR
@@ -368,6 +378,7 @@ __spp_updatetag(void *ptr, int64_t off) {
         stats(useless__spp_updatetag_cnt++;)
         return ptr; 
     }
+
     dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
     tag = tag + off;  
@@ -391,7 +402,6 @@ __spp_updatetag_direct(void *ptr, int64_t off) {
    
     dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
     
-    dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
     int64_t tag = (int64_t)__spp_extract_tagval(ptr);     
     tag = tag + off;  
     
@@ -518,16 +528,15 @@ __spp_memintr_check_and_clean_direct(void *ptr, int64_t off) {
 
     dbg(printf(">>%s with %p and offset %ld \n", __func__, ptr, off);)
        
-    int64_t tag = (int64_t)__spp_extract_tagval(ptr);   
+    int64_t tag = (int64_t)__spp_extract_tagval(ptr);
     // -1 is applied due to addressing starting from 0   
     dbg(printf(">>%s with %p and offset %ld and tag %lx\n", __func__, ptr, off, tag);)
-    tag = tag + (off - 1); 
+    tag = tag + (off - 1);
     
     uintptr_t tempval = ((uintptr_t)tag) << NUM_PTR_BITS; // | PM_PTR_SET;
     tempval = tempval & OVERFLOW_MASK; // keep only the tag overflow bit
     uintptr_t untagged = (uintptr_t)__spp_cleantag_direct(ptr);
     untagged = untagged & ~OVERFLOW_MASK; // remove previous overflow bit
-    
     dbg(printf(">>%s checked ptr: tag %p addr %p\n", __func__, tempval, untagged);)
     
 #ifdef FAIL_OBL_COMP
