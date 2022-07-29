@@ -1,5 +1,5 @@
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index fdfd7715b..e84a862e1 100644
+index 78b08d3ff..a2bc23363 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
 @@ -147,7 +147,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
@@ -19,10 +19,10 @@ index fdfd7715b..e84a862e1 100644
  SPPLIB:=$(SPPROOT)/runtime
  SPPLIBSRC:=$(SPPLIB)/src
  SPPLIBOBJ:=$(SPPLIB)/obj
-@@ -187,13 +186,13 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
-            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
-            -Wl,-wrap,strcat -Wl,-wrap,snprintf \
-            -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
+@@ -194,13 +193,13 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+            -Wl,-wrap,pmem_memset_persist -Wl,-wrap,pmemobj_memcpy \
+            -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
+            -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist
 -OPT_LEVEL:=-O1
 +OPT_LEVEL:=-O3
  FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
@@ -36,7 +36,7 @@ index fdfd7715b..e84a862e1 100644
  
  INCS += -I$(SPPLIBSRC)/spp.h
 diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
-index bec5ee16a..cedca86d7 100644
+index 8d6738290..87238ac24 100644
 --- a/src/examples/Makefile.inc
 +++ b/src/examples/Makefile.inc
 @@ -26,7 +26,7 @@ endif
@@ -56,8 +56,8 @@ index bec5ee16a..cedca86d7 100644
  SPPLIB:=$(SPPROOT)/runtime
  SPPLIBSRC:=$(SPPLIB)/src
  SPPLIBOBJ:=$(SPPLIB)/obj
-@@ -55,7 +54,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
- FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+@@ -63,7 +62,7 @@ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ LDFLAGS += -lpmem
  
  CFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
 -CFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
@@ -65,7 +65,7 @@ index bec5ee16a..cedca86d7 100644
  BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
  
  INCS += -I$(SPPLIBSRC)/spp.h
-@@ -168,8 +167,8 @@ else #----------------------------------
+@@ -176,8 +175,8 @@ else #----------------------------------
  
  %.o: %.c $(MAKEFILE_DEPS)
  	$(call check-cstyle, $<)
@@ -76,7 +76,7 @@ index bec5ee16a..cedca86d7 100644
  	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
  
  lib%.o:
-@@ -181,7 +180,7 @@ libmap%.o:
+@@ -189,7 +188,7 @@ libmap%.o:
  libmap.o:
  	$(AR) rcv $@ $^
  

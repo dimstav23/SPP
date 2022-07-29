@@ -1,5 +1,5 @@
 diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
-index 01feea1a..8d3a4eb5 100644
+index 01feea1a..02db0704 100644
 --- a/examples/CMakeLists.txt
 +++ b/examples/CMakeLists.txt
 @@ -17,7 +17,7 @@ if(MSVC_VERSION)
@@ -11,7 +11,7 @@ index 01feea1a..8d3a4eb5 100644
  endif()
  add_flag(-Wpointer-arith)
  add_flag(-Wsign-compare)
-@@ -31,6 +31,40 @@ add_flag(-Wno-maybe-uninitialized)
+@@ -31,6 +31,47 @@ add_flag(-Wno-maybe-uninitialized)
  add_flag(-ggdb DEBUG)
  add_flag(-DDEBUG DEBUG)
  
@@ -42,7 +42,14 @@ index 01feea1a..8d3a4eb5 100644
 +           -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
 +           -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
 +           -Wl,-wrap,strcat -Wl,-wrap,snprintf \
-+           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove")
++           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove \
++           -Wl,-wrap,pmem_memmove_persist -Wl,-wrap,pmem_memcpy_persist \
++           -Wl,-wrap,pmem_memmove_nodrain -Wl,-wrap,pmem_memcpy_nodrain \
++           -Wl,-wrap,pmem_memmove -Wl,-wrap,pmem_memcpy \
++           -Wl,-wrap,pmem_memset_nodrain -Wl,-wrap,pmem_memset \
++           -Wl,-wrap,pmem_memset_persist -Wl,-wrap,pmemobj_memcpy \
++           -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
++           -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist")
 +
 +set(BUILD_EXEC_FLAGS "${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o -Xlinker ${SPPLIBOBJ}/spp.o")
 +

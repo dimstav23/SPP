@@ -1,5 +1,5 @@
 diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
-index fdfd7715b..bc6b9d19c 100644
+index 78b08d3ff..a10027a76 100644
 --- a/src/benchmarks/Makefile
 +++ b/src/benchmarks/Makefile
 @@ -147,7 +147,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
@@ -30,16 +30,16 @@ index fdfd7715b..bc6b9d19c 100644
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project
-@@ -187,7 +196,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
-            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
-            -Wl,-wrap,strcat -Wl,-wrap,snprintf \
-            -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
+@@ -194,7 +203,7 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+            -Wl,-wrap,pmem_memset_persist -Wl,-wrap,pmemobj_memcpy \
+            -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
+            -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist
 -OPT_LEVEL:=-O1
 +OPT_LEVEL:=-O3
  FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
  
  # CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
-@@ -216,7 +225,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+@@ -224,7 +233,7 @@ ifeq ($(SPP_OFF),1) #----------------------------------
  	$(create-deps)
  
  $(BENCHMARK): $(TMP_HEADERS) $(OBJS) $(LIBMAP)
@@ -49,7 +49,7 @@ index fdfd7715b..bc6b9d19c 100644
  
  pmembench.o: pmembench.cpp Makefile
 diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
-index bec5ee16a..e9a949c55 100644
+index 8d6738290..e9a949c55 100644
 --- a/src/examples/Makefile.inc
 +++ b/src/examples/Makefile.inc
 @@ -26,12 +26,23 @@ endif
@@ -77,7 +77,25 @@ index bec5ee16a..e9a949c55 100644
  else #----------------------------------
  SPPROOT:= $(TOP)/..
  LLVMROOT:=$(SPPROOT)/llvm-project
-@@ -96,9 +107,8 @@ all-dirs clean-dirs clobber-dirs cstyle-dirs format-dirs sparse-dirs: $(DIRS)
+@@ -51,16 +62,8 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
+            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
+            -Wl,-wrap,strcat -Wl,-wrap,snprintf \
+-           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove \
+-           -Wl,-wrap,pmem_memmove_persist -Wl,-wrap,pmem_memcpy_persist \
+-           -Wl,-wrap,pmem_memmove_nodrain -Wl,-wrap,pmem_memcpy_nodrain \
+-           -Wl,-wrap,pmem_memmove -Wl,-wrap,pmem_memcpy \
+-           -Wl,-wrap,pmem_memset_nodrain -Wl,-wrap,pmem_memset \
+-           -Wl,-wrap,pmem_memset_persist -Wl,-wrap,pmemobj_memcpy \
+-           -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
+-           -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist
++           -Wl,-wrap,memcpy -Wl,-wrap,memset -Wl,-wrap,memmove
+ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+-LDFLAGS += -lpmem
+ 
+ CFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
+ CFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
+@@ -104,9 +107,8 @@ all-dirs clean-dirs clobber-dirs cstyle-dirs format-dirs sparse-dirs: $(DIRS)
  all-progs: $(PROGS)
  
  ifeq ($(SPP_OFF),1) #----------------------------------
@@ -89,7 +107,7 @@ index bec5ee16a..e9a949c55 100644
  else #----------------------------------
  all-libraries: $(STATIC_LIBRARIES)
  $(foreach l, $(LIBRARIES), $(eval $(l): lib$(l).a))
-@@ -150,19 +160,28 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+@@ -158,19 +160,28 @@ ifeq ($(SPP_OFF),1) #----------------------------------
  
  %.o: %.c $(MAKEFILE_DEPS)
  	$(call check-cstyle, $<)
