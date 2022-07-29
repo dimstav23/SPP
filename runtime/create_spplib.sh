@@ -20,7 +20,7 @@ mkdir -p ${SPPLIB}/obj
 
 $CLANG \
 ${SPPLIB}/src/wrappers_spp.c \
--c -O1 -o \
+-c -O1 -I${SPPLIB}/../pmdk/src/include -o \
 ${SPPLIB}/obj/wrappers_spp.o 
 
 $CLANG \

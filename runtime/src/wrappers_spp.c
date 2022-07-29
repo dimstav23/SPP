@@ -9,6 +9,8 @@ extern "C"
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <libpmem.h>
+#include <libpmemobj.h>
 #include "./spp.h"
 
 #define PERFORM_ONLY_TAG_CLEANING_AT_MEM_ACCESS
@@ -70,6 +72,7 @@ void __real_free(void *ptr);
 
 extern void* __spp_cleantag_external(void *p);  
 extern void* __spp_memintr_check_and_clean(void *ptr, int64_t off);
+extern void* __spp_memintr_check_and_clean_direct(void *ptr, int64_t off);
 
 ///////////////////////////////////////
 ///                                 /// 
@@ -385,4 +388,152 @@ int __wrap_snprintf(char *str, size_t size, const char *format, ...)
 
   return __real_snprintf((char*)__spp_memintr_check_and_clean(str, size), 
                           size, format);
+}
+
+/////////////////////////////////
+///                           /// 
+///   pmem memory functions   ///
+///                           /// 
+/////////////////////////////////
+
+void *__real_pmem_memmove_persist(void *pmemdest, const void *src, size_t len);
+void *__real_pmem_memcpy_persist(void *pmemdest, const void *src, size_t len);
+void *__real_pmem_memset_persist(void *pmemdest, int c, size_t len);
+void *__real_pmem_memmove_nodrain(void *pmemdest, const void *src, size_t len);
+void *__real_pmem_memcpy_nodrain(void *pmemdest, const void *src, size_t len);
+void *__real_pmem_memset_nodrain(void *pmemdest, int c, size_t len);
+void *__real_pmem_memmove(void *pmemdest, const void *src, size_t len, unsigned flags);
+void *__real_pmem_memcpy(void *pmemdest, const void *src, size_t len, unsigned flags);
+void *__real_pmem_memset(void *pmemdest, int c, size_t len, unsigned flags);
+
+void * __real_pmemobj_memcpy(PMEMobjpool *pop, void *dest, const void *src, size_t len, unsigned flags);
+void * __real_pmemobj_memcpy_persist(PMEMobjpool *pop, void *dest, const void *src, size_t len);
+void * __real_pmemobj_memmove(PMEMobjpool *pop, void *dest, const void *src, size_t len, unsigned flags);
+void * __real_pmemobj_memset(PMEMobjpool *pop, void *dest, int c, size_t len, unsigned flags);
+void * __real_pmemobj_memset_persist(PMEMobjpool *pop, void *dest, int c, size_t len);
+
+void * 
+__wrap_pmem_memcpy(void *pmemdest, const void *src, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memcpy(__spp_memintr_check_and_clean_direct(pmemdest, len),
+                            __spp_memintr_check_and_clean((void*)src, len), 
+                            len, flags);
+}
+
+void * 
+__wrap_pmem_memcpy_persist(void *pmemdest, const void *src, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memcpy_persist(__spp_memintr_check_and_clean_direct(pmemdest, len),
+                                    __spp_memintr_check_and_clean((void*)src, len),
+                                    len);
+}
+
+void * 
+__wrap_pmem_memcpy_nodrain(void *pmemdest, const void *src, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memcpy_nodrain(__spp_memintr_check_and_clean_direct(pmemdest, len), 
+                                    __spp_memintr_check_and_clean((void*)src, len),
+                                    len);
+}
+
+void * 
+__wrap_pmem_memmove(void *pmemdest, const void *src, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+    return __real_pmem_memmove(__spp_memintr_check_and_clean_direct(pmemdest, len),
+                               __spp_memintr_check_and_clean((void*)src, len), 
+                               len, flags);
+}
+
+void * 
+__wrap_pmem_memmove_persist(void *pmemdest, const void *src, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memmove_persist(__spp_memintr_check_and_clean_direct(pmemdest, len),
+                                     __spp_memintr_check_and_clean((void*)src, len),
+                                     len);
+}
+
+void * 
+__wrap_pmem_memmove_nodrain(void *pmemdest, const void *src, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memmove_nodrain(__spp_memintr_check_and_clean_direct(pmemdest, len),
+                                     __spp_memintr_check_and_clean((void*)src, len),
+                                     len);
+}
+
+void * 
+__wrap_pmem_memset(void *pmemdest, int c, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memset(__spp_memintr_check_and_clean_direct(pmemdest, len), 
+                            c, len, flags);
+}
+
+void * 
+__wrap_pmem_memset_persist(void *pmemdest, int c, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memset_persist(__spp_memintr_check_and_clean_direct(pmemdest, len), 
+                                    c, len);
+}
+
+void * 
+__wrap_pmem_memset_nodrain(void *pmemdest, int c, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmem_memset_nodrain(__spp_memintr_check_and_clean_direct(pmemdest, len), 
+                                    c, len);
+}
+
+void * 
+__wrap_pmemobj_memcpy(PMEMobjpool *pop, void *dest, const void *src, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmemobj_memcpy(pop, 
+                              __spp_memintr_check_and_clean_direct(dest, len), 
+                              __spp_memintr_check_and_clean((void*)src, len), 
+                              len, flags);
+}
+
+void * 
+__wrap_pmemobj_memcpy_persist(PMEMobjpool *pop, void *dest, const void *src, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmemobj_memcpy_persist(pop, 
+                                      __spp_memintr_check_and_clean_direct(dest, len), 
+                                      __spp_memintr_check_and_clean((void*)src, len), 
+                                      len);
+}
+
+void * 
+__wrap_pmemobj_memmove(PMEMobjpool *pop, void *dest, const void *src, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmemobj_memmove(pop, 
+                               __spp_memintr_check_and_clean_direct(dest, len), 
+                               __spp_memintr_check_and_clean((void*)src, len), 
+                               len, flags);
+}
+
+void * 
+__wrap_pmemobj_memset(PMEMobjpool *pop, void *dest, int c, size_t len, unsigned flags) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmemobj_memset(pop, 
+                              __spp_memintr_check_and_clean_direct(dest, len), 
+                              c, len, flags);
+}
+
+void * 
+__wrap_pmemobj_memset_persist(PMEMobjpool *pop, void *dest, int c, size_t len) {
+  dbg(printf(">>%s\n",__func__);)
+  
+  return __real_pmemobj_memset_persist(pop, 
+                                      __spp_memintr_check_and_clean_direct(dest, len), 
+                                      c, len);
 }

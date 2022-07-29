@@ -26,7 +26,10 @@ endif
 SPPLIB := $(shell realpath .)
 SRC_FOLDER := $(SPPLIB)/src/
 OBJ_FOLDER := $(SPPLIB)/obj/
+PMDK_INC := $(SPPLIB)/../pmdk/src/include
 FILES := spp wrappers_spp
+
+CFLAGS += -I$(PMDK_INC)
 
 TARGET := $(addprefix $(OBJ_FOLDER), $(addsuffix .o, $(FILES)))
 
