@@ -1,5 +1,4 @@
-FROM ubuntu:20.04
-ARG DEBIAN_FRONTEND=noninteractive
+FROM spp-llvm-clang-test:latest
 
 # Install dependencies for PMDK
 RUN apt-get update && apt-get -qq install -y \
@@ -11,9 +10,10 @@ RUN apt-get update && apt-get -qq install -y \
     git \
     build-essential \
     python \
+    sudo \
     autotools-dev \
     automake \
-    libc6-dbg
+    libc6-dbg   
 
 # Install PMDK
 WORKDIR /
@@ -32,13 +32,16 @@ RUN ./configure
 RUN make -j7
 RUN make -j7 install
 
-COPY . /ripe64
-WORKDIR /ripe64
-RUN mkdir build
+WORKDIR /spp-pass/benchmarks/ripe
+COPY ./Makefile_container /spp-pass/benchmarks/ripe/
+COPY ./memcheck.patch /spp-pass/benchmarks/ripe
 RUN git apply memcheck.patch
-RUN make build/gcc_attack_gen
+RUN mkdir -p build
+RUN make clean 
+RUN make build/gcc_attack_gen_pmemobj_heap INTACT=1
+RUN cd build && mv gcc_attack_gen_pmemobj_heap gcc_attack_gen
 
-RUN useradd kartal
+RUN useradd spp_user
 RUN mkdir vgcore_blackhole
 RUN chmod 550 vgcore_blackhole # Disable writes to keep valgrind from producing large core dumps
-RUN chown kartal:kartal vgcore_blackhole
+RUN chown spp_user:spp_user vgcore_blackhole

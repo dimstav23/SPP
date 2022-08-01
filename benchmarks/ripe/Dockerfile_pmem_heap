@@ -14,9 +14,9 @@ RUN apt-get update && apt-get -qq install -y \
 
 # Install PMDK
 WORKDIR /
-RUN git clone https://github.com/TUM-DSE/safepm-pmdk.git /pmdk
+RUN git clone https://github.com/pmem/pmdk.git /pmdk
 WORKDIR /pmdk
-RUN git checkout pmasan-1.9.2
+RUN git checkout 1.9.2
 RUN make -j7 install
 RUN ldconfig
 
@@ -25,5 +25,5 @@ RUN mkdir -p build
 COPY ./Makefile_container /spp-pass/benchmarks/ripe/
 RUN mv Makefile_container Makefile
 RUN make clean 
-RUN make build/gcc_attack_gen_pmemobj_heap INTACT=1 ASAN=1
-RUN cd build && mv gcc_attack_gen_pmemobj_heap gcc_attack_gen
+RUN make build/clang_attack_gen_pmemobj_heap INTACT=1
+RUN cd build && mv clang_attack_gen_pmemobj_heap clang_attack_gen

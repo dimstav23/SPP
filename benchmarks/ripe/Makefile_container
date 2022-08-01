@@ -16,7 +16,7 @@ SPPLIBSRC=${SPPLIB}/src
 SPPLIBOBJ=${SPPLIB}/obj
 TESTSRC=${SPPROOT}/examples
 
-WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,strncpy -Wl,-wrap,strncmp -Wl,-wrap,memcmp \
            -Wl,-wrap,memchr -Wl,-wrap,strchr -Wl,-wrap,strncat \
            -Wl,-wrap,strtol -Wl,-wrap,strlen -Wl,-wrap,strchrnul \
@@ -34,6 +34,7 @@ LFLAGS=-lpmem -lpmemobj
 INCLUDEDIR=-I${PMDKSRC}/include/
 LDFLAGS=-L${PMDKSRC}/nondebug/
 
+ifndef INTACT
 CFLAGS=${OPT_LEVEL} \
 -flto \
 -fuse-ld=gold \
@@ -44,16 +45,25 @@ ${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o \
 -Xlinker ${SPPLIBOBJ}/spp.o \
 -DTAG_BITS=26
 
+LFLAGS+=-L/spp-pass/pmdk/src/nondebug/
+else
+CFLAGS=-g
+endif
+
+ifdef ASAN
+CFLAGS+=-fsanitize=address
+endif
+
 all: build/gcc_attack_gen_system_heap build/clang_attack_gen_system_heap build/clang_attack_gen_pmemobj_heap build/gcc_attack_gen_pmemobj_heap
 
 build/gcc_attack_gen_system_heap: ./source/attack_gen_system_heap.c
-	${GCC} -g ./source/attack_gen_system_heap.c -o ./build/gcc_attack_gen_system_heap
+	${GCC} ${CFLAGS} ./source/attack_gen_system_heap.c -o ./build/gcc_attack_gen_system_heap
 
 build/clang_attack_gen_system_heap: ./source/attack_gen_system_heap.c
-	${CLANG} ./source/attack_gen_system_heap.c -o ./build/clang_attack_gen_system_heap
+	${CLANG} ${CFLAGS} ./source/attack_gen_system_heap.c -o ./build/clang_attack_gen_system_heap
 
 build/gcc_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
-	${GCC} ./source/attack_gen_pmemobj_heap.c ${INCLUDEDIR} ${LDFLAGS} ${LFLAGS} -o ./build/gcc_attack_gen_pmemobj_heap 
+	${GCC} ${CFLAGS} ./source/attack_gen_pmemobj_heap.c -o ./build/gcc_attack_gen_pmemobj_heap ${LFLAGS}
 
 build/clang_attack_gen_pmemobj_heap: ./source/attack_gen_pmemobj_heap.c
 	${CLANG} ${CFLAGS} ./source/attack_gen_pmemobj_heap.c -o ./build/clang_attack_gen_pmemobj_heap ${LFLAGS}
