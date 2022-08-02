@@ -3,9 +3,8 @@
 Here we list a set of tools we used to ensure the correctness and crash consistency of our modified PMDK fork.
 
 ## Tools
-We considered two state-of-the-art debugging tools based on [**Valgrind**](https://valgrind.org/):
+We considered a state-of-the-art debugging tool based on [**Valgrind**](https://valgrind.org/):
 - `pmemcheck`
-- `PMDebugger`
 
 ### pmemcheck ([src](https://github.com/pmem/valgrind), [docs](https://www.intel.com/content/www/us/en/developer/articles/technical/discover-persistent-memory-programming-errors-with-pmemcheck.html))
 
@@ -38,26 +37,8 @@ A practical example on how to run pmemcheck on the PMDK benchmark suite (**pmemb
 $ cd pmdk_top_level/src/benchmarks
 $ LD_LIBRARY_PATH=/path/to/pmdk/libs/ valgrind --tool=pmemcheck ./pmembench pmembench_config_file.cfg
 ```
-### PMDebugger ([src](https://github.com/PASAUCMerced/PMDebugger), [paper](http://pasalabs.org/papers/2021/asplos21_pmdebugger_full_paper.pdf))
-**PMDebugger** is based on **Valgrind** and is able to detect more bugs in PM-enabled applications compared to **pmemcheck**.
-It is included in our project as a submodule. 
-Initially you have to fetch the submodule:
-```
-$ git submodule update --init
-```
-Then compile and install the **PMDebugger** (see [here](https://github.com/PASAUCMerced/PMDebugger) for further instructions and customization):
-```
-$ cd valgrind-pmdebugger
-$ ./autogen.sh
-$ ./configure
-$ make
-$ make check
-$ sudo make install 
-```
-After the successful installation you can run ```$ valgrind --tool=pmdebugger -h``` to get more information about the capabilities of PMDebugger.
 
-A practical example on how to run **PMDebugger** on the PMDK benchmark suite (**pmembench**) is:
+To run the SPP crash consistency benchmark end-to-end:
 ```
-$ cd pmdk_top_level/src/benchmarks
-$ LD_LIBRARY_PATH=/path/to/pmdk/libs/ valgrind --tool=pmdebugger --tree-reorganization=yes --order-guarantee=yes --redundant-logging=yes ./pmembench pmembench_config_file.cfg
+$ BENCHMARK_PM_PATH=/path/to/pm ./run-variants.sh
 ```
