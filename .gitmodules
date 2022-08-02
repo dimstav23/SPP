@@ -6,6 +6,3 @@
 	path = llvm-project
 	url = https://github.com/dimstav23/llvm-project.git
 	branch = transaction-handling 
-[submodule "PMDebugger"]
-	path = benchmarks/crash_consistency/PMDebugger
-	url = https://github.com/PASAUCMerced/PMDebugger.git

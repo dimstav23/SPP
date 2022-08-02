@@ -1,0 +1,88 @@
+diff --git a/src/benchmarks/Makefile b/src/benchmarks/Makefile
+index 78b08d3ff..a2bc23363 100644
+--- a/src/benchmarks/Makefile
++++ b/src/benchmarks/Makefile
+@@ -147,7 +147,7 @@ LIBMAP=$(LIBMAP_DIR)/libmap.a
+ OBJS += pmemobj.o
+ 
+ ifeq ($(DEBUG),)
+-CXXFLAGS += -O1
++CXXFLAGS += -O3
+ LIBS_PATH=../nondebug
+ else
+ CXXFLAGS += -ggdb
+@@ -171,7 +171,6 @@ ifeq ($(SPP_OFF),1) #----------------------------------
+ CXXFLAGS += -DSPP_OFF
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+-LLVMROOT:=$(SPPROOT)/llvm-project
+ SPPLIB:=$(SPPROOT)/runtime
+ SPPLIBSRC:=$(SPPLIB)/src
+ SPPLIBOBJ:=$(SPPLIB)/obj
+@@ -194,13 +193,13 @@ WRAP_LIST:=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+            -Wl,-wrap,pmem_memset_persist -Wl,-wrap,pmemobj_memcpy \
+            -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
+            -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist
+-OPT_LEVEL:=-O1
++OPT_LEVEL:=-O3
+ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ 
+ # CXXFLAGS += -flto -fno-builtin $(OPT_LEVEL) $(FORTIFY)
+ CXXFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
+ PROGFLAGS := $(CXXFLAGS)
+-CXXFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
++CXXFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
+ BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
+ 
+ INCS += -I$(SPPLIBSRC)/spp.h
+diff --git a/src/examples/Makefile.inc b/src/examples/Makefile.inc
+index 8d6738290..87238ac24 100644
+--- a/src/examples/Makefile.inc
++++ b/src/examples/Makefile.inc
+@@ -26,7 +26,7 @@ endif
+ INCS = -I$(INCDIR) -I. -I$(TOP_SRC)/examples $(OS_INCS)
+ LIBS += $(OS_LIBS) $(LIBUUID)
+ 
+-OPT_LEVEL:=-O1
++OPT_LEVEL:=-O2
+ 
+ #if SPP_OFF is set, enable PMDK's original functions
+ ifeq ($(SPP_OFF),1) #----------------------------------
+@@ -34,7 +34,6 @@ CFLAGS += -DSPP_OFF
+ CXXFLAGS += -DSPP_OFF
+ else #----------------------------------
+ SPPROOT:= $(TOP)/..
+-LLVMROOT:=$(SPPROOT)/llvm-project
+ SPPLIB:=$(SPPROOT)/runtime
+ SPPLIBSRC:=$(SPPLIB)/src
+ SPPLIBOBJ:=$(SPPLIB)/obj
+@@ -63,7 +62,7 @@ FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+ LDFLAGS += -lpmem
+ 
+ CFLAGS += -flto $(OPT_LEVEL) $(FORTIFY)
+-CFLAGS += -Xclang -load -Xclang $(LLVMROOT)/build/lib/LLVMSPP.so
++CFLAGS += -Xclang -load -Xclang /llvm/lib/LLVMSPP.so
+ BUILD_EXEC_FLAGS := $(WRAP_LIST) $(SPPLIBOBJ)/wrappers_spp.o -Xlinker "${SPPLIBOBJ}/spp.o"
+ 
+ INCS += -I$(SPPLIBSRC)/spp.h
+@@ -176,8 +175,8 @@ else #----------------------------------
+ 
+ %.o: %.c $(MAKEFILE_DEPS)
+ 	$(call check-cstyle, $<)
+-	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
+-	opt -O1 -load $(LLVMROOT)/build/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
++	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
++	opt -O2 -load /llvm/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
+ 	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
+ 
+ lib%.o:
+@@ -189,7 +188,7 @@ libmap%.o:
+ libmap.o:
+ 	$(AR) rcv $@ $^
+ 
+-$(STATIC_LIBRARIES):
++$(STATIC_LIBRARIES): $(eval SHELL:=/bin/bash)
+ 	@if [[ $@ == "libmap"*".a" ]]; then \
+ 		echo "cp $^ $@"; \
+ 		cp $^ $@; \
+
