@@ -14,6 +14,7 @@ pkgs.mkShell {
     pkgs.pkg-config
     pkgs.pandoc
     pkgs.m4
+    pkgs.bc
     pkgs.bashInteractive
     pkgs.cmake
     pkgs.dos2unix
