@@ -302,4 +302,4 @@ if "file" in summary_format:
         results[compiler]["total_ok"], results[compiler]["total_some"], results[compiler]["total_fail"],
         results[compiler]["total_np"], total_attacks))
   sys.stdout = original_stdout
-  os.system("sudo mv " + tmp_result + " " + result_file)
+  os.system("mv " + tmp_result + " " + result_file)

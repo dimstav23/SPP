@@ -54,6 +54,8 @@ To run the `ripe` experiments for all the variants:
 $ cd spp-pass/benchmarks/ripe
 $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
+**BUG**: memcheck requires sudo pwd for spp_user. Needs to be fixed for the automation.
+
 ### bug reproduction
 To reproduce the `btree bug` of `PMDK`:
 ```

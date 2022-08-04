@@ -6,7 +6,7 @@ then
   exit 1
 fi
 
-declare -a variants=( intact pmem_heap safepm memcheck spp )
+declare -a variants=( intact pmem_heap safepm spp memcheck )
 
 for variant in "${variants[@]}"
 do
