@@ -16,5 +16,5 @@ WORKDIR /spp-pass/benchmarks/ripe
 RUN mkdir -p build
 RUN mv Makefile_container Makefile
 RUN make clean 
-RUN make build/clang_attack_gen_system_heap
+RUN make build/clang_attack_gen_system_heap INTACT=1
 RUN cd build && mv clang_attack_gen_system_heap clang_attack_gen
