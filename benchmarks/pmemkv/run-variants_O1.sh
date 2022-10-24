@@ -19,12 +19,11 @@ then
   echo "CPU Cores to pin the benchmarks: $NUMA_CPU_CORES"
 fi
 
-declare -a variants=("vanilla_pmdk" "spp" "safepm")
-#declare -a variants=("safepm")
+declare -a variants=("vanilla_pmdk_o1" "spp_o1" "safepm_o1")
 
 for variant in "${variants[@]}"
 do
-  if [ "${variant}" == "safepm" ]; then
+  if [ "${variant}" == "safepm_o1" ]; then
     PMDK_PATH=/pmdk_safepm/src/nondebug
   else
     PMDK_PATH=/spp-pass/pmdk/src/nondebug
