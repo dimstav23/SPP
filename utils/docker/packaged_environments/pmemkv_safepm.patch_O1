@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a2f5c7a..1317cc8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -221,6 +221,9 @@ if(COVERAGE)
+ 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
+ endif()
+ 
++# Avoid using add_common_flag for `-fsanitize=address`, because for some reason the macro thinks it is not supported and disables it silently.
++set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+ add_common_flag(-Wall)
+ add_common_flag(-Wpointer-arith)
+ add_common_flag(-Wsign-compare)
+@@ -233,7 +236,11 @@ add_common_flag(-Wsign-conversion)
+ add_common_flag(-ggdb DEBUG)
+ add_common_flag(-DDEBUG DEBUG)
+ 
+-add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" RELEASE)
++#add_common_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
++
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -DSPP_OFF")
++
++#add_common_flag(-DSPP_OFF)
+ 
+ # ----------------------------------------------------------------- #
+ ## Setup environment, find packages,
+@@ -278,7 +285,7 @@ string(REPLACE ";" ", " DEB_PACKAGE_REQUIRES "${DEB_DEPENDS}")
+ # ----------------------------------------------------------------- #
+ ## Link libraries, setup targets
+ # ----------------------------------------------------------------- #
+-add_library(pmemkv SHARED ${SOURCE_FILES})
++add_library(pmemkv STATIC ${SOURCE_FILES})
+ set_target_properties(pmemkv PROPERTIES SOVERSION 1)
+ target_link_libraries(pmemkv PRIVATE
+ 	-Wl,--version-script=${PMEMKV_ROOT_DIR}/src/libpmemkv.map)

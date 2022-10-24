@@ -1,0 +1,37 @@
+diff --git a/Makefile b/Makefile
+index 0d934da..059912b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,19 +3,28 @@
+ 
+ .ONESHELL:
+ 
+-bench: CFLAGS = $(shell pkg-config --cflags libpmemkv libpmempool) -DOS_LINUX -fno-builtin-memcmp -march=native -DNDEBUG -O2 -std=c++11
+-bench: LDFLAGS = -ldl -lpthread $(shell pkg-config --libs libpmemkv libpmempool)
++bench: CFLAGS = $(shell pkg-config --cflags libpmem libpmemobj libpmemobj++ libpmemkv libpmempool) -DOS_LINUX -fno-builtin-memcmp -march=native -DNDEBUG -std=c++11
++bench: LDFLAGS = -ldl -lpthread $(shell pkg-config --libs libpmem libpmemobj libpmempool)
+ CPP_FILES = $(shell find . -iname "*.h" -o -iname "*.cc" -o -iname "*.cpp" -o -iname "*.hpp")
+ PYTHON_FILES = $(shell find . -iname "*.py")
+ KV_BENCH_TEST_PATH ?= /dev/shm/pmemkv
+ 
++OPT_LEVEL:=-O1
++FORTIFY:=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++
++CXXFLAGS += $(OPT_LEVEL) $(FORTIFY)
++PROGFLAGS := $(CXXFLAGS)
++
++LDFLAGS += -fuse-ld=gold
++
++PMEMKV_LIB := /usr/local/lib/libpmemkv.a
+ 
+ .PHONY: cppformat $(CPP_FILES) pythonformat $(PYTHON_FILES)
+ 
+ bench: reset
+-	g++ ./bench/db_bench.cc ./bench/port/port_posix.cc ./bench/util/env.cc ./bench/util/env_posix.cc \
++	clang++ ./bench/db_bench.cc ./bench/port/port_posix.cc ./bench/util/env.cc ./bench/util/env_posix.cc \
+ 		./bench/util/histogram.cc ./bench/util/logging.cc ./bench/util/status.cc ./bench/util/testutil.cc \
+-		-o pmemkv_bench -I./bench/include -I./bench -I./bench/util $(CFLAGS) $(LDFLAGS)
++		-o pmemkv_bench -I./bench/include -I./bench -I./bench/util $(CFLAGS) $(CXXFLAGS) -fuse-ld=gold $(PMEMKV_LIB) $(LDFLAGS)
+ 
+ reset:
+ 	rm -rf $(KV_BENCH_TEST_PATH)
