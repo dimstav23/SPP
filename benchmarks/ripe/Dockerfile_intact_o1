@@ -1,0 +1,21 @@
+FROM spp-llvm-clang-test:latest
+
+# Install dependencies for PMDK
+RUN apt-get update && apt-get -qq install -y \
+   pkg-config \
+   libndctl-dev \
+   libdaxctl-dev \
+   pandoc \
+   m4 \
+   git \
+   build-essential \
+   python \
+   sudo 
+
+WORKDIR /spp-pass/benchmarks/ripe
+RUN mkdir -p build
+RUN ls
+RUN mv Makefile_container_O1 Makefile
+RUN make clean 
+RUN make build/clang_attack_gen_system_heap INTACT=1
+RUN cd build && mv clang_attack_gen_system_heap clang_attack_gen

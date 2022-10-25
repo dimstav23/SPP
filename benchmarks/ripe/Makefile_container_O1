@@ -9,7 +9,7 @@ SPPROOT:=/spp-pass
 LLVMROOT=/llvm
 PMDKSRC=/pmdk/src
 
-OPT_LEVEL=-O2
+OPT_LEVEL=-O1
 
 SPPLIB=${SPPROOT}/runtime
 SPPLIBSRC=${SPPLIB}/src

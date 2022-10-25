@@ -33,8 +33,8 @@ RUN make -j7
 RUN make -j7 install
 
 WORKDIR /spp-pass/benchmarks/ripe
-COPY ./Makefile_container /spp-pass/benchmarks/ripe/
-RUN mv Makefile_container Makefile
+COPY ./Makefile_container_O1 /spp-pass/benchmarks/ripe/
+RUN mv Makefile_container_O1 Makefile
 COPY ./memcheck.patch /spp-pass/benchmarks/ripe
 RUN git apply memcheck.patch
 RUN mkdir -p build

@@ -1,0 +1,33 @@
+FROM spp-llvm-clang-test:latest
+
+# Install dependencies for PMDK
+RUN apt-get update && apt-get -qq install -y \
+   pkg-config \
+   libndctl-dev \
+   libdaxctl-dev \
+   pandoc \
+   m4 \
+   git \
+   build-essential \
+   python \
+   sudo 
+
+# Compile SPP runtime library
+WORKDIR /spp-pass/runtime
+RUN make clean && make
+
+# Install PMDK
+WORKDIR /spp-pass/pmdk
+# RUN git checkout spp_lto-pm_ptr_bit
+COPY ./pmdk_spp.patch /spp-pass/pmdk/
+RUN git apply pmdk_spp.patch
+RUN make -j7 install
+RUN ldconfig
+
+WORKDIR /spp-pass/benchmarks/ripe
+RUN mkdir -p build
+COPY ./Makefile_container_O1 /spp-pass/benchmarks/ripe/
+RUN mv Makefile_container_O1 Makefile
+RUN make clean
+RUN make build/clang_attack_gen_pmemobj_heap
+RUN cd build && mv clang_attack_gen_pmemobj_heap clang_attack_gen

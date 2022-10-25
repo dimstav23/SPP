@@ -9,7 +9,7 @@ SPPROOT:=$(shell pwd)/../..
 LLVMROOT=${SPPROOT}/llvm-project
 PMDKSRC=${SPPROOT}/pmdk/src
 
-OPT_LEVEL=-O1
+OPT_LEVEL=-O2
 
 SPPLIB=${SPPROOT}/runtime
 SPPLIBSRC=${SPPLIB}/src
