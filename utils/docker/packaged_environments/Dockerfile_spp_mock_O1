@@ -1,0 +1,94 @@
+FROM spp-llvm-clang-test:latest
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get -qq install -y \
+    autoconf \
+    automake \
+    pkg-config \
+    libndctl-dev \
+    libdaxctl-dev \
+    libglib2.0-dev \
+    libncurses5-dev \
+    libfuse-dev \
+    libuv1-dev \
+    pandoc \
+    libfabric-dev \
+    gdb \
+    python3.9 \
+    binutils-dev \
+    m4 \
+    bash \
+    valgrind \
+    # Dependencies to compile PMDK
+    git \
+    build-essential \
+    # Install dependencies for memkind
+    libnuma-dev \
+    libtool \
+    numactl \
+    unzip \
+    # Install dependencies for libpmemobj-cpp
+    cmake \
+    # Install dependencies for pmemkv
+    libtbb-dev
+
+# setup env variables --- to be moved to image create
+ENV CC:=/llvm/bin/clang
+ENV CXX:=/llvm/bin/clang++
+ENV NM:=/llvm/bin/llvm-nm
+ENV AR:=/llvm/bin/llvm-ar
+ENV RANLIB:=/llvm/bin/llvm-ranlib
+
+ENV CMAKE_C_COMPILER:=/llvm/bin/clang
+ENV CMAKE_CXX_COMPILER:=/llvm/bin/clang++
+
+# compile runtime lib
+WORKDIR /spp-pass/runtime
+RUN make MOCK_SPP_FUNCS=1
+
+# build pmdk
+WORKDIR /spp-pass/pmdk
+COPY ./pmdk_spp.patch_O1 /spp-pass/pmdk/pmdk_spp.patch_O1
+RUN git apply pmdk_spp.patch_O1
+RUN make -j$(nproc)
+RUN make install -j$(nproc)
+
+# build libpmemobj-cpp
+WORKDIR /
+RUN git clone https://github.com/pmem/libpmemobj-cpp.git /libpmemobj-cpp
+WORKDIR /libpmemobj-cpp
+RUN git checkout stable-1.13
+COPY ./libpmemobj-cpp_spp.patch_O1 /libpmemobj-cpp/libpmemobj-cpp_spp.patch_O1
+RUN git apply libpmemobj-cpp_spp.patch_O1
+RUN mkdir build
+WORKDIR /libpmemobj-cpp/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF -DBUILD_BENCHMARKS=OFF
+RUN make -j$(nproc)
+RUN make install -j$(nproc)
+
+# build pmemkv
+WORKDIR /
+RUN git clone https://github.com/pmem/pmemkv.git /pmemkv
+WORKDIR /pmemkv
+RUN git checkout 1.4
+COPY ./toolchain.cmake /pmemkv/toolchain.cmake
+COPY ./pmemkv_spp.patch_O1 /pmemkv/pmemkv_spp.patch_O1
+RUN git apply pmemkv_spp.patch_O1
+RUN mkdir build
+WORKDIR /pmemkv/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DENGINE_CMAP=ON -DENGINE_VCMAP=OFF -DENGINE_VSMAP=OFF -DENGINE_STREE=OFF -DBUILD_JSON_CONFIG=OFF -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake
+RUN make -j$(nproc)
+RUN make install -j$(nproc)
+
+# build pmemkv-bench
+WORKDIR /
+RUN git clone https://github.com/pmem/pmemkv-bench.git /pmemkv-bench
+WORKDIR /pmemkv-bench
+RUN git checkout 32d94c0
+COPY pmemkv-bench_spp.patch_O1 /pmemkv-bench/pmemkv-bench_spp.patch_O1
+RUN git apply pmemkv-bench_spp.patch_O1
+RUN make -j$(nproc)
+
+WORKDIR /
