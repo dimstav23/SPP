@@ -23,6 +23,10 @@ ifneq ($(FAIL_OBL_COMP),)
 CFLAGS += -DFAIL_OBL_COMP
 endif
 
+ifneq ($(MOCK_SPP_FUNCS),)
+CFLAGS += -DMOCK_SPP_FUNCS
+endif
+
 SPPLIB := $(shell realpath .)
 SRC_FOLDER := $(SPPLIB)/src/
 OBJ_FOLDER := $(SPPLIB)/obj/

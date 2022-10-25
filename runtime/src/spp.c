@@ -312,6 +312,10 @@ __SPP_ATTR
 void*
 __spp_checkbound(void *ptr, int64_t deref_size)
 {
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag(ptr);
+#endif
+
     stats(__spp_checkbound_cnt++;)
     dbg(printf(">>%s with %p and deref size: %ld\n", __func__, ptr, deref_size);)
     
@@ -343,6 +347,10 @@ __SPP_ATTR
 void*
 __spp_checkbound_direct(void *ptr, int64_t deref_size)
 {
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag_direct(ptr);
+#endif
+
     stats(__spp_checkbound_cnt++;)
     stats(__spp_checkbound_cnt_direct++;)
     dbg(printf(">>%s with %p and deref size: %ld\n", __func__, ptr, deref_size);)
@@ -365,7 +373,12 @@ __spp_checkbound_direct(void *ptr, int64_t deref_size)
 
 __SPP_ATTR
 void* 
-__spp_updatetag(void *ptr, int64_t off) {
+__spp_updatetag(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return ptr;
+#endif
+
     stats(__spp_updatetag_cnt++;)
     // ptr:  after pointer arithmetic  (i.e. GEP itself)
    
@@ -395,7 +408,12 @@ __spp_updatetag(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
-__spp_updatetag_direct(void *ptr, int64_t off) {
+__spp_updatetag_direct(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return ptr;
+#endif
+
     stats(__spp_updatetag_cnt++;)
     stats(__spp_updatetag_cnt_direct++;)
     // ptr:  after pointer arithmetic  (i.e. GEP itself)
@@ -417,7 +435,12 @@ __spp_updatetag_direct(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
-__spp_update_check_clean(void *ptr, int64_t off) {
+__spp_update_check_clean(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag(ptr);
+#endif
+
     stats(__spp_updatetag_cnt++;)
     stats(__spp_checkbound_cnt++;)
     
@@ -450,7 +473,12 @@ __spp_update_check_clean(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
-__spp_update_check_clean_direct(void *ptr, int64_t off) {
+__spp_update_check_clean_direct(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag_direct(ptr);
+#endif
+
     stats(__spp_updatetag_cnt++;)
     stats(__spp_updatetag_cnt_direct++;)
     stats(__spp_checkbound_cnt++;)
@@ -476,7 +504,12 @@ __spp_update_check_clean_direct(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
-__spp_memintr_check_and_clean(void *ptr, int64_t off) {
+__spp_memintr_check_and_clean(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag(ptr);
+#endif
+
     stats(__spp_memintr_check_and_clean_cnt++;)
     // ptr: pointer pass to LLVM memory intrinsic
     // off: offset to be added and checked
@@ -516,7 +549,12 @@ __spp_memintr_check_and_clean(void *ptr, int64_t off) {
 
 __SPP_ATTR
 void* 
-__spp_memintr_check_and_clean_direct(void *ptr, int64_t off) {
+__spp_memintr_check_and_clean_direct(void *ptr, int64_t off) 
+{
+#ifdef MOCK_SPP_FUNCS
+    return __spp_cleantag_direct(ptr);
+#endif
+
     stats(__spp_memintr_check_and_clean_cnt++;)
     stats(__spp_memintr_check_and_clean_cnt_direct++;)
     // ptr: pointer pass to LLVM memory intrinsic
