@@ -39,8 +39,8 @@ COPY ./memcheck.patch /spp-pass/benchmarks/ripe
 RUN git apply memcheck.patch
 RUN mkdir -p build
 RUN make clean 
-RUN make build/gcc_attack_gen_pmemobj_heap INTACT=1
-RUN cd build && mv gcc_attack_gen_pmemobj_heap gcc_attack_gen
+RUN make build/clang_attack_gen_pmemobj_heap INTACT=1
+RUN cd build && mv clang_attack_gen_pmemobj_heap clang_attack_gen
 
 RUN useradd spp_user
 RUN mkdir vgcore_blackhole
