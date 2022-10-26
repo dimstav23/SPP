@@ -134,3 +134,17 @@ make clean
 make -j$(nproc) SPP_OFF=1
 ```
 Then run again the `pmembench` commands as explained above.
+
+### How to run the tests
+After you have successfully compiled `llvm` and the runtime library, you can run our sample tests from the root directory:
+```
+OPT_LEVEL=1 ./spp_test.sh
+```
+or
+```
+OPT_LEVEL=2 ./spp_test.sh
+```
+depending on the optimization level that you want your binaries to be compiled with.
+Note that this command will create a build directory where it will place the binaries,
+build the `pmdk`, generate the transformed IRs and run the tests. 
+The IRs and the binaries are placed in `build/tests` folder.

@@ -18,7 +18,7 @@ function (spp_test target)
 	"-O2" 
 	"-Xclang -load -Xclang" "${SPPBASE}/llvm-project/build/lib/LLVMSPP.so" 
 	"-include" "${SPPBASE}/runtime/src/spp.h"
-    	-v)
+    	)
     	
 	target_link_options(
         "${target}" 
@@ -39,7 +39,8 @@ function (spp_test target)
         -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist
         ${SPPBASE}/runtime/obj/wrappers_spp.o 
         -Xlinker ${SPPBASE}/runtime/obj/spp.o 
-        -v)
+        -Wl,-plugin-opt=save-temps #to produce the .bc files
+        )
 
 	target_link_libraries(
         "${target}" 
@@ -52,6 +53,24 @@ function (spp_test target)
         "${target}" 
         PUBLIC 
         "${PMDK_INSTALL_DIR}/include")
+
+        add_custom_command (
+        OUTPUT "${target}.0.0.preopt.ll"
+        COMMAND llvm-dis "${target}.0.0.preopt.bc"
+        DEPENDS "${target}"
+        )
+
+        add_custom_command (
+        OUTPUT "${target}.0.5.precodegen.ll"
+        COMMAND llvm-dis "${target}.0.5.precodegen.bc"
+        DEPENDS "${target}"
+        )
+
+        add_custom_target(
+        "${target}_ir" ALL
+        DEPENDS "${target}.0.0.preopt.ll" "${target}.0.5.precodegen.ll"
+        )
+
 endfunction()
 
 spp_test(overflow)

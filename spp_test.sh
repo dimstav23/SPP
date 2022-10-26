@@ -63,7 +63,29 @@ function pending_should_crash {
 #get the absolute path of the base of spp project
 SPPBASE=$(realpath "$(dirname "$0")")
 
+#go to the root path
 cd "$(dirname "$0")"
+
+#force the user to give an optimization level to run the tests
+OPT=0
+if [ "$OPT_LEVEL" = "1" ]
+then
+NDEBUG=0
+OPT=$OPT_LEVEL
+# change the CMakeLists to use the appropriate optimization level
+sed -i 's/-O2/-O'${OPT}'/g' tests/CMakeLists.txt
+elif [ "$OPT_LEVEL" = "2" ]
+then
+NDEBUG=1
+OPT=$OPT_LEVEL
+# change the CMakeLists to use the appropriate optimization level
+sed -i 's/-O1/-O'${OPT}'/g' tests/CMakeLists.txt
+else
+  echo "please set an optimization level with env var OPT_LEVEL"
+  echo "e.g., OPT_LEVEL=1 ./spp_test.sh"
+  exit
+fi
+
 mkdir -p build
 cd build
 [ -e Makefile ] && make clean
@@ -84,9 +106,9 @@ WRAP_LIST="-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
            -Wl,-wrap,pmemobj_memcpy_persist -Wl,-wrap,pmemobj_memmove \
            -Wl,-wrap,pmemobj_memset -Wl,-wrap,pmemobj_memset_persist"
 
-CFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O1 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+CFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O'${OPT}' -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
-CXXFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O1 -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
+CXXFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -flto -O'${OPT}' -Xclang -load -Xclang '${SPPBASE}'/llvm-project/build/lib/LLVMSPP.so -include '${SPPBASE}'/runtime/src/spp.h'
 
 LDFLAGS='-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fuse-ld=gold '${WRAP_LIST}' '${SPPBASE}'/runtime/obj/wrappers_spp.o -Xlinker '${SPPBASE}'/runtime/obj/spp.o'
 
@@ -95,8 +117,6 @@ echo "__CLANG++:  $(which clang++)"
 echo "__GOLD:     $(which ld.gold)"
 echo "__CXXFLAGS: ${CXXFLAGS}"
 echo "__LDFLAGS:  ${LDFLAGS}"
-
-NDEBUG=1;
 
 if [ "$NDEBUG" = "1" ]
 then
@@ -110,6 +130,7 @@ else
 fi
 
 make -j$(nproc) VERBOSE=1
+# make VERBOSE=1
 
 cd tests
 
