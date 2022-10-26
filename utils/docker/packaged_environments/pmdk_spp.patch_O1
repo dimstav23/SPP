@@ -71,8 +71,8 @@ index 8d6738290..87238ac24 100644
  	$(call check-cstyle, $<)
 -	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
 -	opt -O1 -load $(LLVMROOT)/build/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
-+	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
-+	opt -O2 -load /llvm/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
++	$(CC) -c -o $@.ll $(INCS) -I../ -I../hashmap -I../tree_map -I../list_map -O1 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -emit-llvm $< 
++	opt -O1 -load /llvm/lib/LLVMSPP.so -S $@.ll -o $@.transformed.ll
  	$(CC) -c -o $@ $(CFLAGS) $(INCS) $<
  
  lib%.o:
