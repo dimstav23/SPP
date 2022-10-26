@@ -22,4 +22,4 @@ fi
 mkdir -p results/pmembench_map
 mkdir -p results/pmembench_tx
 
-docker run -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/run_spp.sh":/run_spp.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_mock bash /run_spp.sh
+docker run -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/run_spp.sh":/run_spp_mock.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_mock bash /run_spp_mock.sh

@@ -23,4 +23,4 @@ mkdir -p results/pmembench_map
 mkdir -p results/pmembench_tx
 
 #O1 & Debug mode
-docker run -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/run_spp_O1.sh":/run_spp_O1.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_mock_o1 bash /run_spp_O1.sh
+docker run -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/run_spp_O1.sh":/run_spp_mock_O1.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_mock_o1 bash /run_spp_mock_O1.sh
