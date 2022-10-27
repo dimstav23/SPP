@@ -27,6 +27,10 @@ ifneq ($(MOCK_SPP_FUNCS),)
 CFLAGS += -DMOCK_SPP_FUNCS
 endif
 
+ifneq ($(SPP_STATS),)
+CFLAGS += -DSPP_STATS
+endif
+
 SPPLIB := $(shell realpath .)
 SRC_FOLDER := $(SPPLIB)/src/
 OBJ_FOLDER := $(SPPLIB)/obj/
