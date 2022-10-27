@@ -72,6 +72,25 @@ extern "C" {
     long int useless__spp_updatetag_cnt = 0;
     long int __spp_memintr_check_and_clean_cnt = 0;
     long int __spp_memintr_check_and_clean_cnt_direct = 0;
+
+    // accummulators
+    long int __spp_extract_tagval_cnt_acc = 0;
+    long int __spp_is_pm_ptr_cnt_acc = 0;
+    long int __spp_vol_ptr_check_cnt_acc = 0;
+    long int __spp_cleantag_cnt_acc = 0;
+    long int __spp_cleantag_cnt_direct_acc = 0;
+    long int useless__spp_cleantag_cnt_acc = 0;
+    long int __spp_cleantag_external_cnt_acc = 0;
+    long int __spp_cleantag_external_cnt_direct_acc = 0;
+    long int useless__spp_cleantag_external_cnt_acc = 0;
+    long int __spp_checkbound_cnt_acc = 0;
+    long int __spp_checkbound_cnt_direct_acc = 0;
+    long int useless__spp_checkbound_cnt_acc = 0;
+    long int __spp_updatetag_cnt_acc = 0;
+    long int __spp_updatetag_cnt_direct_acc = 0;
+    long int useless__spp_updatetag_cnt_acc = 0;
+    long int __spp_memintr_check_and_clean_cnt_acc = 0;
+    long int __spp_memintr_check_and_clean_cnt_direct_acc = 0;
     
     struct func_cnt {
         char* fname;
@@ -79,6 +98,87 @@ extern "C" {
         struct func_cnt* next;
     };
     struct func_cnt* head = NULL;
+
+    void __spp_stats_reset() {
+        __spp_extract_tagval_cnt = 0;
+        __spp_is_pm_ptr_cnt = 0;
+        __spp_vol_ptr_check_cnt = 0;
+        __spp_cleantag_cnt = 0;
+        __spp_cleantag_cnt_direct = 0;
+        useless__spp_cleantag_cnt = 0;
+        __spp_cleantag_external_cnt = 0;
+        __spp_cleantag_external_cnt_direct = 0;
+        useless__spp_cleantag_external_cnt = 0;
+        __spp_checkbound_cnt = 0;
+        __spp_checkbound_cnt_direct = 0;
+        useless__spp_checkbound_cnt = 0;
+        __spp_updatetag_cnt = 0;
+        __spp_updatetag_cnt_direct = 0;
+        useless__spp_updatetag_cnt = 0;
+        __spp_memintr_check_and_clean_cnt = 0;
+        __spp_memintr_check_and_clean_cnt_direct = 0;
+    }
+
+    void __spp_gather_stats() {
+        __spp_extract_tagval_cnt_acc += __spp_extract_tagval_cnt;
+        __spp_is_pm_ptr_cnt_acc += __spp_is_pm_ptr_cnt;
+        __spp_vol_ptr_check_cnt_acc += __spp_vol_ptr_check_cnt;
+        __spp_cleantag_cnt_acc += __spp_cleantag_cnt;
+        __spp_cleantag_cnt_direct_acc += __spp_cleantag_cnt_direct;
+        useless__spp_cleantag_cnt_acc += useless__spp_cleantag_cnt;
+        __spp_cleantag_external_cnt_acc += __spp_cleantag_external_cnt;
+        __spp_cleantag_external_cnt_direct_acc += __spp_cleantag_external_cnt_direct;
+        useless__spp_cleantag_external_cnt_acc += useless__spp_cleantag_external_cnt;
+        __spp_checkbound_cnt_acc += __spp_checkbound_cnt;
+        __spp_checkbound_cnt_direct_acc += __spp_checkbound_cnt_direct;
+        useless__spp_checkbound_cnt_acc += useless__spp_checkbound_cnt;
+        __spp_updatetag_cnt_acc += __spp_updatetag_cnt;
+        __spp_updatetag_cnt_direct_acc += __spp_updatetag_cnt_direct;
+        useless__spp_updatetag_cnt_acc += useless__spp_updatetag_cnt;
+        __spp_memintr_check_and_clean_cnt_acc += __spp_memintr_check_and_clean_cnt;
+        __spp_memintr_check_and_clean_cnt_direct_acc += __spp_memintr_check_and_clean_cnt_direct;
+    }
+
+    void __spp_print_mean_stats(int repeats) {
+        printf("***** SPP runtime statistics *****\n");
+        printf("__spp_extract_tagval_cnt\t\t: %ld \n", __spp_extract_tagval_cnt_acc/repeats);
+        printf("__spp_is_pm_ptr_cnt\t\t\t: %ld \n", __spp_is_pm_ptr_cnt_acc/repeats);
+        printf("__spp_vol_ptr_check_cnt\t\t\t: %ld \n", __spp_vol_ptr_check_cnt_acc/repeats);
+        printf("__spp_cleantag_cnt\t\t\t: %ld \n", __spp_cleantag_cnt_acc/repeats);
+        printf("USELESS__spp_cleantag_cnt\t\t: %ld \n", useless__spp_cleantag_cnt_acc/repeats);
+        printf("__spp_cleantag_external_cnt\t\t: %ld \n", __spp_cleantag_external_cnt_acc/repeats);
+        printf("USELESS__spp_cleantag_external_cnt\t: %ld \n", useless__spp_cleantag_external_cnt_acc/repeats);
+        printf("__spp_checkbound_cnt\t\t\t: %ld \n", __spp_checkbound_cnt_acc/repeats);
+        printf("USELESS__spp_checkbound_cnt\t\t: %ld \n", useless__spp_checkbound_cnt_acc/repeats);
+        printf("__spp_updatetag_cnt\t\t\t: %ld \n", __spp_updatetag_cnt_acc/repeats);
+        printf("USELESS__spp_updatetag_cnt\t\t: %ld \n", useless__spp_updatetag_cnt_acc/repeats);
+        printf("__spp_memintr_check_and_clean_cnt\t: %ld \n", __spp_memintr_check_and_clean_cnt_acc/repeats);
+        printf("\n");
+        printf("***** SPP direct runtime statistics *****\n");
+        printf("__spp_cleantag_cnt_direct\t\t: %ld \n", __spp_cleantag_cnt_direct_acc/repeats);
+        printf("__spp_cleantag_external_cnt_direct\t: %ld \n", __spp_cleantag_external_cnt_direct_acc/repeats);
+        printf("__spp_checkbound_cnt_direct\t\t: %ld \n", __spp_checkbound_cnt_direct_acc/repeats);
+        printf("__spp_updatetag_cnt_direct\t\t: %ld \n", __spp_updatetag_cnt_direct_acc/repeats);
+        printf("__spp_memintr_check_and_clean_cnt_direct: %ld \n", __spp_memintr_check_and_clean_cnt_direct_acc/repeats);
+        printf("\n");
+        __spp_extract_tagval_cnt_acc = 0;
+        __spp_is_pm_ptr_cnt_acc = 0;
+        __spp_vol_ptr_check_cnt_acc = 0;
+        __spp_cleantag_cnt_acc = 0;
+        __spp_cleantag_cnt_direct_acc = 0;
+        useless__spp_cleantag_cnt_acc = 0;
+        __spp_cleantag_external_cnt_acc = 0;
+        __spp_cleantag_external_cnt_direct_acc = 0;
+        useless__spp_cleantag_external_cnt_acc = 0;
+        __spp_checkbound_cnt_acc = 0;
+        __spp_checkbound_cnt_direct_acc = 0;
+        useless__spp_checkbound_cnt_acc = 0;
+        __spp_updatetag_cnt_acc = 0;
+        __spp_updatetag_cnt_direct_acc = 0;
+        useless__spp_updatetag_cnt_acc = 0;
+        __spp_memintr_check_and_clean_cnt_acc = 0;
+        __spp_memintr_check_and_clean_cnt_direct_acc = 0;
+    }
 
     void __spp_runtime_stats() {
         printf("***** SPP runtime statistics *****\n");
@@ -94,14 +194,14 @@ extern "C" {
         printf("__spp_updatetag_cnt\t\t\t: %ld \n", __spp_updatetag_cnt);
         printf("USELESS__spp_updatetag_cnt\t\t: %ld \n", useless__spp_updatetag_cnt);
         printf("__spp_memintr_check_and_clean_cnt\t: %ld \n", __spp_memintr_check_and_clean_cnt);
-        printf("\n\n");
+        printf("\n");
         printf("***** SPP direct runtime statistics *****\n");
         printf("__spp_cleantag_cnt_direct\t\t: %ld \n", __spp_cleantag_cnt_direct);
         printf("__spp_cleantag_external_cnt_direct\t: %ld \n", __spp_cleantag_external_cnt_direct);
         printf("__spp_checkbound_cnt_direct\t\t: %ld \n", __spp_checkbound_cnt_direct);
         printf("__spp_updatetag_cnt_direct\t\t: %ld \n", __spp_updatetag_cnt_direct);
         printf("__spp_memintr_check_and_clean_cnt_direct: %ld \n", __spp_memintr_check_and_clean_cnt_direct);
-        printf("\n\n");
+        printf("\n");
         struct func_cnt* curr = head;
         struct func_cnt* temp;
         while (curr) {
@@ -113,7 +213,13 @@ extern "C" {
         }
         return;
     }
+// to print runtime stats at exit
+// needs to be combined with SPP_STATS
+#ifdef PRINT_STATS 
     int declared = 0;
+#else
+    int declared = 1;
+#endif
 
     __SPP_ATTR
     void 

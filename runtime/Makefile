@@ -29,7 +29,12 @@ endif
 
 ifneq ($(SPP_STATS),)
 CFLAGS += -DSPP_STATS
+# to enable stats printing at exit
+	ifneq ($(PRINT_STATS),)
+	CFLAGS += -DPRINT_STATS
+	endif
 endif
+
 
 SPPLIB := $(shell realpath .)
 SRC_FOLDER := $(SPPLIB)/src/

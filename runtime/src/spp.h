@@ -61,6 +61,9 @@ extern void* __spp_update_check_clean(void *ptr, int64_t off);
 extern void* __spp_update_check_clean_direct(void *ptr, int64_t off);
 
 extern void __spp_runtime_stats();
+extern void __spp_stats_reset();
+extern void __spp_gather_stats();
+extern void __spp_print_mean_stats(int repeats);
 extern void __spp_update_checkcnt(char *fname);
 
 #ifdef __cplusplus
