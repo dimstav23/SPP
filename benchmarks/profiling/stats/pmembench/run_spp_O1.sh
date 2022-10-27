@@ -2,6 +2,9 @@
 set -e
 
 cd /spp-pass/runtime/
+cd /spp-pass/runtime/
+git fetch
+git pull
 make clean && make SPP_STATS=1
 
 cd /spp-pass/pmdk/src/benchmarks
@@ -10,7 +13,7 @@ sed -i 's|/dev/shm/testfile.map|/mnt/pmembench/benchfile.map|' pmembench_map.cfg
 sed -i 's|/dev/shm/testfile.tx|/mnt/pmembench/benchfile.tx|' pmembench_tx_spp.cfg
 
 cp /pmembench_stats.cpp ./pmembench.cpp
-cp /Makefile_pmembench_stats ./Makefile
+sed -i 's|INCS += -I$(SPPLIBSRC)/spp.h|PROGFLAGS += -I$(SPPLIBSRC)/|g' Makefile
 make clean && make
 
 if ! [ -z "$NUMA_CPU_CORES" ]

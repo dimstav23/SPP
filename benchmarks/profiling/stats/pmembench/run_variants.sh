@@ -23,7 +23,7 @@ mkdir -p results/pmembench_map
 mkdir -p results/pmembench_tx
 
 # Optimized & Release Mode
-docker run --privileged -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/Makefile_pmembench_stats":/Makefile_pmembench_stats -v "$(pwd)/pmembench_stats.cpp":/pmembench_stats.cpp -v "$(pwd)/run_spp.sh":/run_spp.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp bash /run_spp.sh
+docker run --privileged -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/pmembench_stats.cpp":/pmembench_stats.cpp -v "$(pwd)/run_spp.sh":/run_spp.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp bash /run_spp.sh
 
 # O1 & Debug mode
-docker run --privileged -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/Makefile_pmembench_stats":/Makefile_pmembench_stats -v "$(pwd)/pmembench_stats.cpp":/pmembench_stats.cpp -v "$(pwd)/run_spp_O1.sh":/run_spp_O1.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_o1 bash /run_spp_O1.sh
+docker run --privileged -v "$BENCHMARK_PM_PATH:/mnt/pmembench" -v "$(pwd)/results":/results -v "$(pwd)/pmembench_stats.cpp":/pmembench_stats.cpp -v "$(pwd)/run_spp_O1.sh":/run_spp_O1.sh -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t spp_o1 bash /run_spp_O1.sh
