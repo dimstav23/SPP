@@ -5,6 +5,9 @@ Modified from [Robert Jandow's repo](https://github.com/RobertJndw/PMDK-performa
 To run the benchmark, use `BENCHMARK_PM_PATH=<path to PM> ./run-variants.sh`. 
 This will run the vanilla `PMDK` and `SPP` variants of the pmemkv benchmarks in the already built containers.
 The results will be stored in the results folder of the current folder.
+Note that the presenting results are the accummulated statistics for all the threads.
+They do not reflect the actual execution time but the CPU time consumed in all the cores that were allocated.
+The same applies to the HW instructions.
 
 **Note**: If the machine you are using has multiple *NUMA nodes*, it is mandatory that you specify the node that the mounted PM is attached.
 This can be done via the `NUMA_NODE` environment variable.
