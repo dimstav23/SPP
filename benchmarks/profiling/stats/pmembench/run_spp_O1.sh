@@ -2,7 +2,6 @@
 set -e
 
 cd /spp-pass/runtime/
-cd /spp-pass/runtime/
 git fetch
 git pull
 make clean && make SPP_STATS=1
