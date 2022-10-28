@@ -631,7 +631,9 @@ public:
 		shared.start = false;
 
 		ThreadArg *arg = new ThreadArg[n];
-		__spp_stats_reset();
+
+        if (name.ToString().compare("fillseq") != 0)
+		    __spp_stats_reset();
 		for (int i = 0; i < n; i++) {
 			arg[i].bm = this;
 			arg[i].method = method;
@@ -652,8 +654,10 @@ public:
 			shared.cv.Wait();
 		}
 		shared.mu.Unlock();
-		__spp_gather_stats();
-		__spp_print_mean_stats(1);
+        if (name.ToString().compare("fillseq") != 0) {
+		    __spp_gather_stats();
+            __spp_print_mean_stats(1);
+        }
 
 		for (int i = 1; i < n; i++) {
 			arg[0].thread->stats.Merge(arg[i].thread->stats);

@@ -31,14 +31,12 @@ for bench in "${benchmarks[@]}"; do
         for threads in "${num_threads[@]}"; do
             echo "Running $bench for threads $threads"
             if [ $create_file = true ]; then
-                # Use sed to skip the line with the values for fillseq
-                (cd $PMEMKVBENCH && LD_LIBRARY_PATH=$PMDK_PATH $CPU_PIN ./pmemkv_bench --num=$NUMBER_OF_ENTRIES --reads=$NUMBER_OF_READS --db=$MOUNT_PM/pmemkv --key_size=16 --value_size=1024 --threads=$threads --db_size_in_gb=$DB_SIZE_GB --benchmarks=fillseq,$bench) | sed '2d' > $RESULT_PATH/${bench}_threads_$i.csv
-                # Need to replace the \r at the file ending, before we can append anything
-                sed -i "s/\r$//;1s/$/,Threads/;2s/$/,$threads/" $RESULT_PATH/${bench}_threads_$i.csv
+                echo "Threads: ${threads}" > $RESULT_PATH/${bench}_threads_$i.csv
+                (cd $PMEMKVBENCH && LD_LIBRARY_PATH=$PMDK_PATH $CPU_PIN ./pmemkv_bench --num=$NUMBER_OF_ENTRIES --reads=$NUMBER_OF_READS --db=$MOUNT_PM/pmemkv --key_size=16 --value_size=1024 --threads=$threads --db_size_in_gb=$DB_SIZE_GB --benchmarks=fillseq,$bench) >> $RESULT_PATH/${bench}_threads_$i.csv
                 create_file=false
             else
-                # tail needed to ignore the first two lines (header and fillseq line), and then add the thread number to the line
-                (cd $PMEMKVBENCH && LD_LIBRARY_PATH=$PMDK_PATH $CPU_PIN ./pmemkv_bench --num=$NUMBER_OF_ENTRIES --reads=$NUMBER_OF_READS --db=$MOUNT_PM/pmemkv --key_size=16 --value_size=1024 --threads=$threads --db_size_in_gb=$DB_SIZE_GB --benchmarks=fillseq,$bench) | tail -n +3 | sed "s/\r$//;1s/$/,$threads/" >> $RESULT_PATH/${bench}_threads_$i.csv
+                echo "Threads: ${threads}" >> $RESULT_PATH/${bench}_threads_$i.csv
+                (cd $PMEMKVBENCH && LD_LIBRARY_PATH=$PMDK_PATH $CPU_PIN ./pmemkv_bench --num=$NUMBER_OF_ENTRIES --reads=$NUMBER_OF_READS --db=$MOUNT_PM/pmemkv --key_size=16 --value_size=1024 --threads=$threads --db_size_in_gb=$DB_SIZE_GB --benchmarks=fillseq,$bench) >> $RESULT_PATH/${bench}_threads_$i.csv
             fi
             rm -rf $MOUNT_PM/pmemkv
         done

@@ -30,7 +30,6 @@ cd /pmemkv-bench
 cp /db_bench_stats.cc ./bench/db_bench.cc
 sed -i 's|INCS += -I$(SPPLIBSRC)/spp.h|INCS += -I$(SPPLIBSRC)/|g' Makefile
 make clean && make
-
 popd
 
 # No additional arguments means execute all benchmarks
