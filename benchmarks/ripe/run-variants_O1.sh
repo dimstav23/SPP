@@ -6,8 +6,8 @@ then
   exit 1
 fi
 
-# declare -a variants=( intact_o1 pmem_heap_o1 safepm_o1 spp_o1 memcheck_o1 )
-declare -a variants=( memcheck_o1 )
+declare -a variants=( intact_o1 pmem_heap_o1 safepm_o1 spp_o1 memcheck_o1 )
+#declare -a variants=( memcheck_o1 )
 
 for variant in "${variants[@]}"
 do
