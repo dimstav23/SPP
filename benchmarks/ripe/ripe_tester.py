@@ -17,12 +17,19 @@
 
 import os
 import sys
+import time
 #from sets import Set
 
 compilers = ["gcc", "clang"]
 
 # locations = ["stack","heap","bss","data"]
 locations = [ "heap" ]
+
+
+# code_ptr = [
+#  "ret","baseptr"
+#  "structfuncptrstack", "structfuncptrheap"
+# ]
 
 code_ptr = [
  "ret","baseptr",
@@ -34,9 +41,17 @@ code_ptr = [
  "longjmpheap", "longjmpbss", "longjmpdata"
 ]
 
+# attacks = [
+#  # "nonop","simplenop",
+#  "r2libc"]
+
 attacks = [
  # "nonop","simplenop",
  "simplenopequival", "r2libc", "rop"]
+
+# funcs = [
+#    "memcpy"
+#  ]
 
 funcs = [
    "memcpy", "strcpy", "strncpy", "snprintf",
@@ -194,6 +209,7 @@ for compiler in compilers:
   total_fail = 0
   total_some = 0
   total_np = 0
+  total_runtime = 0
   for tech in techniques:
     for loc in locations:
       for ptr in code_ptr:
@@ -204,13 +220,14 @@ for compiler in compilers:
             s_attempts = 0
             attack_possible = 1
             additional_info = [];
+            runtime = 0
             while i < repeat_times:
               i += 1
 
               os.system("rm -f /tmp/ripe_log")
               parameters = (tech,loc,ptr,attack,func)
               parameters_str = "-t %8s -l %5s -c %18s -i %16s -f %8s" % parameters
-              sys.stdout.write('... Running %s %d/%d...\r' % (parameters_str, progress, len(techniques) * len(locations) * len(code_ptr) * len(attacks) * len(funcs)))
+              sys.stdout.write('... Running %s %d/%d...\n' % (parameters_str, progress, len(techniques) * len(locations) * len(code_ptr) * len(attacks) * len(funcs)))
               sys.stdout.flush()
               os.system("echo "+parameters_str+">> /tmp/ripe_log")
               ## Valgrind - Memcheck
@@ -219,7 +236,16 @@ for compiler in compilers:
               # cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | drmemory -no_check_uninitialized -crash_at_error -- ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
 
               cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | LD_LIBRARY_PATH="+pmdk_path+" ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
+              
+              # Start the time measurement before executing the attack
+              start_time = time.perf_counter_ns()
+
+              # Execute the attack
               os.system(cmdline)
+
+              # End the timer after the attack has finished
+              end_time = time.perf_counter_ns()
+              runtime += end_time - start_time
 
               log_entry = open("/tmp/ripe_log","r").read()
               if log_entry.find("Impossible") != -1:
@@ -264,12 +290,19 @@ for compiler in compilers:
                     ' '.join(set(additional_info))))
               total_some += 1
 
+            # Attack is possible, get the avg of the runtime
+            attack_duration = runtime / 1000000000
+            total_runtime += attack_duration
+            # print("Attack duration: {:.9f} s".format(seconds))
+            sys.stdout.write("Attack duration: {:.9f} s\n".format(attack_duration))
+            sys.stdout.flush()
 
   results[compiler] = {
           'total_ok': total_ok,
           'total_fail': total_fail,
           'total_some': total_some,
-          'total_np': total_np}
+          'total_np': total_np,
+          'total_runtime': total_runtime }
 
 total_attacks = total_ok + total_some + total_fail + total_np
 for compiler in results:
@@ -298,8 +331,8 @@ if "file" in summary_format:
     for compiler in results:
       print("\n"+bold("||Summary "+compiler+"||"))
       total_attacks = results[compiler]["total_ok"] + results[compiler]["total_some"] + results[compiler]["total_fail"]
-      print("OK: %s SOME: %s FAIL: %s NP: %s Total Attacks: %s\n\n"% (
+      print("OK: %s SOME: %s FAIL: %s NP: %s Total Attacks: %s Total Runtime: %s s\n\n"% (
         results[compiler]["total_ok"], results[compiler]["total_some"], results[compiler]["total_fail"],
-        results[compiler]["total_np"], total_attacks))
+        results[compiler]["total_np"], total_attacks, results[compiler]["total_runtime"]))
   sys.stdout = original_stdout
   os.system("mv " + tmp_result + " " + result_file)

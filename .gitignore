@@ -12,3 +12,4 @@ obj
 *.a
 example
 *.swp
+*__pycache__*
