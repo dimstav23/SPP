@@ -27,6 +27,7 @@ pkgs.mkShell {
     (pkgs.python39.withPackages (ps: [
      	ps.matplotlib
 	ps.pyyaml
+	ps.seaborn
     ]))
     (pkgs.callPackage ./impure-clang.nix {})
   ];

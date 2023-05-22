@@ -50,6 +50,11 @@ colour = ["white", "black", "white", "grey", "white", "white"]
 hatch = ['--' , '' , '' , '', '/', '++']
 markers = ['o', 's', '+', 'x', 'D', '*']
 
+import seaborn as sb
+palette = sb.color_palette("pastel")
+colour = [palette[0], palette[2], palette[1], palette[3], palette[4], palette[5]]
+hatch = ["", "//", "..", "", "++", ""]
+
 def create_dir(new_dir):
     if not(os.path.exists(new_dir)):
         try:
@@ -87,6 +92,9 @@ def pmembench_tx_plot_single(x_values, y_values, info, x_axis_label, y_axis_labe
     plot_idx = 0
     colour_local = ["white", "black", "white", "grey", "white", "lightgray"]
     hatch_local = ['' , '' , '++' , '', '/', '']
+    #override for colourful plots
+    colour_local = colour
+    hatch_local = hatch
     for benchmark in x_values:
         plot_title = benchmark
         for variant in x_values[benchmark]:
@@ -147,6 +155,8 @@ def pmembench_tx_plot_dual(x_values, y_values, info, x_axis_label, y_axis_label,
     plot_idx_0 = 0
     plot_idx_1 = 0
     colour_local = ["white", "black", "grey"]
+    #override for colourful plots
+    colour_local = colour
     for benchmark in x_values:
         plot_title = benchmark
         for variant in x_values[benchmark]:
@@ -235,7 +245,9 @@ def pmembench_tx_plot_single_vertical(x_values, y_values, info, x_axis_label, y_
     plot_idx = 0
     colour_local = ["white", "black", "white", "grey", "white", "lightgray"]
     hatch_local = ['' , '' , '++' , '', '/', '']
-    
+    #override for colourful plots
+    colour_local = colour
+    hatch_local = hatch
     for benchmark in x_values:
         plot_title = benchmark
         for variant in x_values[benchmark]:
@@ -568,6 +580,8 @@ def pmembench_map_plot(x_values, y_values, info, x_axis_label, y_axis_label, ove
 def pmembench_map_partial_cov_plot(x_values, y_values, info, x_axis_label, y_axis_label, overhead_annot, plot_folder):
     print("pmembench_map_partial_cov_plot")
     colour_local = ["white", "black", "grey"]
+    #override for colourful plots
+    colour_local = colour
     fig, ax = plt.subplots(1, 1)
     plot_idx = 0
     for benchmark in x_values:
