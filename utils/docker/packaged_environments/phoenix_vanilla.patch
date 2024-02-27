@@ -1,0 +1,22 @@
+diff --git a/PM_phoenix-2.0/Defines.mk b/PM_phoenix-2.0/Defines.mk
+index 6d2820a..8b02812 100644
+--- a/PM_phoenix-2.0/Defines.mk
++++ b/PM_phoenix-2.0/Defines.mk
+@@ -96,7 +96,7 @@ LIB_DIR = lib
+ INC_DIR = include
+ TESTS_DIR = tests
+ 
+-PMDKSRC = $(HOME)/../../../pmdk/src
++PMDKSRC = /spp-pass/pmdk/src
+ 
+ ifneq ($(SPP_OFF),1)
+ WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \
+@@ -130,6 +130,6 @@ $(WRAP_LIST) \
+ $(SPPLIBOBJ)/wrappers_spp.o \
+ -Xlinker ${SPPLIBOBJ}/spp.o
+ else
+-SPP_CFLAGS=
+-SPP_LDFLAGS=
++SPP_CFLAGS=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
++SPP_LDFLAGS=-fuse-ld=gold
+ endif

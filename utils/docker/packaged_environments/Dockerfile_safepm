@@ -32,7 +32,9 @@ RUN apt-get update && apt-get -qq install -y \
     # Install dependencies for libpmemobj-cpp
     cmake \
     # Install dependencies for pmemkv
-    libtbb-dev
+    libtbb-dev \
+    # Install the dependencies for phoenix
+    wget
 
 # setup env variables --- to be moved to image create
 ENV CC:=/llvm/bin/clang
@@ -86,5 +88,15 @@ RUN git checkout 32d94c0
 COPY pmemkv-bench_safepm.patch /pmemkv-bench/pmemkv-bench_safepm.patch
 RUN git apply pmemkv-bench_safepm.patch
 RUN make -j$(nproc)
+
+# build phoenix benchmark - for SPP: the phoenix benchmark requires 31-TAG bits to work
+WORKDIR /
+RUN git clone https://github.com/dimstav23/phoenix.git /phoenix
+WORKDIR /phoenix
+RUN git checkout spp-run
+COPY phoenix_safepm.patch /phoenix/phoenix_safepm.patch
+RUN git apply phoenix_safepm.patch
+WORKDIR /phoenix/PM_phoenix-2.0/
+RUN make SPP_OFF=1
 
 WORKDIR /
