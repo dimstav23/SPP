@@ -38,7 +38,7 @@ export MR_NUMTHREADS=4
 echo "----- SPP Histogram -----"
 cd /phoenix/PM_phoenix-2.0/tests/histogram
 if [ ! -d "histogram_datafiles" ]; then
-  wget http://csl.stanford.edu/\~christos/data/histogram.tar.gz 
+  wget http://csl.stanford.edu/\~christos/data/histogram.tar.gz
   tar -xvf histogram.tar.gz
 fi
 for ((i=1; i<=$REPEATS; i++)); do

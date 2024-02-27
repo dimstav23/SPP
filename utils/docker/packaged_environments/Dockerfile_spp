@@ -102,5 +102,18 @@ COPY phoenix_spp.patch /phoenix/phoenix_spp.patch
 RUN git apply phoenix_spp.patch
 WORKDIR /phoenix/PM_phoenix-2.0/
 RUN make
+# get and unzip the appropriate input files for the phoenix benchmarks
+WORKDIR /phoenix/PM_phoenix-2.0/tests/histogram
+RUN wget http://csl.stanford.edu/\~christos/data/histogram.tar.gz
+RUN tar -xvf histogram.tar.gz
+WORKDIR /phoenix/PM_phoenix-2.0/tests/linear_regression
+RUN wget http://csl.stanford.edu/\~christos/data/linear_regression.tar.gz
+RUN tar -xvf linear_regression.tar.gz
+WORKDIR /phoenix/PM_phoenix-2.0/tests/string_match
+RUN wget http://csl.stanford.edu/\~christos/data/string_match.tar.gz
+RUN tar -xvf string_match.tar.gz
+WORKDIR /phoenix/PM_phoenix-2.0/tests/word_count
+RUN wget http://csl.stanford.edu/\~christos/data/word_count.tar.gz
+RUN tar -xvf word_count.tar.gz
 
 WORKDIR /
