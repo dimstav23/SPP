@@ -42,6 +42,12 @@ To run the `pmemkv` experiments for all the variants:
 $ cd spp-pass/benchmarks/pmemkv
 $ NUMA_NODE=<numa_node_id> BENCHMARK_PM_PATH=<path_to_pm> ./run-variants.sh
 ```
+### phoenix
+To run the `phoenix` experiments for all the variants:
+```
+$ cd spp-pass/benchmarks/phoenix
+$ NUMA_NODE=<numa_node_id> BENCHMARK_PM_PATH=<path_to_pm> ./run-variants.sh
+```
 ### recovery time
 To run the `recovery time` experiments for all the variants:
 ```
@@ -84,7 +90,7 @@ $ ./plot_all
 
 ```
 $ cd spp-pass/benchmarks/recovery_time
-$ ./recovery_time.sh
+$ ./recovery_table.sh
 ```
 
 ```
