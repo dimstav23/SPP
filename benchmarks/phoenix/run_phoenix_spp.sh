@@ -9,13 +9,13 @@ fi
 
 ### Change the PM path in the source for the mapped PM in the container
 cd /phoenix/PM_phoenix-2.0
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/histogram/histogram.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/kmeans/kmeans.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/linear_regression/linear_regression.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/matrix_multiply/matrix_multiply.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/pca/pca.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/string_match/string_match.c
-sed -i 's|/mnt/pmem0/dimitrios/|/mnt/pmembench/|' tests/word_count/word_count.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/histogram/histogram.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/kmeans/kmeans.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/linear_regression/linear_regression.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/matrix_multiply/matrix_multiply.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/pca/pca.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/string_match/string_match.c
+sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/word_count/word_count.c
 
 ### For SPP: Ensure that both the runtime library and the PMDK was compiled with TAG_BITS=31
 cd /spp-pass/pmdk/
