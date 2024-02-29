@@ -7,7 +7,7 @@ index 6d2820a..8b02812 100644
  TESTS_DIR = tests
  
 -PMDKSRC = $(HOME)/../../../pmdk/src
-+PMDKSRC = /spp-pass/pmdk/src
++PMDKSRC = /SPP/pmdk/src
  
  ifneq ($(SPP_OFF),1)
  WRAP_LIST=-Wl,-wrap,free -Wl,-wrap,strcpy -Wl,-wrap,strcmp \

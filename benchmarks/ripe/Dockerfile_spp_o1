@@ -13,20 +13,20 @@ RUN apt-get update && apt-get -qq install -y \
    sudo 
 
 # Compile SPP runtime library
-WORKDIR /spp-pass/runtime
+WORKDIR /SPP/runtime
 RUN make clean && make
 
 # Install PMDK
-WORKDIR /spp-pass/pmdk
+WORKDIR /SPP/pmdk
 # RUN git checkout spp_lto-pm_ptr_bit
-COPY ./pmdk_spp.patch /spp-pass/pmdk/
+COPY ./pmdk_spp.patch /SPP/pmdk/
 RUN git apply pmdk_spp.patch
 RUN make -j7 install
 RUN ldconfig
 
-WORKDIR /spp-pass/benchmarks/ripe
+WORKDIR /SPP/benchmarks/ripe
 RUN mkdir -p build
-COPY ./Makefile_container_O1 /spp-pass/benchmarks/ripe/
+COPY ./Makefile_container_O1 /SPP/benchmarks/ripe/
 RUN mv Makefile_container_O1 Makefile
 RUN make clean
 RUN make build/clang_attack_gen_pmemobj_heap

@@ -12,18 +12,18 @@ In case you do not have a machine with persistent memory, you can execute the ex
 
 Further, you need to get the source code of SPP. It can be found by simply cloning the current repository:
 ```
-$ git clone git@github.com:dimstav23/spp-pass.git
+$ git clone git@github.com:dimstav23/SPP.git
 $ git checkout spp_lto-pm_ptr_bit
 $ git submodule --update init
 ```
 
 ## Image creation
 ```
-$ cd spp-pass/utils/docker/compiler_images
+$ cd SPP/utils/docker/compiler_images
 $ GIT_TOKEN=<your_git_token> ./create_clang_12_image.sh
 $ GIT_TOKEN=<your_git_token> ./create_spp_image.sh
 
-$ cd spp-pass/utils/docker/packaged_environments
+$ cd SPP/utils/docker/packaged_environments
 $ ./create_env_pmdk.sh
 $ ./create_env_safepm.sh
 $ ./create_env_spp.sh
@@ -33,31 +33,31 @@ $ ./create_env_spp.sh
 ### pmembench
 To run the `pmembench` experiments for all the variants:
 ```
-$ cd spp-pass/benchmarks/pmembench
+$ cd SPP/benchmarks/pmembench
 $ NUMA_NODE=<numa_node_id> BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
 ### pmemkv
 To run the `pmemkv` experiments for all the variants:
 ```
-$ cd spp-pass/benchmarks/pmemkv
+$ cd SPP/benchmarks/pmemkv
 $ NUMA_NODE=<numa_node_id> BENCHMARK_PM_PATH=<path_to_pm> ./run-variants.sh
 ```
 ### phoenix
 To run the `phoenix` experiments for all the variants:
 ```
-$ cd spp-pass/benchmarks/phoenix
+$ cd SPP/benchmarks/phoenix
 $ NUMA_NODE=<numa_node_id> BENCHMARK_PM_PATH=<path_to_pm> ./run-variants.sh
 ```
 ### recovery time
 To run the `recovery time` experiments for all the variants:
 ```
-$ cd spp-pass/benchmarks/recovery_time
+$ cd SPP/benchmarks/recovery_time
 $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
 ### ripe
 To run the `ripe` experiments for all the variants:
 ```
-$ cd spp-pass/benchmarks/ripe
+$ cd SPP/benchmarks/ripe
 $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
 **BUG**: memcheck requires sudo pwd for spp_user. Needs to be fixed for the automation.
@@ -65,46 +65,46 @@ $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ### bug reproduction
 To reproduce the `btree bug` of `PMDK`:
 ```
-$ cd spp-pass/benchmarks/bugs
+$ cd SPP/benchmarks/bugs
 $ BENCHMARK_PM_PATH=<path_to_pm> ./spp_bugs.sh
 ```
 ### space overhead
 To run the `space overhead` experiments:
 ```
-$ cd spp-pass/benchmarks/space_overhead
+$ cd SPP/benchmarks/space_overhead
 $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
 ### crash_consistency
 To run the `crash consistency` validation experiments:
 ```
-$ cd spp-pass/benchmarks/crash_consistency
+$ cd SPP/benchmarks/crash_consistency
 $ BENCHMARK_PM_PATH=<path_to_pm> ./run_variants.sh
 ```
 
 ## Results visualization
 To produce the figures 4, 5 and 6 of the paper:
 ```
-$ cd spp-pass/plot_utils
+$ cd SPP/plot_utils
 $ ./plot_all
 ```
 
 ```
-$ cd spp-pass/benchmarks/recovery_time
+$ cd SPP/benchmarks/recovery_time
 $ ./recovery_table.sh
 ```
 
 ```
-$ cd spp-pass/benchmarks/ripe
+$ cd SPP/benchmarks/ripe
 $ #TODO --- get from SafePM
 ```
 
 ```
-$ cd spp-pass/benchmarks/space_overhead 
+$ cd SPP/benchmarks/space_overhead 
 $ ./space_overhead_results.sh
 ```
 
 ```
-$ cd spp-pass/benchmarks/crash_consistency 
+$ cd SPP/benchmarks/crash_consistency 
 $ #TODO --- get from SafePM
 ```
 
@@ -120,4 +120,4 @@ We require the following software configuration to reproduce our experimental re
 5. The [`bc`](https://www.gnu.org/software/bc/) package for our analysis scripts.
 
 ## SPP code structure
-For more information about the source code structure please see [here](https://github.com/dimstav23/spp-pass/tree/spp_lto-pm_ptr_bit#code-structure).
+For more information about the source code structure please see [here](https://github.com/dimstav23/SPP/tree/spp_lto-pm_ptr_bit#code-structure).

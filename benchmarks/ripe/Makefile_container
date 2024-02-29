@@ -5,7 +5,7 @@ CLANGPP:=$(shell which clang++)
 # CFLAGS=-g -fsanitize=address
 
 # Container specific directories
-SPPROOT:=/spp-pass
+SPPROOT:=/SPP
 LLVMROOT=/llvm
 PMDKSRC=/pmdk/src
 
@@ -45,7 +45,7 @@ ${WRAP_LIST} ${SPPLIBOBJ}/wrappers_spp.o \
 -Xlinker ${SPPLIBOBJ}/spp.o \
 -DTAG_BITS=26
 
-LFLAGS+=-L/spp-pass/pmdk/src/nondebug/
+LFLAGS+=-L/SPP/pmdk/src/nondebug/
 else
 CFLAGS=-g
 endif

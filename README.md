@@ -1,4 +1,4 @@
-# spp-pass
+# SPP - Safe Persistent Pointers
 
 Compiler pass and associated runtime for Safe Persistent Pointers
 

@@ -27,7 +27,7 @@ do
   if [ "${variant}" == "safepm" ]; then
     PMDK_PATH=/pmdk_safepm/src/nondebug
   else
-    PMDK_PATH=/spp-pass/pmdk/src/nondebug
+    PMDK_PATH=/SPP/pmdk/src/nondebug
   fi
   echo -e "###### Starting pmemkv for ${variant} ######"
   mkdir -p "results/${variant}"

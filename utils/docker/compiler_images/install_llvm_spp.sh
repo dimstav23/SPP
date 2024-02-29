@@ -1,7 +1,7 @@
 #!/bin/sh
 
-mkdir -p /spp-pass/llvm-project/build /llvm
-cd /spp-pass/llvm-project/build
+mkdir -p /SPP/llvm-project/build /llvm
+cd /SPP/llvm-project/build
 
 cmake -G "Unix Makefiles" \
 -DCMAKE_BUILD_TYPE=Release \
@@ -14,5 +14,5 @@ make -j$(nproc) clang
 
 make install -j$(nproc) clang
 
-cd /spp-pass
+cd /SPP
 rm -rf llvm-project

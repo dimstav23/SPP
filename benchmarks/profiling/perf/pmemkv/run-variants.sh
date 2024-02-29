@@ -23,7 +23,7 @@ declare -a variants=("vanilla_pmdk" "spp" "spp_mock")
 
 for variant in "${variants[@]}"
 do
-  PMDK_PATH=/spp-pass/pmdk/src/nondebug
+  PMDK_PATH=/SPP/pmdk/src/nondebug
   echo -e "###### Starting pmemkv for ${variant} ######"
   mkdir -p "results/${variant}"
   docker run --privileged -v "$BENCHMARK_PM_PATH:/mnt/pmem0/" -v "$(pwd)/db_bench_perf.cc:/db_bench_perf.cc" -v "$(pwd)/results/${variant}:/results" -v "$(pwd):/pmemkv_scripts" -e NUMA_CPU_CORES=$NUMA_CPU_CORES -t --shm-size=2g ${variant} ./pmemkv_scripts/run-all.sh $PMDK_PATH

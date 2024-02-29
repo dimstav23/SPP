@@ -3,12 +3,12 @@ set -e
 
 # Copy out the IRs of the maps
 echo "1. PM INDICES IR generation"
-cd /spp-pass/pmdk/src/examples/libpmemobj
+cd /SPP/pmdk/src/examples/libpmemobj
 find ./ -type f | grep -i .ll$ | xargs -i cp {} /results/pm_indices/
 
 # Copy out the pre-optimized and pre-codegen IRs of pmembench
 echo "2. PMEMBENCH IR generation"
-cd /spp-pass/pmdk/src/benchmarks
+cd /SPP/pmdk/src/benchmarks
 rm pmembench
 LIBS=-Wl,-plugin-opt=save-temps make &>/dev/null
 llvm-dis pmembench.0.0.preopt.bc

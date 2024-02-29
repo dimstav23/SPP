@@ -30,12 +30,12 @@ RUN apt-get update && apt-get -qq install -y \
     sudo
 
 # Compile SPP runtime library
-WORKDIR /spp-pass/runtime
+WORKDIR /SPP/runtime
 RUN make clean && make
 
 # Install PMDK
-WORKDIR /spp-pass/pmdk
-COPY ./pmdk_spp.patch /spp-pass/pmdk/
+WORKDIR /SPP/pmdk
+COPY ./pmdk_spp.patch /SPP/pmdk/
 RUN git apply pmdk_spp.patch
 RUN make -j7 install
 RUN ldconfig
@@ -49,7 +49,7 @@ RUN ./configure
 RUN make -j7
 RUN make -j7 install
 
-COPY ./change_pmembench_file_path.sh /spp-pass/pmdk/src/benchmarks
-COPY ./inner_run.sh /spp-pass/pmdk/src/benchmarks
-WORKDIR /spp-pass/pmdk/src/benchmarks
-RUN /spp-pass/pmdk/src/benchmarks/change_pmembench_file_path.sh
+COPY ./change_pmembench_file_path.sh /SPP/pmdk/src/benchmarks
+COPY ./inner_run.sh /SPP/pmdk/src/benchmarks
+WORKDIR /SPP/pmdk/src/benchmarks
+RUN /SPP/pmdk/src/benchmarks/change_pmembench_file_path.sh

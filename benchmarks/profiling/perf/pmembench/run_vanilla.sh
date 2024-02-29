@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /spp-pass/pmdk/src/benchmarks
+cd /SPP/pmdk/src/benchmarks
 
 sed -i 's|/dev/shm/testfile.map|/mnt/pmembench/benchfile.map|' pmembench_map.cfg
 sed -i 's|/dev/shm/testfile.tx|/mnt/pmembench/benchfile.tx|' pmembench_tx_spp.cfg

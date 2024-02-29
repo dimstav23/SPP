@@ -1,6 +1,6 @@
 set -e
 
-cd /spp-pass/pmdk/src/benchmarks
+cd /SPP/pmdk/src/benchmarks
 echo "----- CRASH CONSISTENCY MAP BENCHMARK WITH MEMCHECK -----"
 LD_LIBRARY_PATH=../nondebug valgrind --log-file="/results/map_memcheck" --tool=memcheck ./pmembench pmembench_map.cfg
 echo "----- CRASH CONSISTENCY MAP BENCHMARK WITH PMEMCHECK -----"

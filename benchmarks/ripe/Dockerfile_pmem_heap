@@ -20,9 +20,9 @@ RUN git checkout 1.9.2
 RUN make -j7 install
 RUN ldconfig
 
-WORKDIR /spp-pass/benchmarks/ripe
+WORKDIR /SPP/benchmarks/ripe
 RUN mkdir -p build
-COPY ./Makefile_container /spp-pass/benchmarks/ripe/
+COPY ./Makefile_container /SPP/benchmarks/ripe/
 RUN mv Makefile_container Makefile
 RUN make clean 
 RUN make build/clang_attack_gen_pmemobj_heap INTACT=1

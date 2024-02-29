@@ -1,9 +1,9 @@
 set -e
 
 echo "----- SPP MAP BTREE BUG (Release)-----"
-cd /spp-pass/runtime
+cd /SPP/runtime
 make clean > /dev/null && make > /dev/null 2>&1
-cd /spp-pass/pmdk/src/benchmarks
+cd /SPP/pmdk/src/benchmarks
 make clean > /dev/null && make > /dev/null 2>&1
 cp /change_pmembench_bugs_file_path.sh ./
 bash change_pmembench_bugs_file_path.sh

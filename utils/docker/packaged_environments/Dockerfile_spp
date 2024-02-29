@@ -47,12 +47,12 @@ ENV CMAKE_C_COMPILER:=/llvm/bin/clang
 ENV CMAKE_CXX_COMPILER:=/llvm/bin/clang++
 
 # compile runtime lib
-WORKDIR /spp-pass/runtime
+WORKDIR /SPP/runtime
 RUN make
 
 # build pmdk
-WORKDIR /spp-pass/pmdk
-COPY ./pmdk_spp.patch /spp-pass/pmdk/pmdk_spp.patch
+WORKDIR /SPP/pmdk
+COPY ./pmdk_spp.patch /SPP/pmdk/pmdk_spp.patch
 RUN git apply pmdk_spp.patch
 RUN make -j$(nproc)
 RUN make install -j$(nproc)

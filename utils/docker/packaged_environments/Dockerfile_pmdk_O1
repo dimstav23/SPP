@@ -45,8 +45,8 @@ ENV CMAKE_C_COMPILER:=/llvm/bin/clang
 ENV CMAKE_CXX_COMPILER:=/llvm/bin/clang++
 
 # build pmdk
-WORKDIR /spp-pass/pmdk
-COPY ./pmdk_vanilla.patch_O1 /spp-pass/pmdk/pmdk_vanilla.patch_O1
+WORKDIR /SPP/pmdk
+COPY ./pmdk_vanilla.patch_O1 /SPP/pmdk/pmdk_vanilla.patch_O1
 RUN git apply pmdk_vanilla.patch_O1
 RUN make -j$(nproc) SPP_OFF=1
 RUN make install -j$(nproc) SPP_OFF=1

@@ -21,7 +21,7 @@ The names of the built images are assigned in the scripts;`llvm-clang-12-test` f
 ### Build images with the appropriate dependencies
 In the directory `packaged_environments`:
 1. `create_env_pmdk.sh`: use `Dockerfile_pmdk` and build an image with all the necessary dependencies to run the performance benchmarks - it fetches and installs *pmdk, libpmemobj-cpp, pmemkv, pmemkv-bench*.
-2. `create_env_spp.sh`: use `Dockerfile_spp` and build an image with all the necessary dependencies to run the performance benchmarks - it fetches and installs *spp-pass/pmdk, libpmemobj-cpp, pmemkv, pmemkv-bench*.
+2. `create_env_spp.sh`: use `Dockerfile_spp` and build an image with all the necessary dependencies to run the performance benchmarks - it fetches and installs *SPP/pmdk, libpmemobj-cpp, pmemkv, pmemkv-bench*.
 
 The included patches are used to adapt the build system of the packages to include the *SPP* pass flags.
 

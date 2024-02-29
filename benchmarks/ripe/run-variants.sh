@@ -16,7 +16,7 @@ done
 
 mkdir -p results
 
-# mkdir -p /spp-pass/benchmarks/ripe/results
+# mkdir -p /SPP/benchmarks/ripe/results
 
 for variant in "${variants[@]}"
 do
@@ -32,12 +32,12 @@ do
   then
     # We trick valgrind into not producing (large) core dumps by creating a read-only directory and running the tests in that. But for that to work, we must run as a non-root user in the container
     docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" ripe64-$variant rm -f /mnt/ripe/vmem_dummy.pool # The non-root user in the container cannot overwrite the pool created by the root user during the previous runs
-    docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/spp-pass/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /spp-pass/benchmarks/ripe/results/$variant
+    docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/SPP/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /SPP/benchmarks/ripe/results/$variant
   elif [ "$variant" = "safepm" ]
   then
-    docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/spp-pass/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /spp-pass/benchmarks/ripe/results/$variant
+    docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/SPP/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /SPP/benchmarks/ripe/results/$variant
   else
-	  docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/spp-pass/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /spp-pass/benchmarks/ripe/results/$variant
+	  docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -v "$(pwd)/results:/SPP/benchmarks/ripe/results" -t --shm-size=2g ripe64-$variant python3 ./ripe_tester.py both 3 clang -o /SPP/benchmarks/ripe/results/$variant
     #docker run -v "$BENCHMARK_PM_PATH:/mnt/ripe" -t --shm-size=2g -it ripe64-$variant bash
   fi
 done

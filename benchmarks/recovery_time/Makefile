@@ -6,9 +6,9 @@ OPT_LEVEL=-O2
 
 ifndef INTACT
 # Container specific directories
-SPPROOT:=/spp-pass
+SPPROOT:=/SPP
 LLVMROOT=/llvm
-PMDKSRC=/spp-pass/pmdk/src
+PMDKSRC=/SPP/pmdk/src
 
 SPPLIB=${SPPROOT}/runtime
 SPPLIBSRC=${SPPLIB}/src

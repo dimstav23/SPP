@@ -37,14 +37,14 @@ RUN git checkout 1.9.2
 RUN make -j$(nproc)
 
 # Compile SPP runtime library
-WORKDIR /spp-pass/runtime
+WORKDIR /SPP/runtime
 RUN make clean && make
 
 # Install SPP PMDK
-WORKDIR /spp-pass/pmdk
-COPY ./pmdk_spp.patch /spp-pass/pmdk/
+WORKDIR /SPP/pmdk
+COPY ./pmdk_spp.patch /SPP/pmdk/
 RUN git apply pmdk_spp.patch
 RUN make -j$(nproc)
 
-COPY ./inner_run.sh /spp-pass/pmdk/src/benchmarks
-WORKDIR /spp-pass/pmdk/src/benchmarks
+COPY ./inner_run.sh /SPP/pmdk/src/benchmarks
+WORKDIR /SPP/pmdk/src/benchmarks

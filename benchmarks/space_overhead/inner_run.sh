@@ -34,15 +34,15 @@ do
 done
 
 
-cd /spp-pass/pmdk/src/benchmarks
+cd /SPP/pmdk/src/benchmarks
 echo "----- MAP BENCHMARK FOR SPP -----"
 for index in "${indices[@]}"
 do
     for op in "${ops[@]}"
     do
         echo "SPP $index $op"
-        construct_config_file $index $op /spp-pass/pmdk/src/benchmarks/pmembench_map.cfg
+        construct_config_file $index $op /SPP/pmdk/src/benchmarks/pmembench_map.cfg
         LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_map.cfg > /dev/null
-        LD_LIBRARY_PATH=../nondebug/ /spp-pass/pmdk/src/tools/pmempool/pmempool info  -s /mnt/space_overhead/benchfile.map | tail -n 2 >> /results/spp_${index}_${op}.txt
+        LD_LIBRARY_PATH=../nondebug/ /SPP/pmdk/src/tools/pmempool/pmempool info  -s /mnt/space_overhead/benchfile.map | tail -n 2 >> /results/spp_${index}_${op}.txt
     done
 done

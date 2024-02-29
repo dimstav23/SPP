@@ -20,9 +20,9 @@ RUN git checkout pmasan-1.9.2
 RUN make -j7 install
 RUN ldconfig
 
-WORKDIR /spp-pass/benchmarks/ripe
+WORKDIR /SPP/benchmarks/ripe
 RUN mkdir -p build
-COPY ./Makefile_container_O1 /spp-pass/benchmarks/ripe/
+COPY ./Makefile_container_O1 /SPP/benchmarks/ripe/
 RUN mv Makefile_container_O1 Makefile
 RUN make clean 
 RUN make build/clang_attack_gen_pmemobj_heap INTACT=1 ASAN=1

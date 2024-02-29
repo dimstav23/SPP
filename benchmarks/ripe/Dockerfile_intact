@@ -12,7 +12,7 @@ RUN apt-get update && apt-get -qq install -y \
    python \
    sudo 
 
-WORKDIR /spp-pass/benchmarks/ripe
+WORKDIR /SPP/benchmarks/ripe
 RUN mkdir -p build
 RUN mv Makefile_container Makefile
 RUN make clean 

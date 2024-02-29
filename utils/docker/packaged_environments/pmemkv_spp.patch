@@ -8,7 +8,7 @@ index a2f5c7a..af9c83b 100644
  
 +## SPP specific paths
 +set(LLVMROOT "/llvm/" CACHE STRING "path to LLVM root directory")
-+set(SPPLIBOBJ "/spp-pass/runtime/obj" CACHE STRING "path to SPP runtime object files")
++set(SPPLIBOBJ "/SPP/runtime/obj" CACHE STRING "path to SPP runtime object files")
 +
  # ----------------------------------------------------------------- #
  ## Set required and useful variables

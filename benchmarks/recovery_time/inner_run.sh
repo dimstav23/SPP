@@ -30,7 +30,7 @@ for pmemoids_num in "${pmemoids_nums[@]}"
 do
     for i in $(seq 1 $REPEATS)
     do
-        LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug ./recovery_run $pmemoids_num >> /results/spp
+        LD_LIBRARY_PATH=/SPP/pmdk/src/nondebug ./recovery_run $pmemoids_num >> /results/spp
     done
 done
 

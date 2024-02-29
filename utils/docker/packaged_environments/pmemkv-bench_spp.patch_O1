@@ -15,7 +15,7 @@ index 0d934da..fceefbc 100644
  KV_BENCH_TEST_PATH ?= /dev/shm/pmemkv
  
  
-+SPPROOT:=/spp-pass
++SPPROOT:=/SPP
 +SPPLIB:=$(SPPROOT)/runtime
 +SPPLIBSRC:=$(SPPLIB)/src
 +SPPLIBOBJ:=$(SPPLIB)/obj

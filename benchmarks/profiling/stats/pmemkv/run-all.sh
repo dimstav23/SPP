@@ -21,7 +21,7 @@ PMDK_PATH=$1
 
 rm -rf $MOUNT_PM/pmemkv
 
-pushd /spp-pass/runtime/
+pushd /SPP/runtime/
 git fetch
 git pull
 make clean && make SPP_STATS=1
