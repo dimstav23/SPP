@@ -11,6 +11,8 @@ fi
 cd /phoenix/PM_phoenix-2.0
 sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/histogram/histogram.c
 sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/kmeans/kmeans.c
+sed -i 's|#define DEF_DIM 3|#define DEF_DIM 5|' tests/kmeans/kmeans.c
+sed -i 's|#define DEF_GRID_SIZE 1000|#define DEF_GRID_SIZE 10000|' tests/kmeans/kmeans.c
 sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/linear_regression/linear_regression.c
 sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/matrix_multiply/matrix_multiply.c
 sed -i 's|/mnt/pmem0/dimitrios/|/mnt/phoenix/|' tests/pca/pca.c
@@ -23,7 +25,7 @@ make clean
 make SPP_OFF=1
 
 ### Set the env variable that defines the amount of threads to use
-export MR_NUMTHREADS=4
+export MR_NUMTHREADS=$THREADS
 
 ### histogram ###
 echo "----- Vanilla Histogram -----"
@@ -33,14 +35,14 @@ if [ ! -d "histogram_datafiles" ]; then
   tar -xvf histogram.tar.gz
 fi
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./histogram histogram_datafiles/large.bmp 2> /results/phoenix/vanilla_histogram_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./histogram histogram_datafiles/large.bmp 2> /results/phoenix_"$THREADS"_threads/vanilla_histogram_"$i".txt
 done
 
 ### kmeans ###
 echo "----- Vanilla kmeans -----"
 cd /phoenix/PM_phoenix-2.0/tests/kmeans
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./kmeans 2> /results/phoenix/vanilla_kmeans_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./kmeans 2> /results/phoenix_"$THREADS"_threads/vanilla_kmeans_"$i".txt
 done
 
 ### linear_regression ###
@@ -51,21 +53,21 @@ if [ ! -d "linear_regression_datafiles" ]; then
   tar -xvf linear_regression.tar.gz
 fi
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./linear_regression linear_regression_datafiles/key_file_500MB.txt 2> /results/phoenix/vanilla_lr_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./linear_regression linear_regression_datafiles/key_file_500MB.txt 2> /results/phoenix_"$THREADS"_threads/vanilla_lr_"$i".txt
 done
 
 ### matrix_multiply ###
 echo "----- Vanilla matrix_multiply -----"
 cd /phoenix/PM_phoenix-2.0/tests/matrix_multiply
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./matrix_multiply 100 100 2> /results/phoenix/vanilla_mm_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./matrix_multiply 100 100 2> /results/phoenix_"$THREADS"_threads/vanilla_mm_"$i".txt
 done
 
 ### pca ###
 echo "----- Vanilla pca -----"
 cd /phoenix/PM_phoenix-2.0/tests/pca
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./pca 2> /results/phoenix/vanilla_pca_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./pca 2> /results/phoenix_"$THREADS"_threads/vanilla_pca_"$i".txt
 done
 
 ### string_match ###
@@ -76,7 +78,7 @@ if [ ! -d "string_match_datafiles" ]; then
   tar -xvf string_match.tar.gz
 fi
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./string_match string_match_datafiles/key_file_500MB.txt 2> /results/phoenix/vanilla_sm_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./string_match string_match_datafiles/key_file_500MB.txt 2> /results/phoenix_"$THREADS"_threads/vanilla_sm_"$i".txt
 done
 
 ### word_count ###
@@ -87,5 +89,5 @@ if [ ! -d "word_count_datafiles" ]; then
   tar -xvf word_count.tar.gz
 fi
 for ((i=1; i<=$REPEATS; i++)); do
-  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./word_count word_count_datafiles/word_100MB.txt 2> /results/phoenix/vanilla_wc_"$i".txt
+  LD_LIBRARY_PATH=/spp-pass/pmdk/src/nondebug $CPU_PIN ./word_count word_count_datafiles/word_100MB.txt 2> /results/phoenix_"$THREADS"_threads/vanilla_wc_"$i".txt
 done
