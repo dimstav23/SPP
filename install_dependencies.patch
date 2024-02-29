@@ -1,0 +1,32 @@
+diff --git a/default.nix b/default.nix
+index c635737..8a0f8cf 100644
+--- a/default.nix
++++ b/default.nix
+@@ -29,18 +29,18 @@ pkgs.mkShell {
+ 	ps.pyyaml
+ 	ps.seaborn
+     ]))
+-    (pkgs.callPackage ./impure-clang.nix {})
++    #(pkgs.callPackage ./impure-clang.nix {})
+   ];
+ 
+   shellHook = ''
+-    export CMAKE_C_COMPILER=clang
+-    export CC=clang
+-    export CMAKE_CXX_COMPILER=clang++
+-    export CXX=clang++
+-    #export CMAKE_C_COMPILER=${pkgs.gcc}/bin/gcc
+-    #export CC=${pkgs.gcc}/bin/gcc
+-    #export CMAKE_CXX_COMPILER=${pkgs.gcc}/bin/g++
+-    #export CXX=${pkgs.gcc}/bin/g++
++    #export CMAKE_C_COMPILER=clang
++    #export CC=clang
++    #export CMAKE_CXX_COMPILER=clang++
++    #export CXX=clang++
++    export CMAKE_C_COMPILER=${pkgs.gcc}/bin/gcc
++    export CC=${pkgs.gcc}/bin/gcc
++    export CMAKE_CXX_COMPILER=${pkgs.gcc}/bin/g++
++    export CXX=${pkgs.gcc}/bin/g++
+     export BINUTILS_DIR=${pkgs.binutils-unwrapped}/include
+   '';
+ 
