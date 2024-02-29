@@ -1,8 +1,23 @@
 #!/bin/bash
 
-# Get the average per variant and per experiment among the executed runs
-cd results/phoenix
+# Check if a result path is provided as a command-line argument
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <result_path>"
+  exit 1
+fi
 
+result_path=$1
+
+# Check if the specified path exists
+if [ ! -d "$result_path" ]; then
+  echo "Error: Directory not found - $result_path"
+  exit 1
+fi
+
+# Change to the specified directory
+cd "$result_path" || exit 1
+
+# Get the average per variant and per experiment among the executed runs
 declare -A sum
 declare -A count
 
