@@ -129,7 +129,7 @@ For the instructions below, we assume that you already have completed the [insta
 We provide 2 sets of minimal examples.
 
 #### Single source file example 
-In the [`examples/simple_example`](./examples/simple_example/) folder you can find a minimal example which can be built and run with the `launch.sh` script as follows:
+In the [`examples/simple_example`](./examples/simple_example/) folder you can find a minimal example which can be built and run with the [`launch.sh`](./examples/simple_example/launch.sh) script as follows:
 ```
 $ cd PROJECT_ROOT/examples/simple_example
 $ ./launch.sh
@@ -141,10 +141,10 @@ It also includes some dummy volatile memory actions in the beginning for compari
 When you run the example, it should result in a SEGMENTATION FAULT because of the injected overflow. 
 The [`example.c`](./examples/simple_example/example.c) file has some annotated lines that should crash.
 Feel free to experiment with those. One of them contains a function that also triggers a PM buffer overflow in the `memcpy` function.
-The `launch.sh` script also produces the original and transformed LLVM-IR for the simple [`example.c`](./examples/simple_example/example.c) code.
+The [`launch.sh`](./examples/simple_example/launch.sh) script also produces the original and transformed LLVM-IR for the simple [`example.c`](./examples/simple_example/example.c) code.
 
 #### Library example
-In the [`examples/library_example`](./examples/library_example/) folder you can find a minimal example which can be built and run with the `launch.sh` script as follows:
+In the [`examples/library_example`](./examples/library_example/) folder you can find a minimal example which can be built and run with the [`launch.sh`](./examples/library_example/launch.sh) script as follows:
 ```
 $ cd PROJECT_ROOT/examples/library_example
 $ ./launch.sh
@@ -159,7 +159,7 @@ When you run the example, it should result in a SEGMENTATION FAULT because of th
 Note the **line 60**: The `driver.c` calls the `test_memcpy` function. In the case of the static library the pointer is not cleared and therefore, the overflow is detected, causing the SEGMENTATION FAULT.
 The [`driver.c`](./examples/library_example/driver.c) file has some annotated lines that should crash.
 Feel free to experiment with those. 
-The `launch.sh` script also produces the original and transformed LLVM-IR for the [`driver.c`](./examples/library_example/driver.c) code.
+The [`launch.sh`](./examples/library_example/launch.sh) script also produces the original and transformed LLVM-IR for the [`driver.c`](./examples/library_example/driver.c) code.
 
 ### How to run pmembench
 First make sure that you have correctly compiled `llvm/clang` as defined above and you use the ```nix-shell``` to use the appropriate wrappers.
