@@ -161,32 +161,28 @@ The [`driver.c`](./examples/library_example/driver.c) file has some annotated li
 Feel free to experiment with those. 
 The [`launch.sh`](./examples/library_example/launch.sh) script also produces the original and transformed LLVM-IR for the [`driver.c`](./examples/library_example/driver.c) code.
 
-### How to run pmembench
-First make sure that you have correctly compiled `llvm/clang` as defined above and you use the ```nix-shell``` to use the appropriate wrappers.
+### How to easily run pmembench
+In the ```nix-shell```, you can run the `pmembench` with the `pmembench_map.cfg` (persistent indices) and `pmembench_tx_spp.cfg` (PM management operations):
+```
+$ cd PROJECT_ROOT/pmdk/src/benchmarks
+$ LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_map.cfg
+$ LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_tx_spp.cfg
+```
+Note that this execution directs the output to `stdout`. To store it in a file, simply redirect it to the file of your choice.
 
-Compile PMDK and the instrumented pmembench benchmarks (uses the default number of tag bits):
+To test `pmembench` with the vanilla PMDK (baseline), you can compile the native PMDK with:
 ```
-cd $PROJECT_ROOT/pmdk/
-make clobber
-make clean
-make -j$(nproc) 
-```
-Run the `pmembench` with the `pmembench_map.cfg` (persistent indices) and `pmembench_tx_spp.cfg` (PM management operations):
-```
-cd $PROJECT_ROOT/pmdk/src/benchmarks
-LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_map.cfg
-LD_LIBRARY_PATH=../nondebug ./pmembench pmembench_tx_spp.cfg
-```
-Note that this execution redirects the output to `stdout`. To store it in a file, simply redirect it to the file of your choice.
-
-For the PMDK baseline, compile the native PMDK with:
-```
-cd $PROJECT_ROOT/pmdk/
-make clobber
-make clean
-make -j$(nproc) SPP_OFF=1
+$ cd PROJECT_ROOT/pmdk/
+$ make clobber
+$ make clean
+$ make -j$(nproc) SPP_OFF=1
 ```
 Then run again the `pmembench` commands as explained above.
+
+**Note**: by default, the `pmembench` uses the `/dev/shm` for the pool (with the ```PMEM_IS_PMEM_FORCE``` exported flag, it is handled as PM from the application).
+We opted for that option so that the `pmembench` can run in systems without PM.
+For the [benchmarks](./benchmarks/), we replace the path with actual PM to get the reliable measurements.
+Feel free to adjust the paths in `pmembench_map.cfg` and `pmembench_tx_spp.cfg` located in `PROJECT_ROOT/pmdk/src/benchmarks` folder of the `pmdk` submodule.
 
 ### How to run the tests
 After you have successfully compiled `llvm` and the runtime library, you can run our sample tests from the root directory:
