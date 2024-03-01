@@ -1,6 +1,6 @@
 # SPP - Safe Persistent Pointers
 
-This repository containts the compiler passes and associated runtime for Safe Persistent Pointers (SPP).
+This repository containts the compiler passes and associated runtime for Safe Persistent Pointers (SPP) for Persistent Memory (PM).
 
 ## Installation instructions
 
@@ -122,46 +122,44 @@ The nix-shell already exports the ```CC```, ```CXX```, ```CMAKE_C_COMPILER```, `
 
 ## Usage instructions
 
-Disable mapping address randomization and provide PMDK with appropriately low mapping address hint ([src](https://pmem.io/pmdk/manpages/linux/v1.0/libpmem.3.html)):
+For the instructions below, we assume that you already have completed the [installation steps](#installation-instructions) above and you are in the environment provided by the ```nix-shell```.
+
+### Minimal examples execution
+
+We provide 2 sets of minimal examples.
+
+#### Single source file example 
+In the [`examples/simple_example`](./examples/simple_example/) folder you can find a minimal example which can be built and run with the `launch.sh` script as follows:
 ```
-export PMEM_MMAP_HINT=0
+$ cd PROJECT_ROOT/examples/simple_example
+$ ./launch.sh
 ```
+The example opens a persistent memory pool, allocates the root object and performs various accesses and copies. 
+It uses the `/dev/shm` for the pool (with the ```PMEM_IS_PMEM_FORCE``` exported flag, it is handled as PM from the application).
+We opted for that option so that this simple example can run in systems without PM.
+It also includes some dummy volatile memory actions in the beginning for comparison purposes of the programming model.
+When you run the example, it should result in a SEGMENTATION FAULT because of the injected overflow. 
+The [`example.c`](./examples/simple_example/example.c) file has some annotated lines that should crash.
+Feel free to experiment with those. One of them contains a function that also triggers a PM buffer overflow in the `memcpy` function.
+The `launch.sh` script also produces the original and transformed LLVM-IR for the simple [`example.c`](./examples/simple_example/example.c) code.
 
-If your machine is not equipped with PM, export the following flag to use `flush` instructions instead of `msync`:
+#### Library example
+In the [`examples/library_example`](./examples/library_example/) folder you can find a minimal example which can be built and run with the `launch.sh` script as follows:
 ```
-export PMEM_IS_PMEM_FORCE=1
+$ cd PROJECT_ROOT/examples/library_example
+$ ./launch.sh
 ```
-
-### Minimal example execution
-
-In the `examples` folder you can find a minimal example which can be built and run with the launch.sh script.
-```
-cd $PROJECT_ROOT/examples/
-./launch.sh
-```
-The script also produces the original and transformed LLVM-IR for the simple `example.c` code.
-
-#### Note
-Currently the passes produce a lot of debug messages. In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
-
-## Code structure
-
-### Directories
-`benchmarks`: folder containing the benchmark scripts
-
-`llvm-project`: llvm fork that contains and registers the passes needed for SPP
-
-`runtime`: runtime library for the hook functions
-
-`pmdk`: pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`
-
-### Important files
-
-`runtime/src/spp.c`: hook functions implementation
-
-`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`: SPP module pass implementation
-
-`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation
+This examples showcases how SPP treats libraries. Especially, it highlights also one limitation of SPP when an overflow occurs in a shared library and cannot be caught.
+We provide the [`libfuncs.h`](./examples/library_example/libfuncs.h) and [`libfuncs.c`](./examples/library_example/libfuncs.c) source code that is built into both a shared (.so) and a static (.a) library.
+This library contains code that performs memory access and memory copies.
+We provide the [`driver.c`](./examples/library_example/driver.c) code that performs similar steps with the `simple_example` above but instead of performing the memory ations or calling the functions in the single source, it uses the compiled libraries.
+Here, we also use the `/dev/shm` for the pool (with the ```PMEM_IS_PMEM_FORCE``` exported flag, it is handled as PM from the application).
+Similarly with the `simple_example`, we opted for that option so that this simple example can run in systems without PM.
+When you run the example, it should result in a SEGMENTATION FAULT because of the injected overflow for the case of the `driver_static` produced executable that uses the static library. The `driver_shared` runs normally without an error as the overflow cannot be detected because the tagged pointer is cleared when passed to the external library (clear limitation -- specified also in the paper).
+Note the **line 60**: The `driver.c` calls the `test_memcpy` function. In the case of the static library the pointer is not cleared and therefore, the overflow is detected, causing the SEGMENTATION FAULT.
+The [`driver.c`](./examples/library_example/driver.c) file has some annotated lines that should crash.
+Feel free to experiment with those. 
+The `launch.sh` script also produces the original and transformed LLVM-IR for the [`driver.c`](./examples/library_example/driver.c) code.
 
 ### How to run pmembench
 First make sure that you have correctly compiled `llvm/clang` as defined above and you use the ```nix-shell``` to use the appropriate wrappers.
@@ -203,3 +201,27 @@ depending on the optimization level that you want your binaries to be compiled w
 Note that this command will create a build directory where it will place the binaries,
 build the `pmdk`, generate the transformed IRs and run the tests. 
 The IRs and the binaries are placed in `build/tests` folder.
+
+#### Note
+Currently the passes produce a lot of debug messages. In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
+
+---
+
+## Code structure
+
+### Directories
+`benchmarks`: folder containing the benchmark scripts
+
+`llvm-project`: llvm fork that contains and registers the passes needed for SPP
+
+`runtime`: runtime library for the hook functions
+
+`pmdk`: pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`
+
+### Important files
+
+`runtime/src/spp.c`: hook functions implementation
+
+`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`: SPP module pass implementation
+
+`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation

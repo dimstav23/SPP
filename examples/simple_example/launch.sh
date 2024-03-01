@@ -58,22 +58,7 @@ echo ">>>>>>> Run example"
 rm -rf /dev/shm/spp_test.pool_dim
 LD_LIBRARY_PATH="${PMDKSRC}/nondebug" ./example
 
-# $CLANG -O -I../pmdk/src/include/ -emit-llvm example.c -c -o example.bc #produce bitcode
 $CLANG $OPT_LEVEL -Wno-array-bounds -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -S -I${PMDKSRC}/include/ -emit-llvm example.c
-
-#clang -O -emit-llvm ../runtime/runtime.c -c -o runtime.bc #produce runtime bitcode
-
-# llvm-link -o example.ll -S runtime.bc example.bc
 
 opt $OPT_LEVEL -load "${LLVMROOT}/build/lib/LLVMSPP.so" -S example.ll -o example_transformed.ll #produce transformed .ll pass sequence plays a role here
 
-
-# llc example_transformed.ll -o example.s #produce transformed .s file -- https://subscription.packtpub.com/book/application-development/9781785285981/1/ch01lvl1sec16/transforming-llvm-ir
-
-# rm -rf example
-
-# #https://lists.llvm.org/pipermail/llvm-dev/2013-January/058038.html
-# clang -Xclang -load -Xclang ../pass/spp.so  -O2 -I../pmdk/src/include/ -L../pmdk/src/debug/ -DTAG_BITS=26 -lpmem -lpmemobj example.c -o example
-
-# rm -rf /dev/shm/spp_test.pool
-# LD_LIBRARY_PATH=../pmdk/src/nondebug ./example

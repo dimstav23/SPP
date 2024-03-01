@@ -57,7 +57,7 @@ int main()
 	struct test_struct* ptr1 = pmemobj_direct(oid1);
 	struct test_struct* ptr2 = pmemobj_direct(oid2);
 
-	test_memcpy(pool, ptr1, ptr2);
+	test_memcpy(pool, ptr1, ptr2); // This line should crash for the static library case
 
 	pmemobj_free(&oid1);
 	pmemobj_free(&oid2);
