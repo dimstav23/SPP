@@ -181,7 +181,7 @@ Then run again the `pmembench` commands as explained above.
 
 **Note**: by default, the `pmembench` uses the `/dev/shm` for the pool (with the ```PMEM_IS_PMEM_FORCE``` exported flag, it is handled as PM from the application).
 We opted for that option so that the `pmembench` can run in systems without PM.
-For the [benchmarks](./benchmarks/), we replace the path with actual PM to get the reliable measurements.
+For the SPP [pmembench benchmarks](./benchmarks/pmembench), we [replace]((./benchmarks/pmembench/run_spp.sh#L6)) the path with actual PM to get the reliable measurements.
 Feel free to adjust the paths in `pmembench_map.cfg` and `pmembench_tx_spp.cfg` located in `PROJECT_ROOT/pmdk/src/benchmarks` folder of the `pmdk` submodule.
 
 ### How to run the tests
