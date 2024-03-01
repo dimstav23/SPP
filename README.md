@@ -7,6 +7,7 @@ This repository containts the compiler passes and associated runtime for Safe Pe
 ### Automated project build
 
 We rely on [nix](https://nixos.org/) package manager to reliably build the environment for SPP.
+
 If you do not run NixOS, you can still use the [nix package manager](https://itsfoss.com/ubuntu-install-nix-package-manager/).
 
 SPP has 3 core components:
@@ -15,12 +16,13 @@ SPP has 3 core components:
 3. A fork of PMDK (as a submodule) containing the SPP wrappers ([pmdk](./pmdk/))
 
 To easily build all of the above we provide the `install_dependencies.sh` script.
+
 Simply execute (takes some minutes):
 ```console
 $ ./install_dependencies.sh
 ```
 
-After this point, you can launch a `nix-shell` and the provided environment will contain:
+After this point, you can launch a ```nix-shell``` and the provided environment will contain:
 - all the required dependecies
 - all the required environment variables (```CC```, ```CXX```, ```CMAKE_C_COMPILER```, ```CMAKE_CXX_COMPILER```, ```BINUTILS_DIR```, ```PMEM_MMAP_HINT```, ```PMEM_IS_PMEM_FORCE```)
 
@@ -34,7 +36,7 @@ nix-shell> # in this shell all build dependencies are present
 The `install_dependencies.sh` script performs the following actions:
 1. Initializes the repository by fetching all the submodules
 2. Applies a patch to `default.nix` required to have the default `gcc` compiler to build LLVM.
-3. Builds the `llvm-project` inside a `nix-shell` based on the patched `default.nix` containing all the dependencies.
+3. Builds the `llvm-project` inside a ```nix-shell``` based on the patched `default.nix` containing all the dependencies.
 4. Reverts the changes of the `default.nix`.
 5. Builds the `SPP runtime library` using the freshly compiled `clang` from step 3.
 6. Builds the `pmdk` and applies the SPP passes to its examples and benchmarks (`pmembench`) using the freshly compiled `clang` from step 3. Note that by default, it builds SPP with **TAG_BITS set to 26**.
@@ -44,16 +46,16 @@ The `install_dependencies.sh` script performs the following actions:
 You can also build the project manually (step by step).
 In the next steps, we define `PROJECT_ROOT` as the root directory of this repository.
 
-1. Initialise the submodules of the repository:
+1. **Initialise the submodules of the repository:**
 ```
 $ cd PROJECT_ROOT
 $ git submodule update --init --recursive
 ```
 
-2. Build the `llvm-project`:
+2. **Build the `llvm-project`:**
 
 Apply the `install_depndencies.patch` to temporarily use the normal `gcc` compiler for the LLVM,
-enter a `nix-shell`, run the build instructions for LLVM with gold plugin (**Warning!** High memory consumption) and exit the `nix-shell`:
+enter a ```nix-shell```, run the build instructions for LLVM with gold plugin (**Warning!** High memory consumption) and exit the ```nix-shell```:
 ```
 $ cd PROJECT_ROOT
 $ git apply build_dependencies.patch
@@ -73,9 +75,9 @@ $ make -j$(nproc)
 $ exit
 ```
 
-3. Bulld the `SPP runtime library`:
+3. **Bulld the `SPP runtime library`:**
 
-Revert the `default.nix` to its original form, enter a `nix-shell` that wraps the compiler with the `clang` compiled in step 2, fetches all the dependencies and sets the appropriate environment variables, compile the runtime library and exit the `nix-shell`:
+Revert the `default.nix` to its original form, enter a ```nix-shell``` that wraps the compiler with the `clang` compiled in step 2, fetches all the dependencies and sets the appropriate environment variables, compile the runtime library and exit the ```nix-shell```:
 ```
 $ cd PROJECT_ROOT
 $ git checkout default.nix
@@ -86,11 +88,12 @@ $ exit
 ```
 
 Optional compile parameter for `SPP runtime library`: `TAG_BITS` to determine the tag size for the returned tagged pointer structure.
+
 **Important**: If you use this parameter, this has to be passed to `SPP PMDK` building phase below (Step 4) as well as to any compiling module of your own (so that it does not mess up with the internal struct definitions).
 
-4. Build the `SPP PMDK` fork:
+4. **Build the `SPP PMDK` fork:**
 
-Revert the `default.nix` to its original form, enter a `nix-shell` that wraps the compiler with the `clang` compiled in step 2 and fetches all the dependencies and sets the appropriate environment variables, compile the `SPP PMDK` fork and exit the `nix-shell`:
+Revert the `default.nix` to its original form, enter a ```nix-shell``` that wraps the compiler with the `clang` compiled in step 2 and fetches all the dependencies and sets the appropriate environment variables, compile the `SPP PMDK` fork and exit the ```nix-shell```:
 ```
 $ cd PROJECT_ROOT
 $ git checkout default.nix
@@ -104,15 +107,18 @@ $ exit
 ```
 
 Optional compile parameter for `SPP PMDK`: `TAG_BITS` to determine the tag size for the returned tagged pointer structure.
+
 **Important**: If you use this parameter, this has to be passed to `SPP runtime library` building phase above (Step 3) as well as to any compiling module of your own (so that it does not mess up with the internal struct definitions).
 
-5. Enter in the `nix-shell` with all the dependencies and built projects:
+5. **Enter in the ```nix-shell``` with all the dependencies and built projects:**
 ```console
 $ nix-shell
 nix-shell> # in this shell all build dependencies are present
 ```
 
 The nix-shell already exports the ```CC```, ```CXX```, ```CMAKE_C_COMPILER```, ```CMAKE_CXX_COMPILER```, ```BINUTILS_DIR```, ```PMEM_MMAP_HINT```, ```PMEM_IS_PMEM_FORCE``` environment variables.
+
+---
 
 ## Usage instructions
 
@@ -158,7 +164,7 @@ Currently the passes produce a lot of debug messages. In order to control the de
 `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation
 
 ### How to run pmembench
-First make sure that you have correctly compiled `llvm/clang` as defined above and you use the `nix-shell` to use the appropriate wrappers.
+First make sure that you have correctly compiled `llvm/clang` as defined above and you use the ```nix-shell``` to use the appropriate wrappers.
 
 Compile PMDK and the instrumented pmembench benchmarks (uses the default number of tag bits):
 ```
