@@ -4,6 +4,11 @@ This repository containts the compiler passes and associated runtime for Safe Pe
 
 ## Installation instructions
 
+Initially clone the repository:
+```
+git clone git@github.com:dimstav23/SPP.git
+```
+
 ### Automated project build
 
 We rely on [nix](https://nixos.org/) package manager to reliably build the environment for SPP.
@@ -106,9 +111,11 @@ $ make -j$(nproc) TAG_BITS=xx
 $ exit
 ```
 
-Optional compile parameter for `SPP PMDK`: `TAG_BITS` to determine the tag size for the returned tagged pointer structure.
+Optional compile parameters for `SPP PMDK`: 
+- `SPP_OFF=1` to disable the SPP modifications and have the plain `PMDK`.
+- `TAG_BITS=xx` to determine the tag size for the returned tagged pointer structure.
 
-**Important**: If you use this parameter, this has to be passed to `SPP runtime library` building phase above (Step 3) as well as to any compiling module of your own (so that it does not mess up with the internal struct definitions).
+**Important**: If you use the `TAG_BITS` parameter, this has to be passed to `SPP runtime library` building phase above (Step 3) as well as to any compiling module of your own (so that it does not mess up with the internal struct definitions).
 
 5. **Enter in the ```nix-shell``` with all the dependencies and built projects:**
 ```console
@@ -161,6 +168,42 @@ The [`driver.c`](./examples/library_example/driver.c) file has some annotated li
 Feel free to experiment with those. 
 The [`launch.sh`](./examples/library_example/launch.sh) script also produces the original and transformed LLVM-IR for the [`driver.c`](./examples/library_example/driver.c) code.
 
+### Functionality tests
+
+The functionality testing suite was originally copied from [`SafePM`](https://github.com/TUM-DSE/safepm) and adapted to SPP needs.
+
+#### General information
+We provide an extensive set of tests covering multiple types of buffer overflows on PM objects.
+The source code of these tests is located in the [`tests`](./tests/) folder.
+The name of each file implies the type of overflow that it performs.
+More information about each test can be found in the [`README`](./tests/README.md) of the respective folder.
+
+#### Configuration information
+These tests create the pool in actual PM in the directory `/mnt/pmem0/dimitrios`.
+To make them work on every system, you can easily replace this path with either the path where your PM is mounted or with `/dev/shm`.
+To do this for all the tests, simply run:
+```
+$ cd PROJECT_ROOT
+$ sed -i 's|/mnt/pmem0/dimitrios|/dev/shm|' ./tests/*
+```
+
+#### Execution
+We provide the [`spp_test.sh`](./spp_test.sh) script that is responsible to orchestrate the execution of the tests.
+More precisely, the [`spp_test.sh`](./spp_test.sh) script:
+- Adapts the [`CMakeLists.txt`](./tests/CMakeLists.txt) of the tests subfolder to reflect the chosen optimization level.
+- Creates the `build` directory in the root directory of the repository.
+- Rebuilds the [`PMDK`](./pmdk/) and places its installation file in a specified directory (**Note**: it uses the default TAG_BITS option which set the TAG_BITS to **26**).
+- Sets the appropriate compilation flags, which are also printed upon execution.
+- Builds the functionality tests in the `build` directory, including their IRs (placed in `build/tests`). The building process of the tests is based on the [`CMakeLists.txt`](./tests/CMakeLists.txt) of the subfolder. Please, consult the respective [`README`](./tests/README.md) for more information.
+- Runs the tests and prints them in green/red depending if they were successful or not. To achieve this, the `launch.sh` script defines 2 functions, `should_crash` and `should_not_crash`, that check if the execution has the expected outcome based on its output (i.e., we should have no invocation of the `print_fail_flag`, defined in the [`common.h`](./tests/common.h) of the tests). 
+
+To execute the tests, depending on the optimization level that you want your binaries to be compiled with, run:
+```
+$ cd PROJECT_ROOT
+$ OPT_LEVEL=1 ./spp_test.sh
+$ OPT_LEVEL=2 ./spp_test.sh
+```
+
 ### How to easily run pmembench
 In the ```nix-shell```, you can run the `pmembench` with the `pmembench_map.cfg` (persistent indices) and `pmembench_tx_spp.cfg` (PM management operations):
 ```
@@ -184,40 +227,60 @@ We opted for that option so that the `pmembench` can run in systems without PM.
 For the SPP [pmembench benchmarks](./benchmarks/pmembench), we [replace](./benchmarks/pmembench/run_spp.sh#L6) the path with actual PM to get the reliable measurements.
 Feel free to adjust the paths in `pmembench_map.cfg` and `pmembench_tx_spp.cfg` located in `PROJECT_ROOT/pmdk/src/benchmarks` folder of the `pmdk` submodule.
 
-### How to run the tests
-After you have successfully compiled `llvm` and the runtime library, you can run our sample tests from the root directory:
-```
-OPT_LEVEL=1 ./spp_test.sh
-```
-or
-```
-OPT_LEVEL=2 ./spp_test.sh
-```
-depending on the optimization level that you want your binaries to be compiled with.
-Note that this command will create a build directory where it will place the binaries,
-build the `pmdk`, generate the transformed IRs and run the tests. 
-The IRs and the binaries are placed in `build/tests` folder.
+---
 
-#### Note
-Currently the passes produce a lot of debug messages. In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
+## Benchmarks & Artifact Evaluation
+
+We choose to use docker containers to have a reproducible environment for our benchmarks.
+
+### Docker-based environment
+We provide a set of Dockerfiles and setup scripts to build the appropriate [compiler images](./utils/docker/compiler_images/) and [runtime environments](./utils/docker/packaged_environments/) for all the variants with all the dependencies and project installations.
+More information can be found in the respective [`README`](./utils/docker/README.md).
+
+### Benchmarks
+To run the SPP [benchmarks](./benchmarks/):
+1. You have to make sure that you have set up the appropriate images for all the variants (`spp`, `vanilla pmdk` and `safepm`). 
+Instructions on how to achieve this are provided [here](./utils/docker/README.md).
+2. Visit the [benchmarks](./benchmarks/) subfolder and choose the benchmark that you would like to run. Inside each subfolder, there is a dedicated `README` with the appropriate instructions and information about the result files/data.
+
+### Artifact evaluation
+We provide a detailed recipe on how to run the required benchmarks for the paper in the [artifact_evaluation](./artifact_evaluation/) folder. This recipe includes instructions on how to produce the required docker images, how to run the benchmarks in the containerized environment and how to visualize the results shown in our paper. 
+
+For more information, please consult the respective [`README`](./artifact_evaluation/README.md).
+
+### Results
+We also include a `.zip` archive where we have enclosed the sample results we used for the paper plots. It can be found [here](./benchmarks/sample_results.zip). Note that it does not contain the `phoenix` benchmark results, as it was added later in the paper.
 
 ---
 
 ## Code structure
 
 ### Directories
-`benchmarks`: folder containing the benchmark scripts
 
-`llvm-project`: llvm fork that contains and registers the passes needed for SPP
+- [`benchmarks`](./benchmarks/): folder containing the benchmark scripts.
 
-`runtime`: runtime library for the hook functions
+- [`llvm-project`](./llvm-project/): llvm fork that contains and registers the passes needed for SPP.
 
-`pmdk`: pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`
+- [`runtime`](./runtime/): runtime library for the hook functions.
 
-### Important files
+- [`pmdk`](./pmdk/): pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`.
 
-`runtime/src/spp.c`: hook functions implementation
+- [`plots_utils`](./plot_utils/): scripts used for creating the plots in the SPP paper. More information can be found in the respective [`README`](./plot_utils/README.md).
 
-`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`: SPP module pass implementation
+- [`utils/docker`](./utils/docker/): contains Dockerfiles and setup scripts to build the appropriate [compiler images](./utils/docker/compiler_images/) and [runtime environments](./utils/docker/packaged_environments/) for all the variants with all the dependencies and project installations. More information can be found in the respective [`README`](./utils/docker/README.md).
 
-`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`: LTO pass implementation
+- [`hw_inst`](./hw_inst/): source code that we used to test the performance of HW instructions for bit manipulation. More information can be found in the respective [`README`](./hw_inst/README.md).
+
+### Important files in the populated repository
+
+[`runtime/src/spp.c`](./runtime/src/spp.c): hook functions implementation
+
+[`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`](llvm-project/llvm/lib/Transforms/SPP/spp.cpp): SPP module pass implementation
+
+[`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`](llvm-project/llvm/lib/Transforms/SPP/spp.cpp): LTO pass implementation
+
+---
+
+### Note
+Currently the passes produce a lot of debug messages.
+In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
