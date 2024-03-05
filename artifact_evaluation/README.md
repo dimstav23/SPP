@@ -23,6 +23,13 @@ $ ./install_dependencies.sh
 $ nix-shell
 ```
 
+---
+
+## Simple minimal examples & functionality tests
+After you have successfully [set up the environment](../README.md#automated-project-build), you can easily run the provided [minimal examples](../README.md#minimal-examples-execution) and [functionality tests](../README.md#functionality-tests) as explained in the [README](../README.md) of the root folder.
+
+---
+
 ## Automated Artifact Evaluation (approx. 8-10hrs)
 
 Our automated scripts create the appropriate docker images and carry out each experiment with the appropriate configuration inside a dedicated docker container.
@@ -49,6 +56,8 @@ The above script will do the following:
   - `table_4-ripe.txt`
   - `crash_consistency_results.txt`
 4. The reproduction of the `btree` bug is left last, so that its output will be presented last in the `stdout` of the `artifact_evaluation.sh` script. For more information about this benchmark, please see [here](../benchmarks/bugs/README.md).
+
+---
 
 ## Manual Artifact Evaluation
 
@@ -217,16 +226,86 @@ $ cd SPP/benchmarks/crash_consistency
 $ ./crash-consistency-res.sh | tee SPP/artifact_evaluation/crash_consistency_results.txt
 ```
 
+---
+
 ## Hardware configuration
-**TODO**
+To reproduce the results from the paper, the machine should preferably be equipped with a physical persistent memory module (e.g., Intel Optane DC) with at least 128 GB available space. 
+The persistent memory module should be mounted using a DAX-enabled file system (e.g. EXT4-DAX).
+Additionally, we recommend running the [pmemkv](https://github.com/pmem/pmemkv) experiments on a machine with at least 24 cores, as they are configured to run with up to 24 threads. 
+Our testbed, used to conduct our experiments, is a dual socket machine with the following CPU architecture obtained through `lscpu` command (flags removed for simplicity):
+```
+Architecture:            x86_64
+  CPU op-mode(s):        32-bit, 64-bit
+  Address sizes:         46 bits physical, 57 bits virtual
+  Byte Order:            Little Endian
+CPU(s):                  64
+  On-line CPU(s) list:   0-63
+Vendor ID:               GenuineIntel
+  Model name:            Intel(R) Xeon(R) Gold 6326 CPU @ 2.90GHz
+    CPU family:          6
+    Model:               106
+    Thread(s) per core:  2
+    Core(s) per socket:  16
+    Socket(s):           2
+    Stepping:            6
+    CPU(s) scaling MHz:  92%
+    CPU max MHz:         3500.0000
+    CPU min MHz:         800.0000
+    BogoMIPS:            5800.00
+Virtualization features: 
+  Virtualization:        VT-x
+Caches (sum of all):     
+  L1d:                   1.5 MiB (32 instances)
+  L1i:                   1 MiB (32 instances)
+  L2:                    40 MiB (32 instances)
+  L3:                    48 MiB (2 instances)
+NUMA:                    
+  NUMA node(s):          2
+  NUMA node0 CPU(s):     0-15,32-47
+  NUMA node1 CPU(s):     16-31,48-63
+```
+
+Our system is equipped with 128GB of DRAM and 2TB of Persistent Memory distributed in its 2 nodes.
+
+The DRAM & PM topology, obtained through the `sudo ipmctl show -topology` command, is as follows:
+```
+ DimmID | MemoryType                  | Capacity    | PhysicalID| DeviceLocator 
+================================================================================
+ 0x0000 | Logical Non-Volatile Device | 256.000 GiB | 0x0029    | P1-DIMMA1
+ 0x0100 | Logical Non-Volatile Device | 256.000 GiB | 0x002d    | P1-DIMMC1
+ 0x0200 | Logical Non-Volatile Device | 256.000 GiB | 0x0031    | P1-DIMME1
+ 0x0300 | Logical Non-Volatile Device | 256.000 GiB | 0x0035    | P1-DIMMG1
+ 0x1000 | Logical Non-Volatile Device | 256.000 GiB | 0x0039    | P2-DIMMA1
+ 0x1100 | Logical Non-Volatile Device | 256.000 GiB | 0x003d    | P2-DIMMC1
+ 0x1200 | Logical Non-Volatile Device | 256.000 GiB | 0x0041    | P2-DIMME1
+ 0x1300 | Logical Non-Volatile Device | 256.000 GiB | 0x0045    | P2-DIMMG1
+ N/A    | DDR4                        | 16.000 GiB  | 0x002b    | P1-DIMMB1
+ N/A    | DDR4                        | 16.000 GiB  | 0x002f    | P1-DIMMD1
+ N/A    | DDR4                        | 16.000 GiB  | 0x0033    | P1-DIMMF1
+ N/A    | DDR4                        | 16.000 GiB  | 0x0037    | P1-DIMMH1
+ N/A    | DDR4                        | 16.000 GiB  | 0x003b    | P2-DIMMB1
+ N/A    | DDR4                        | 16.000 GiB  | 0x003f    | P2-DIMMD1
+ N/A    | DDR4                        | 16.000 GiB  | 0x0043    | P2-DIMMF1
+ N/A    | DDR4                        | 16.000 GiB  | 0x0047    | P2-DIMMH1
+```
+
+---
 
 ## Software dependencies
-We require the following software configuration to reproduce our experimental results:
+To make reproducibility easier, we use the `nix` package manager. Using our [`install_dependencies.sh`](../install_dependencies.sh) and[`default.nix`](../default.nix) files and following [this](../README.md#automated-project-build) process, you can get the exact environment (with the `nix-shell`) we used which contains all the required depencencies through the `nix` package manager. 
+
+Our benchmark execution orchestration is based entirely on Docker containers.
+
+For Native environments without the `nix` package manager, 
+we require the following software configuration to reproduce our experimental results:
 1. Linux (tested in Ubuntu 20.04.3 LTS with kernel version 5.4.0)
 2. Docker (tested with Docker version 20.10.7): Each experiment comes with its pre-configured Dockerfile. We provide scripts that automatically build the images containing the required software dependencies.
 3. gcc and cmake (tested with gcc 9.3.0 and cmake 3.16.3)
 4. Python 3.7 or newer (tested with Python 3.8.10). The packages `matplotlib` and `pyyml` are required.
 5. The [`bc`](https://www.gnu.org/software/bc/) package for our analysis scripts.
+6. The versions of `libpmemobj-cpp` (version stable-1.13), `pmemkv` (version 1.4) and `pmemkv-bench` (commit `32d94c0`) that are used, are specified in the respective Dockerfiles in [this directory](../utils/docker/compiler_images/).
+
+---
 
 ## SPP code structure
-For more information about the source code structure please see [here](https://github.com/dimstav23/SPP/tree/spp_lto-pm_ptr_bit#code-structure).
+For more information about the source code structure please see [here](../README.md#code-structure).
