@@ -1,4 +1,4 @@
-# Crash Consistency
+# Crash Consistency (~20-30mins)
 
 **Crash consistency** is an important property to ensure both for PM applications and for PMDK itself.
 Here we list a set of tools we used to ensure the correctness and crash consistency of our modified PMDK fork.
@@ -7,7 +7,7 @@ Here we list a set of tools we used to ensure the correctness and crash consiste
 
 We use `pmemcheck `([src](https://github.com/pmem/valgrind), [docs](https://www.intel.com/content/www/us/en/developer/articles/technical/discover-persistent-memory-programming-errors-with-pmemcheck.html)), a state-of-the-art debugging tool based on [**Valgrind**](https://valgrind.org/).
 
-We build a new image, tagged as `spp-crash_consistency`, using the [`Dockerfile`](./Dockerfile) which is based the [SPP image](../../utils/docker/packaged_environments/). We patch the PMDK to be compiled with SPP and also install `Valgrind`.
+We build a new image (~6 GB), tagged as `spp-crash_consistency`, using the [`Dockerfile`](./Dockerfile) which is based the [SPP image](../../utils/docker/packaged_environments/). We patch the PMDK to be compiled with SPP and also install `Valgrind`.
 Then, we run the persistent indices benchmark of `pmembench` and its transactional PM updates benchmark using `memcheck` and `pmemcheck`.
 
 To run the SPP crash consistency benchmark end-to-end:
