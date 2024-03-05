@@ -34,7 +34,7 @@ cd $PROJECT_ROOT/utils/docker/packaged_environments
 # pmembench
 ## execution
 cd $PROJECT_ROOT/benchmarks/pmembench
-NUMA_NODE=0 BENCHMARK_PM_PATH=/mnt/pmem0/ ./run_variants.sh
+NUMA_NODE=$NUMA_NODE BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH ./run_variants.sh
 ## visualize results
 cd $PROJECT_ROOT/plot_utils
 ./import_pmembench.sh $PROJECT_ROOT/benchmarks/pmembench/results
@@ -48,7 +48,7 @@ cp $PROJECT_ROOT/plot_utils/plots/pmembench_tx/pmembench_tx_plot_single_vertical
 # pmemkv
 ## execution
 cd $PROJECT_ROOT/benchmarks/pmemkv
-NUMA_NODE=0 BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
+NUMA_NODE=$NUMA_NODE BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH ./run-variants.sh
 ## visualize results
 cd $PROJECT_ROOT/plot_utils
 ./import_pmemkv.sh $PROJECT_ROOT/benchmarks/pmemkv/results
@@ -59,7 +59,7 @@ cp $PROJECT_ROOT/plot_utils/plots/pmemkv/pmemkv_plot_overhead.pdf $THIS_DIR/figu
 # phoenix
 ## execution
 cd $PROJECT_ROOT/benchmarks/phoenix
-NUMA_NODE=0 BENCHMARK_PM_PATH=/mnt/pmem0 ./run_variants.sh
+NUMA_NODE=$NUMA_NODE BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH ./run_variants.sh
 ## visualize results
 cd $PROJECT_ROOT/benchmarks/phoenix
 python3 plot.py $PROJECT_ROOT/benchmarks/phoenix/results/phoenix_8_threads
@@ -69,7 +69,7 @@ cp $PROJECT_ROOT/benchmarks/phoenix/results/phoenix_8_threads/phoenix_bar_plot_o
 # recovery time
 ## execution
 cd $PROJECT_ROOT/benchmarks/recovery_time
-BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
+BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH  ./run-variants.sh
 ## visualize results
 cd $PROJECT_ROOT/benchmarks/recovery_time
 ./recovery_table.sh > $THIS_DIR/table_2-recovery_time.txt
@@ -77,7 +77,7 @@ cd $PROJECT_ROOT/benchmarks/recovery_time
 # space overhead
 ## execution
 cd $PROJECT_ROOT/benchmarks/space_overhead
-BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
+BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH  ./run-variants.sh
 ## visualize results
 cd $PROJECT_ROOT/benchmarks/space_overhead
 ./space_overhead_results.sh > $THIS_DIR/table_3-space_overhead.txt
@@ -85,7 +85,7 @@ cd $PROJECT_ROOT/benchmarks/space_overhead
 # crash consistency
 ## execution
 cd $PROJECT_ROOT/benchmarks/crash_consistency
-BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
+BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH  ./run-variants.sh
 ## visualize results
 cd $PROJECT_ROOT/benchmarks/crash_consistency
 ./crash-consistency-res.sh > $THIS_DIR/crash_consistency_results.txt
@@ -93,7 +93,7 @@ cd $PROJECT_ROOT/benchmarks/crash_consistency
 # ripe
 ## execution
 cd $PROJECT_ROOT/benchmarks/ripe
-BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
+BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH  ./run-variants.sh
 ## visualize results
 cd $PROJECT_ROOT/benchmarks/ripe
 ./ripe_table.sh > $THIS_DIR/table_4-ripe.txt
@@ -101,4 +101,4 @@ cd $PROJECT_ROOT/benchmarks/ripe
 # bugs
 ## execution
 cd $PROJECT_ROOT/benchmarks/bugs
-BENCHMARK_PM_PATH=/mnt/pmem0 ./spp_bugs.sh
+BENCHMARK_PM_PATH=$BENCHMARK_PM_PATH  ./spp_bugs.sh
