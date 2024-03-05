@@ -3,7 +3,7 @@
 This directory contains the automation for the benchmark execution of the SPP paper.
 
 - [`bugs`](./bugs/): Scripts to reproduce the pmembench bug found with SPP ([[1]](https://github.com/pmem/pmdk/issues/5333)). For more information, see [here](./bugs/README.md).
-- [`crash_consistency`](./crash_consistency/):
+- [`crash_consistency`](./crash_consistency/): Scripts to run `memcheck` and `pmemcheck` (`Valrind`-based) tools for crash consistency checks.
 - [`llvm_ir_dump`](./llvm_ir_dump/):
 - [`phoenix`](./phoenix/):
 - [`pmembench`](./pmembench/):
