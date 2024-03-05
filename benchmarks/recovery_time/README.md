@@ -19,7 +19,7 @@ $ BENCHMARK_PM_PATH=/path/to/pm ./run-variants.sh
 
 The results of the execution are placed in the `results` directory of the current folder (created, if not existing).
 
-To observe the results summary in the stdout if you do not want to browse the files manually, run:
+To observe the results summary in the `stdout` if you do not want to browse the files manually, run:
 ```
 $ cd PROJECT_ROOT/benchmarks/recovery_time
 $ ./recovery_table.sh
@@ -35,7 +35,7 @@ $ ./recovery_table.sh
   3. Closes the pool before the TX end (to trigger a recovery in the next run)
   4. Re-opens the PM pool and measures the time it takes for its initilization (recovery time from the interrupted transaction).
 - [`Dockerfile`](./Dockerfile): Dockerfile that is used to patch the `PMDK` and compile it with SPP.
-- [`inner_run.sh`](./inner_run.sh): Script to run inside the container and execute the benchmarks.
+- [`inner_run.sh`](./inner_run.sh): Script to run inside the container and executes the benchmarks.
 - [`Makefile`](./Makefile): Makefile to build the [`source/recovery_run.c`](./source/recovery_run.c) inside the container.
 - [`pmdk_spp.patch`](./pmdk_spp.patch): PMDK patch to use the SPP passes.
 - [`recovery_table.sh`](./recovery_table.sh): Script that analyses the results, takes the average of the execute repeats and prints it to `stdout` in a nice table.

@@ -18,7 +18,7 @@ $ BENCHMARK_PM_PATH=/path/to/pm ./run-variants.sh
 
 The results of the execution are placed in the `results` directory of the current folder (created, if not existing).
 
-To observe the results summary in the stdout if you do not want to browse the files manually, run:
+To observe the results summary in the `stdout` if you do not want to browse the files manually, run:
 ```
 $ cd PROJECT_ROOT/benchmarks/crash_consistency
 $ ./crash-consistency-res.sh
@@ -30,7 +30,7 @@ $ ./crash-consistency-res.sh
 
 - [`change_pmembench_file_path`](./change_pmembench_file_path.sh): Helper script to adjust the PM pool path for the benchmark.
 - [`Dockerfile`](./Dockerfile): Dockerfile that is used to patch the `PMDK` and fetch & install `Valgrind`.
-- [`inner_run.sh`](./inner_run.sh): Script to run inside the container and execute the benchmarks.
+- [`inner_run.sh`](./inner_run.sh): Script to run inside the container and executes the benchmarks.
 - [`pmdk_spp.patch`](./pmdk_spp.patch): PMDK patch to use the SPP passes.
 - [`run-variants.sh`](./run-variants.sh): Creates the `spp-crash_consistency` image and triggers the benchmark run inside a newly-built container.
 
