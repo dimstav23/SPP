@@ -10,8 +10,8 @@ We use `pmemcheck `([src](https://github.com/pmem/valgrind), [docs](https://www.
 We build a new image (~6 GB), tagged as `spp-crash_consistency`, using the [`Dockerfile`](./Dockerfile) which is based the [SPP image](../../utils/docker/packaged_environments/). We patch the PMDK to be compiled with SPP and also install `Valgrind`.
 Then, we run the persistent indices benchmark of `pmembench` and its transactional PM updates benchmark using `memcheck` and `pmemcheck`.
 
-To run the SPP crash consistency benchmark end-to-end:
 ```
+$ cd PROJECT_ROOT/benchmarks/crash_consistency
 $ BENCHMARK_PM_PATH=/path/to/pm ./run-variants.sh
 ```
 
