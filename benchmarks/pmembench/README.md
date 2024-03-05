@@ -19,7 +19,7 @@ $ NUMA_NODE=0 BENCHMARK_PM_PATH=<path to PM> ./run_variants.sh
 For more information about the images and containers, see [here](../..//utils/docker/README.md).
 
 ## Plots
-To generate bar plots based on the results, simply run:
+To generate the plots based on the results, simply run:
 ```
 $ cd PROJECT_ROOT/plot_utils
 $ ./import_pmembench.sh <path-to-pmembench-results>
