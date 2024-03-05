@@ -1,5 +1,4 @@
 FROM ubuntu:20.04 AS spp_clang_build
-ARG git_token
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
@@ -36,7 +35,7 @@ RUN apt-get update && apt-get -qq install -y \
 
 # Install LLVM/CLANG
 WORKDIR /
-RUN git clone https://${git_token}@github.com/dimstav23/SPP.git /SPP
+RUN git clone https://github.com/dimstav23/SPP.git /SPP
 WORKDIR /SPP
 RUN git checkout spp_lto-pm_ptr_bit
 RUN git submodule update --init
