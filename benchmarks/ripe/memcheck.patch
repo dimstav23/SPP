@@ -1,14 +1,14 @@
 diff --git a/benchmarks/ripe/ripe_tester.py b/benchmarks/ripe/ripe_tester.py
-index 9123fda..d4bc832 100755
+index 80f1a2d..d9acade 100755
 --- a/benchmarks/ripe/ripe_tester.py
 +++ b/benchmarks/ripe/ripe_tester.py
-@@ -218,7 +218,8 @@ for compiler in compilers:
+@@ -235,7 +235,8 @@ for compiler in compilers:
                ## Dr. Memory
                # cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | drmemory -no_check_uninitialized -crash_at_error -- ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
  
 -              cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | LD_LIBRARY_PATH="+pmdk_path+" ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
 +              # cmdline = "(echo \"touch /tmp/ripe-eval/f_xxxx\" | LD_LIBRARY_PATH="+pmdk_path+" ./build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
 +              cmdline = "(cd vgcore_blackhole && echo \"touch /tmp/ripe-eval/f_xxxx\" | valgrind --tool=memcheck --exit-on-first-error=yes --error-exitcode=1 ../build/"+compiler+"_attack_gen "+parameters_str+" >> /tmp/ripe_log 2>&1) 2> /tmp/ripe_log2"+str(i)
-               os.system(cmdline)
- 
-               log_entry = open("/tmp/ripe_log","r").read()
+               
+               # Start the time measurement before executing the attack
+               start_time = time.perf_counter_ns()
