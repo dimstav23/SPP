@@ -50,6 +50,7 @@ $ ./ripe_table.sh
 - [`Makefile_container`](./Makefile_container): Makefile to compile RIPE-64 inside the containers environment for all the variants depending on the provided `INTACT` and `ASAN` flags.
 - [`memcheck.patch`](./memcheck.patch): Patch for [`ripe_tester.py`](./ripe_tester.py) for the `memcheck` variant.
 - [`pmdk_spp.patch`](./pmdk_spp.patch): PMDK patch to use the SPP passes.
+- [`ripe_table.sh`](./ripe_table.sh): Script that analyses the results prints it to `stdout` in a nice table.
 - [`ripe_tester.py`](./ripe_tester.py): Python script that instruments the execution of the RIPE attacks. The chosen attacks (buffer overflows) can be seen in the beginning of the script.
 - [`run_ripe_intact.sh`](./run_ripe_intact.sh): Script that runs inside the container, builds the intact version (using the volatile heap) of RIPE and executes the [`ripe_tester.py`](./ripe_tester.py) script.
 - [`run_ripe_spp.sh`](./run_ripe_spp.sh): Script that runs inside the container, builds the PM version (using the PM heap) of RIPE and executes the [`ripe_tester.py`](./ripe_tester.py) script.
