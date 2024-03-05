@@ -257,11 +257,11 @@ We also include a `.zip` archive where we have enclosed the sample results we us
 
 ### Directories
 
-- [`benchmarks`](./benchmarks/): folder containing the benchmark scripts.
+- [`benchmarks`](./benchmarks/): folder containing the benchmark scripts. For further detailed information, check [here](./benchmarks/README.md).
 
 - [`llvm-project`](./llvm-project/): llvm fork that contains and registers the passes needed for SPP.
 
-- [`runtime`](./runtime/): runtime library for the hook functions.
+- [`runtime`](./runtime/): runtime library for the hook functions. For further detailed information, check [here](./runtime/README.md).
 
 - [`pmdk`](./pmdk/): pmdk fork that contains the modified libpmemobj that uses the enhanced `PMEMoid` structure and constructs the appropriate `tagged pointers`.
 
@@ -273,14 +273,21 @@ We also include a `.zip` archive where we have enclosed the sample results we us
 
 ### Important files in the populated repository
 
-[`runtime/src/spp.c`](./runtime/src/spp.c): hook functions implementation
+- [`runtime/src/spp.c`](./runtime/src/spp.c): hook functions implementation
 
-[`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`](llvm-project/llvm/lib/Transforms/SPP/spp.cpp): SPP module pass implementation
+- [`runtime/src/wrappers_spp.c`](./runtime/src/wrappers_spp.c): the memory intrinsic functions wrappers of SPP
 
-[`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`](llvm-project/llvm/lib/Transforms/SPP/spp.cpp): LTO pass implementation
+- [`llvm-project/llvm/lib/Transforms/SPP/spp.cpp`](llvm-project/llvm/lib/Transforms/SPP/spp.cpp): SPP module pass implementation
+
+- [`llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`](llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp): LTO pass implementation
+
+- [`pmdk/src/libpmemobj/spp_wrappers.c`](./pmdk/src/libpmemobj/spp_wrappers.c): SPP wrappers of the core PM management functions of `libpmemobj` library of PMDK
+
+- [`pmdk/src/include/libpmemobj/base.h`](./pmdk/src/include/libpmemobj/base.h): definition of SPP PMEMoid structure (which adds the *size* field) and the adapted `pmemobj_direct_inline` function that returns the tagged pointer for SPP.
 
 ---
 
 ### Note
 Currently the passes produce a lot of debug messages.
-In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`, `llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
+In order to control the debug information, someone can comment out the defined `DEBUG` variables in `runtime/src/spp.c`,
+`llvm-project/llvm/lib/Transforms/SPP/spp.cpp` and `llvm-project/llvm/lib/Transforms/IPO/SPPLTO.cpp`.
