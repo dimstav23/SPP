@@ -2,7 +2,7 @@
 
 ## Workflow description
 
-To reproduce the pmembench bug found with SPP ([[1]](https://github.com/pmem/pmdk/issues/5333), run:
+To reproduce the pmembench bug found with SPP ([[1]](https://github.com/pmem/pmdk/issues/5333)), run:
 ``` 
 ./spp_bugs.sh <path-to-pm>
 ```
