@@ -4,9 +4,10 @@
 
 To reproduce the pmembench bugs found with SPP, run:
 ``` 
-./spp_bugs.sh <path-to-pm>
+$ cd PROJECT_ROOT/benchmarks/bugs
+$ BENCHMARK_PM_PATH=/path/to/pm ./spp_bugs.sh
 ```
-where `path-to-pm` is the directory where benchmarks will create the persistent memory pools.
+where `/path/to/pm` is the directory where benchmarks will create the persistent memory pools.
 
 During the execution, you can view in the `stdout` the outcome of the bugs reproduction. Every script should end with a segmentation fault (expected).
 
