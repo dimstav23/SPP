@@ -2,7 +2,7 @@
 
 This directory contains the automation for the benchmark execution of the SPP paper.
 
-- [`bugs`](./bugs/): Scripts to reproduce the pmembench bug found with SPP ([[1]](https://github.com/pmem/pmdk/issues/5333)). For more information, see [here](./bugs/README.md). (Duration ~1min)
+- [`bugs`](./bugs/): Scripts to reproduce the bugs found with SPP. For more information, see [here](./bugs/README.md). (Duration ~5min)
 - [`crash_consistency`](./crash_consistency/): Scripts to run `memcheck` and `pmemcheck` (`Valgrind`-based) tools for crash consistency checks. (Duration ~20-30mins)
 - [`llvm_ir_dump`](./llvm_ir_dump/): Helper benchmark that dumps the modified LLVM IRs by SPP of `pmembench`, `PM indices` of PMDK, `pmemkv` and `pmemkv_bench`. For more information, see [here](./llvm_ir_dump/README.md). (Duration <1min)
 - [`phoenix`](./phoenix/): Scripts to run the `phoenix` benchmark suite and plot its results. For more information, see [here](./phoenix/README.md). (Duration ~90mins)

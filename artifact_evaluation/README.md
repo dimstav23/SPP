@@ -55,7 +55,7 @@ The above script will do the following:
   - `table_3-space_overhead.txt`
   - `table_4-ripe.txt`
   - `crash_consistency_results.txt`
-4. The reproduction of the `btree` bug is left last, so that its output will be presented last in the `stdout` of the `artifact_evaluation.sh` script. For more information about this benchmark, please see [here](../benchmarks/bugs/README.md).
+4. The reproduction of the PMDK `btree`, phoenix `string_match` and PMDK `array` bugs are left last, so that its output will be presented last in the `stdout` of the `artifact_evaluation.sh` script. For more information about this benchmark, please see [here](../benchmarks/bugs/README.md).
 
 ---
 
@@ -125,14 +125,14 @@ $ BENCHMARK_PM_PATH=/mnt/pmem0 ./run-variants.sh
 ```
 For more information about `ripe`, please see [here](../benchmarks/ripe/README.md).
 
-#### Bug reproduction (approx. 1-2 mins)
-To reproduce the `btree bug` of `PMDK`:
+#### Bugs reproduction (approx. 5 mins)
+To reproduce the PMDK `btree`, phoenix `string_match` and PMDK `array` bugs:
 ```
 $ cd SPP/benchmarks/bugs
 $ BENCHMARK_PM_PATH=/mnt/pmem0 ./spp_bugs.sh
 ```
 The caught PM buffer overflow bugs will be presented in the `stdout` as faults.
-For more information about the `bug reproduction`, please see [here](../benchmarks/bugs/README.md).
+For more information about the `bugs reproduction`, please see [here](../benchmarks/bugs/README.md).
 
 #### Space overhead (approx. 10 mins)
 To run the `space overhead` experiments:
