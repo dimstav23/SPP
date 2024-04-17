@@ -42,6 +42,7 @@ To execute **all** the Artifact Evaluation steps, simply run:
 $ cd SPP/artifact_evaluation
 $ NUMA_NODE=0 BENCHMARK_PM_PATH=/mnt/pmem0/ ./artifact_evaluation.sh
 ```
+Note that you might need to prefix this command with `sudo` depending on your permissions on the directories of the used machine.
 
 The above script will do the following:
 1. Create the appropriate docker images
