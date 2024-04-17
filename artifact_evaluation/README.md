@@ -18,7 +18,7 @@ To do so, run the following:
 ```
 $ git clone git@github.com:dimstav23/SPP.git
 $ git checkout spp_lto-pm_ptr_bit
-$ git submodule --update init
+$ git submodule update --init
 $ ./install_dependencies.sh
 $ nix-shell
 ```

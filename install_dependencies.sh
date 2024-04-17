@@ -11,7 +11,7 @@ git submodule update --init --recursive
 #Apply the patch to default.nix to use the default gcc to compile LLVM
 cd $THIS_DIR
 git checkout default.nix
-git apply build_dependencies.patch
+git apply install_dependencies.patch
 
 #Enter the nix-shell & compile LLVM
 #Note that we escape the BINUTILES_DIR to take the value of the shellHook in default.nix
